@@ -1,107 +1,269 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🌍 Intercultural Experience Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![Laravel](https://img.shields.io/badge/Laravel-12.0-red.svg)](https://laravel.com)
+[![React Native](https://img.shields.io/badge/React%20Native-0.76.9-blue.svg)](https://reactnative.dev)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-purple.svg)](https://php.net)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## About Laravel
+Sistema integral para la gestión de programas de intercambio cultural con backend Laravel y aplicación móvil React Native.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📋 Descripción
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+La **Plataforma de Experiencias Interculturales** es un sistema completo que permite:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- 🎓 **Gestión de Programas** de intercambio internacional
+- 📱 **Aplicación Móvil** para estudiantes y participantes
+- 📊 **Panel Administrativo** para gestión y reportes
+- 📝 **Constructor de Formularios** dinámico con drag & drop
+- 💰 **Sistema de Puntos y Recompensas**
+- 🎫 **Gestión de Aplicaciones** y documentación
+- 💳 **Sistema Financiero** integrado
 
-## Learning Laravel
+## 🏗️ Arquitectura
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```
+📦 intercultural-experience/
+├── 🔧 Backend Laravel (API + Panel Admin)
+│   ├── app/Http/Controllers/        # Controladores
+│   ├── app/Models/                  # Modelos Eloquent
+│   ├── database/migrations/         # Migraciones
+│   ├── resources/views/             # Vistas Blade
+│   └── routes/                      # Rutas API y Web
+├── 📱 ieapp/ (React Native App)
+│   ├── src/screens/                 # Pantallas
+│   ├── src/components/              # Componentes reutilizables
+│   ├── src/services/api/            # Servicios API
+│   └── src/navigation/              # Navegación
+└── 📄 IE-FORMS/                     # Formularios y documentos
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## ✨ Características Principales
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 🖥️ Backend Laravel
+- **API RESTful** para aplicación móvil
+- **Panel Administrativo** completo
+- **Constructor de Formularios** visual con drag & drop
+- **Sistema de Autenticación** con Laravel Sanctum
+- **Gestión de Archivos** y documentos
+- **Reportes y Analytics**
+- **Sistema de Notificaciones**
 
-## Laravel Sponsors
+### 📱 Aplicación Móvil React Native
+- **Autenticación** de usuarios
+- **Exploración de Programas** disponibles
+- **Aplicaciones** a programas
+- **Sistema de Puntos** y recompensas
+- **Perfil de Usuario** y configuraciones
+- **Notificaciones Push**
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 🎨 Constructor de Formularios
+- **Drag & Drop** intuitivo
+- **Campos Dinámicos**: texto, email, fecha, archivos, etc.
+- **Secciones Organizadas**
+- **Vista Previa** en tiempo real
+- **Validaciones** automáticas
 
-### Premium Partners
+## 🚀 Instalación
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Requisitos Previos
 
-## Contributing
+- **PHP** 8.2+
+- **Composer**
+- **Node.js** 18+
+- **MySQL** o **PostgreSQL**
+- **Expo CLI** (para la app móvil)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 1. Clonar el Repositorio
 
-## Code of Conduct
+```bash
+git clone https://github.com/keuch2/intercultural-experience.git
+cd intercultural-experience
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 2. Configurar Backend Laravel
 
-## Security Vulnerabilities
+```bash
+# Instalar dependencias PHP
+composer install
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tu configuración de base de datos
 
-## License
+# Generar clave de aplicación
+php artisan key:generate
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Ejecutar migraciones
+php artisan migrate
 
-# Intercultural Experience Platform
+# Ejecutar seeders (datos de prueba)
+php artisan db:seed
 
-## Sistema de Formularios Mejorado
+# Instalar dependencias Node.js
+npm install
 
-### Características Principales
+# Compilar assets
+npm run build
+```
 
-**Constructor Visual de Formularios**
-- Drag & Drop intuitivo para crear formularios
-- Panel lateral con campos organizados por categorías
-- Vista previa en tiempo real
-- Edición de propiedades de campos
+### 3. Configurar Aplicación Móvil
 
-**Campos Disponibles**
-- **Texto**: text, email, teléfono, número, fecha, área de texto, URL
-- **Selección**: lista desplegable, radio buttons, checkboxes  
-- **Especiales**: archivos
+```bash
+cd ieapp
 
-**Gestión de Secciones**
-- Crear secciones personalizadas
-- Editar títulos y descripciones
-- Reorganizar campos entre secciones
+# Instalar dependencias
+npm install
 
-**Funcionalidades**
-- Campos requeridos/opcionales
-- Opciones personalizables para campos de selección
-- Placeholders y descripciones
-- Validaciones automáticas
+# Iniciar en modo desarrollo
+npm start
+```
 
-### Cómo Usar
+## ⚙️ Configuración
 
-1. **Crear Formulario**: `Admin → Programas → [Programa] → Gestionar Formularios → Crear Nuevo`
-2. **Editar Formulario**: `Admin → Programas → [Programa] → Gestionar Formularios → [Formulario] → Editar`
-3. **Arrastrar Campos**: Del panel lateral al área de construcción
-4. **Configurar Campo**: Click en campo → editar propiedades en panel lateral
-5. **Gestionar Secciones**: Botón "Añadir Sección" para organizaar
-6. **Vista Previa**: Botón "Vista Previa" para ver resultado final
+### Variables de Entorno (.env)
+
+```env
+APP_NAME="Intercultural Experience"
+APP_ENV=local
+APP_KEY=base64:YOUR_KEY_HERE
+APP_DEBUG=true
+APP_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=intercultural_experience
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+
+# Configuración de archivos
+FILESYSTEM_DISK=local
+
+# Configuración de email
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+```
+
+### Base de Datos
+
+El sistema incluye migraciones completas y seeders para:
+- Usuarios administradores
+- Programas de ejemplo
+- Monedas y configuraciones
+- Datos de prueba
+
+```bash
+# Ejecutar migraciones con datos de prueba
+php artisan migrate:fresh --seed
+```
+
+## 🎯 Uso
+
+### Panel Administrativo
+
+1. **Acceder**: `http://localhost/admin`
+2. **Login**: Usar credenciales creadas en seeders
+3. **Gestionar**:
+   - Programas de intercambio
+   - Aplicaciones de estudiantes
+   - Formularios dinámicos
+   - Sistema financiero
+   - Reportes y analytics
+
+### Aplicación Móvil
+
+1. **Iniciar**: `npm start` en carpeta `ieapp/`
+2. **Desarrollo**: Usar Expo Go en dispositivo físico
+3. **Funciones**:
+   - Registro y login de usuarios
+   - Explorar programas disponibles
+   - Aplicar a programas
+   - Gestionar perfil y puntos
+
+## 📊 Estructura de Base de Datos
+
+### Principales Entidades
+
+- **Users**: Usuarios del sistema
+- **Programs**: Programas de intercambio
+- **Applications**: Aplicaciones de usuarios
+- **Points**: Sistema de puntuación
+- **Rewards**: Recompensas disponibles
+- **FormTemplates**: Plantillas de formularios
+- **Currencies**: Monedas y costos
+
+## 🛠️ Desarrollo
+
+### Comandos Útiles
+
+```bash
+# Backend Laravel
+php artisan serve              # Servidor de desarrollo
+php artisan migrate:fresh      # Recrear base de datos
+php artisan db:seed           # Ejecutar seeders
+php artisan queue:work        # Procesar trabajos en cola
+
+# Frontend (Aplicación móvil)
+cd ieapp
+npm start                     # Servidor Expo
+npm run android              # Ejecutar en Android
+npm run ios                  # Ejecutar en iOS
+```
+
+### Testing
+
+```bash
+# Tests PHP
+php artisan test
+
+# Tests JavaScript
+cd ieapp
+npm test
+```
+
+## 📱 Screenshots
+
+| Panel Admin | App Móvil | Constructor Formularios |
+|-------------|-----------|-------------------------|
+| ![Admin](docs/admin-dashboard.png) | ![Mobile](docs/mobile-app.png) | ![Forms](docs/form-builder.png) |
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crear rama feature (`git checkout -b feature/AmazingFeature`)
+3. Commit cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir Pull Request
+
+## 📝 Roadmap
+
+- [ ] **Notificaciones Push** para la app móvil
+- [ ] **Chat en tiempo real** entre usuarios
+- [ ] **Integración con APIs** de universidades
+- [ ] **Sistema de calificaciones** y reviews
+- [ ] **Múltiples idiomas** (i18n)
+- [ ] **Dashboard analytics** avanzado
+
+## 🐛 Reportar Issues
+
+Si encuentras algún bug o tienes sugerencias:
+1. Revisa [issues existentes](https://github.com/keuch2/intercultural-experience/issues)
+2. Crea un [nuevo issue](https://github.com/keuch2/intercultural-experience/issues/new)
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
+
+## 👥 Equipo
+
+- **Desarrollo Backend**: Laravel + PHP
+- **Desarrollo Frontend**: React Native + TypeScript
+- **Base de Datos**: MySQL
+- **Infraestructura**: XAMPP Local
 
 ---
 
-*Sistema desarrollado para gestión de programas de intercambio internacional*
+⭐ **¿Te gusta el proyecto?** ¡Dale una estrella en GitHub!
+
+📧 **Contacto**: [Crear issue](https://github.com/keuch2/intercultural-experience/issues/new) para consultas
