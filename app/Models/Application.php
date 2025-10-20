@@ -42,6 +42,22 @@ class Application extends Model
     {
         return $this->hasMany(UserProgramRequisite::class);
     }
+
+    /**
+     * Relación con VisaProcess
+     */
+    public function visaProcess()
+    {
+        return $this->hasOne(VisaProcess::class);
+    }
+
+    /**
+     * Relación con JobOfferReservation
+     */
+    public function jobOfferReservation()
+    {
+        return $this->hasOne(JobOfferReservation::class);
+    }
     
     /**
      * Calcula el progreso de la solicitud en porcentaje

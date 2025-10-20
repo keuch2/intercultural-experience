@@ -144,6 +144,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Relación con EnglishEvaluations
+     */
+    public function englishEvaluations()
+    {
+        return $this->hasMany(EnglishEvaluation::class);
+    }
+
+    /**
+     * Relación con JobOfferReservations
+     */
+    public function jobOfferReservations()
+    {
+        return $this->hasMany(JobOfferReservation::class);
+    }
+
+    /**
      * Relación con el rol
      */
     public function userRole()
