@@ -12,32 +12,72 @@ class ProgramController extends Controller
     /**
      * Display a listing of the resource.
      */
+    /**
+     * @OA\Get(
+     *     path="/programs",
+     *     tags={"Programs"},
+     *     summary="Listar programas disponibles",
+     *     description="Obtiene la lista de todos los programas activos disponibles para aplicación",
+     *     @OA\Parameter(
+     *         name="category",
+     *         in="query",
+     *         description="Filtrar por categoría principal",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"IE", "YFU"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="subcategory",
+     *         in="query",
+     *         description="Filtrar por subcategoría",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="country",
+     *         in="query",
+     *         description="Filtrar por país destino",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de programas",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Programas obtenidos exitosamente"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Program")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function index()
     {
-        // Get only active programs
-        $programs = Program::where('is_active', true)->get();
+        // Get only active IE programs for mobile app (YFU programs are not used in mobile)
+        $programs = Program::where('is_active', true)
+                          ->where('main_category', 'IE')
+                          ->get();
         
         // Transform the programs to match the mobile app's expected format
         $transformedPrograms = $programs->map(function ($program) {
-            // Create placeholder dates for testing
-            $startDate = Carbon::now()->addWeeks(2);
-            $endDate = Carbon::now()->addWeeks(6);
-            
             return [
                 'id' => $program->id,
                 'name' => $program->name,
                 'description' => $program->description,
-                'location' => $program->country, // Map country to location
-                'start_date' => $startDate->toDateString(),
-                'end_date' => $endDate->toDateString(),
-                'cost' => rand(1000, 5000), // Random cost for demo
-                'image_url' => "https://source.unsplash.com/random/800x600?{$program->country}", // Generate random image based on country
-                'capacity' => 20,
-                'available_spots' => rand(1, 10),
-                'duration' => $startDate->diffInWeeks($endDate) . ' semanas',
-                'credits' => rand(3, 6),
-                'application_deadline' => $startDate->subWeeks(1)->toDateString(),
-                'status' => 'open',
+                'location' => $program->country,
+                'start_date' => $program->start_date ? $program->start_date->toDateString() : null,
+                'end_date' => $program->end_date ? $program->end_date->toDateString() : null,
+                'cost' => $program->cost ?? 0,
+                'image_url' => $program->image_url,
+                'capacity' => $program->capacity ?? 0,
+                'available_spots' => $program->available_spots ?? 0,
+                'duration' => $program->duration,
+                'credits' => $program->credits,
+                'application_deadline' => $program->application_deadline ? $program->application_deadline->toDateString() : null,
+                'status' => $program->is_active ? 'open' : 'closed',
                 'created_at' => $program->created_at,
                 'updated_at' => $program->updated_at
             ];
@@ -62,39 +102,42 @@ class ProgramController extends Controller
     {
         $program = Program::findOrFail($id);
         
-        if (!$program->is_active && !auth()->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Este programa no está disponible actualmente.'], 403);
+        // Only allow IE programs in mobile app
+        if ($program->main_category !== 'IE') {
+            return response()->json(['message' => 'Este programa no está disponible en la aplicación móvil.'], 403);
         }
         
-        // Create placeholder dates for testing
-        $startDate = Carbon::now()->addWeeks(2);
-        $endDate = Carbon::now()->addWeeks(6);
+        if (!$program->is_active && !auth()->user()?->hasRole('admin')) {
+            return response()->json(['message' => 'Este programa no está disponible actualmente.'], 403);
+        }
         
         // Transform the program to match the mobile app's expected format
         $transformedProgram = [
             'id' => $program->id,
             'name' => $program->name,
             'description' => $program->description,
-            'location' => $program->country, // Map country to location
-            'start_date' => $startDate->toDateString(),
-            'end_date' => $endDate->toDateString(),
-            'cost' => rand(1000, 5000), // Random cost for demo
-            'image_url' => "https://source.unsplash.com/random/800x600?{$program->country}", // Generate random image based on country
-            'capacity' => 20,
-            'available_spots' => rand(1, 10),
-            'duration' => $startDate->diffInWeeks($endDate) . ' semanas',
-            'credits' => rand(3, 6),
-            'application_deadline' => $startDate->subWeeks(1)->toDateString(),
-            'status' => 'open',
+            'location' => $program->country,
+            'start_date' => $program->start_date ? $program->start_date->toDateString() : null,
+            'end_date' => $program->end_date ? $program->end_date->toDateString() : null,
+            'cost' => $program->cost ?? 0,
+            'image_url' => $program->image_url,
+            'capacity' => $program->capacity ?? 0,
+            'available_spots' => $program->available_spots ?? 0,
+            'duration' => $program->duration,
+            'credits' => $program->credits,
+            'application_deadline' => $program->application_deadline ? $program->application_deadline->toDateString() : null,
+            'status' => $program->is_active ? 'open' : 'closed',
             'created_at' => $program->created_at,
             'updated_at' => $program->updated_at,
             // Additional details for the program detail view
             'details' => [
-                'prerequisites' => 'Nivel de idioma B1, promedio académico mínimo 3.0/5.0',
-                'program_type' => $program->category,
-                'coordinator' => 'Dr. ' . ucfirst(str_shuffle('abcdefghijklmnopqrstuvwxyz')) . ' ' . ucfirst(str_shuffle('abcdefghijklmnopqrstuvwxyz')),
-                'coordinator_email' => 'coordinator@exchange.edu',
-                'syllabus' => 'El programa incluye actividades culturales, visitas a museos y empresas locales, clases de idioma y cursos regulares en la universidad anfitriona.'
+                'prerequisites' => 'Requisitos del programa disponibles en el portal',
+                'program_type' => $program->subcategory ?? $program->category,
+                'main_category' => $program->main_category,
+                'subcategory' => $program->subcategory,
+                'coordinator' => 'Coordinador de Programas IE',
+                'coordinator_email' => 'coordinator@interculturalexperience.com',
+                'syllabus' => $program->description
             ]
         ];
         

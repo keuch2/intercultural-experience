@@ -14,14 +14,20 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'storage/*'],
     
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     
-    'allowed_origins' => [
+    'allowed_origins' => env('APP_ENV') === 'production' ? [
+        // Production origins - replace with your actual domains
+        'https://your-domain.com',
+        'https://app.your-domain.com',
+    ] : [
+        // Development origins
         'http://localhost:8081',     // React Native Expo web
         'http://localhost:8082',     // React Native Expo web (port)
         'http://localhost:8083',     // React Native Expo web (current port)
+        'http://localhost:8084',     // React Native Expo web (current port)
         'http://localhost:19000',    // Expo development server
         'http://localhost:19001',    // Expo development server alternative
         'http://localhost:19002',    // Expo DevTools
@@ -29,12 +35,9 @@ return [
         'exp://localhost:19000',     // Expo on device using localhost
         'http://localhost',          // General localhost
         'https://localhost',         // General localhost with HTTPS
-        'https://localhost/ieapp',   // Your React Native app
         'capacitor://localhost',     // Capacitor
         'http://localhost:3000',     // React development
         'http://localhost:8000',     // Laravel development
-        'http://localhost:8100',     // Ionic
-        'null',                      // For some environments
     ],
     
     'allowed_origins_patterns' => [

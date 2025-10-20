@@ -3,14 +3,32 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsActivity;
 
 class Program extends Model
 {
+    use LogsActivity;
+    
     protected $fillable = [
-        'name', 'description', 'country', 'category', 'is_active',
-        'location', 'start_date', 'end_date', 'application_deadline',
-        'duration', 'credits', 'capacity', 'available_spots', 
-        'image_url', 'cost', 'currency_id'
+        'name',
+        'description',
+        'country',
+        'main_category',
+        'subcategory',
+        'image',
+        'is_active',
+        'location', 
+        'start_date', 
+        'end_date', 
+        'application_deadline',
+        'duration', 
+        'credits', 
+        'capacity', 
+        'available_spots', 
+        'image_url', 
+        'cost', 
+        'currency_id', 
+        'institution_id'
     ];
 
     protected $casts = [
@@ -19,6 +37,16 @@ class Program extends Model
         'end_date' => 'date', 
         'application_deadline' => 'date',
         'cost' => 'decimal:4',
+    ];
+
+    /**
+     * Accessors que se agregan automáticamente a las respuestas JSON
+     * Para sincronización con React Native
+     */
+    protected $appends = [
+        'image_url',
+        'status',
+        'available_slots',
     ];
 
     // Relationships
@@ -35,6 +63,11 @@ class Program extends Model
     public function currency()
     {
         return $this->belongsTo(Currency::class);
+    }
+
+    public function institution()
+    {
+        return $this->belongsTo(Institution::class);
     }
 
     public function forms()
@@ -93,10 +126,76 @@ class Program extends Model
         return '₲ ' . number_format($this->cost_in_pyg, 0);
     }
 
+    /**
+     * Get the full URL for the program image
+     * Accessor para sincronizar con React Native que espera 'image_url'
+     */
+    public function getImageUrlAttribute()
+    {
+        if (!$this->image) {
+            return null;
+        }
+        
+        // Si ya es una URL completa, retornarla
+        if (filter_var($this->image, FILTER_VALIDATE_URL)) {
+            return $this->image;
+        }
+        
+        // Construir URL completa con config('app.url') para evitar problemas de CORS
+        $baseUrl = config('app.url');
+        
+        // La imagen en BD ya incluye el path relativo desde storage/
+        // Ejemplo: "programs/1760927704_Results_copy_4.png"
+        return $baseUrl . '/storage/' . $this->image;
+    }
+
+    /**
+     * Get the status as string
+     * Accessor para sincronizar con React Native que espera 'status' en lugar de 'is_active'
+     */
+    public function getStatusAttribute()
+    {
+        return $this->is_active ? 'active' : 'inactive';
+    }
+
+    /**
+     * Get available slots (alias para sincronizar con React Native)
+     */
+    public function getAvailableSlotsAttribute()
+    {
+        // Si ya existe el campo available_spots en BD, usarlo
+        if (isset($this->attributes['available_slots'])) {
+            return $this->attributes['available_slots'];
+        }
+        
+        // Si no, calcularlo dinámicamente
+        return $this->getAvailableSpots();
+    }
+
     // Scopes
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopeIe($query)
+    {
+        return $query->where('main_category', 'IE');
+    }
+
+    public function scopeYfu($query)
+    {
+        return $query->where('main_category', 'YFU');
+    }
+
+    public function scopeByMainCategory($query, $category)
+    {
+        return $query->where('main_category', $category);
+    }
+
+    public function scopeBySubcategory($query, $subcategory)
+    {
+        return $query->where('subcategory', $subcategory);
     }
 
     // Métodos auxiliares para asignaciones

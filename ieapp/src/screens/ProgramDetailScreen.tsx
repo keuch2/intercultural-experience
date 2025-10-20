@@ -57,34 +57,19 @@ const ProgramDetailScreen: React.FC = () => {
         
         // Luego obtenemos los requisitos por separado
         try {
-          // Intentamos obtener los requisitos usando el endpoint público
-          console.log('Intentando obtener requisitos para programa ID:', programId);
+          console.log('Obteniendo requisitos para programa ID:', programId);
           
-          // Usamos el endpoint público que no requiere autenticación y cambiamos localhost por 127.0.0.1
-          const url = `/public/programs/${programId}/requisites`;
-          console.log('Intentando acceder a la URL:', url);
+          // Usamos el apiClient configurado con el endpoint correcto
+          const response = await apiClient.get(`/programs/${programId}/requisites`);
           
-          // Usamos una URL completa que sabemos que funciona
-          const fullUrl = `http://127.0.0.1/intercultural-experience/public/api/public/programs/${programId}/requisites`;
+          console.log('Respuesta de requisitos:', response.data);
           
-          // Hacemos un fetch directo en lugar de usar apiClient para evitar problemas de configuración
-          const response = await fetch(fullUrl, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            }
-          });
-          
-          if (!response.ok) {
-            throw new Error(`Error al obtener requisitos: ${response.status}`);
-          }
-          
-          const data = await response.json();
-          console.log('Respuesta de requisitos:', JSON.stringify(data));
-          
-          // Si tenemos datos, los asignamos al programa
-          if (data) {
-            programData.requisites = data;
+          // El backend devuelve { success: true, requisites: [...], total: N }
+          if (response.data && response.data.success && response.data.requisites) {
+            programData.requisites = response.data.requisites;
+            console.log(`✅ Cargados ${response.data.total} requisitos para el programa`);
+          } else {
+            programData.requisites = [];
           }
         } catch (reqError: any) {
           console.error('Error específico al obtener requisitos:', 
@@ -220,7 +205,7 @@ const ProgramDetailScreen: React.FC = () => {
         {/* Header Image */}
         <Image 
           source={{ 
-            uri: program.image_url || 'https://via.placeholder.com/800x400?text=Programa'
+            uri: program.image_url || program.image || 'https://via.placeholder.com/800x400?text=Programa'
           }} 
           style={styles.headerImage} 
         />
@@ -261,11 +246,7 @@ const ProgramDetailScreen: React.FC = () => {
             </View>
             
             <View style={styles.infoRow}>
-              <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>Costo</Text>
-                <Text style={styles.costValue}>A Cotizar</Text>
-              </View>
-              <View style={styles.infoItem}>
+              <View style={styles.infoItemFull}>
                 <Text style={styles.infoLabel}>Créditos</Text>
                 <Text style={styles.infoValue}>{program.credits || 'No aplica'}</Text>
               </View>
@@ -417,11 +398,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#333',
-  },
-  costValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#E52224',
   },
   descriptionSection: {
     marginBottom: 20,

@@ -1,0 +1,689 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Intercultural Experience Platform API",
+        "description": "API completa para la plataforma de intercambios culturales. Incluye autenticación, gestión de programas, aplicaciones, sistema de puntos y más.",
+        "contact": {
+            "name": "IE Development Team",
+            "email": "developers@ie.org.py"
+        },
+        "license": {
+            "name": "Proprietary",
+            "url": "https://ie.org.py/terms"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://ie.org.py/api",
+            "description": "Servidor de Producción"
+        },
+        {
+            "url": "https://staging.ie.org.py/api",
+            "description": "Servidor de Staging"
+        },
+        {
+            "url": "http://localhost:8000/api",
+            "description": "Servidor de Desarrollo Local"
+        }
+    ],
+    "paths": {
+        "/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Registrar nuevo usuario",
+                "description": "Registra un nuevo usuario en la plataforma. El rol se fuerza siempre a 'user' por seguridad.",
+                "operationId": "c7ebf7f8110c59c58bf8002489176686",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "description": "Nombre completo del usuario",
+                                        "type": "string",
+                                        "example": "Juan Pérez"
+                                    },
+                                    "email": {
+                                        "description": "Email único del usuario",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "juan@example.com"
+                                    },
+                                    "password": {
+                                        "description": "Contraseña fuerte (min 8 chars, mayús, minús, número, especial)",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "StrongP@ss123"
+                                    },
+                                    "password_confirmation": {
+                                        "description": "Confirmación de contraseña",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "StrongP@ss123"
+                                    },
+                                    "phone": {
+                                        "description": "Teléfono opcional",
+                                        "type": "string",
+                                        "example": "+595981234567"
+                                    },
+                                    "nationality": {
+                                        "description": "Nacionalidad opcional",
+                                        "type": "string",
+                                        "example": "Paraguaya"
+                                    },
+                                    "birth_date": {
+                                        "description": "Fecha de nacimiento opcional",
+                                        "type": "string",
+                                        "example": "1990-01-01"
+                                    },
+                                    "address": {
+                                        "description": "Dirección opcional",
+                                        "type": "string",
+                                        "example": "Av. Mcal. López 123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario registrado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Usuario registrado exitosamente"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abc123..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Errores de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Iniciar sesión",
+                "description": "Autentica un usuario y devuelve un token de acceso. Los administradores no pueden usar la API móvil.",
+                "operationId": "d618a255475240ba3d40cc39692cd924",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "Email del usuario",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "juan@example.com"
+                                    },
+                                    "password": {
+                                        "description": "Contraseña del usuario",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Inicio de sesión exitoso"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abc123..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciales incorrectas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Administrador intentando acceder via móvil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Los administradores deben iniciar sesión a través del panel web."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Cerrar sesión",
+                "description": "Revoca el token de acceso actual del usuario autenticado",
+                "operationId": "1e357eb2c93a1bdabebcebfa088332bf",
+                "responses": {
+                    "200": {
+                        "description": "Logout exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sesión cerrada exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/programs": {
+            "get": {
+                "tags": [
+                    "Programs"
+                ],
+                "summary": "Listar programas disponibles",
+                "description": "Obtiene la lista de todos los programas activos disponibles para aplicación",
+                "operationId": "2e4e62f49d884f1bf678a29fef4b5151",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Filtrar por categoría principal",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "IE",
+                                "YFU"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "subcategory",
+                        "in": "query",
+                        "description": "Filtrar por subcategoría",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "country",
+                        "in": "query",
+                        "description": "Filtrar por país destino",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de programas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programas obtenidos exitosamente"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Program"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "title": "Usuario",
+                "description": "Modelo de usuario del sistema",
+                "properties": {
+                    "id": {
+                        "description": "ID único del usuario",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Nombre completo del usuario",
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "description": "Email del usuario",
+                        "type": "string",
+                        "format": "email",
+                        "example": "juan@example.com"
+                    },
+                    "role": {
+                        "description": "Rol del usuario",
+                        "type": "string",
+                        "enum": [
+                            "user",
+                            "admin"
+                        ],
+                        "example": "user"
+                    },
+                    "phone": {
+                        "description": "Teléfono del usuario",
+                        "type": "string",
+                        "example": "+595981234567",
+                        "nullable": true
+                    },
+                    "nationality": {
+                        "description": "Nacionalidad del usuario",
+                        "type": "string",
+                        "example": "Paraguaya",
+                        "nullable": true
+                    },
+                    "birth_date": {
+                        "description": "Fecha de nacimiento",
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-01-01",
+                        "nullable": true
+                    },
+                    "address": {
+                        "description": "Dirección del usuario",
+                        "type": "string",
+                        "example": "Av. Mcal. López 123",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "description": "Estado del usuario",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "description": "Fecha de creación",
+                        "type": "string",
+                        "format": "datetime",
+                        "example": "2024-01-01T00:00:00Z"
+                    },
+                    "updated_at": {
+                        "description": "Fecha de última actualización",
+                        "type": "string",
+                        "format": "datetime",
+                        "example": "2024-01-01T00:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "Program": {
+                "title": "Programa",
+                "description": "Programa de intercambio cultural",
+                "properties": {
+                    "id": {
+                        "description": "ID único del programa",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Nombre del programa",
+                        "type": "string",
+                        "example": "Work and Travel USA 2024"
+                    },
+                    "description": {
+                        "description": "Descripción detallada",
+                        "type": "string",
+                        "example": "Programa de trabajo y turismo en Estados Unidos"
+                    },
+                    "country": {
+                        "description": "País destino",
+                        "type": "string",
+                        "example": "Estados Unidos"
+                    },
+                    "main_category": {
+                        "description": "Categoría principal",
+                        "type": "string",
+                        "enum": [
+                            "IE",
+                            "YFU"
+                        ],
+                        "example": "IE"
+                    },
+                    "subcategory": {
+                        "description": "Subcategoría específica",
+                        "type": "string",
+                        "example": "Work and Travel"
+                    },
+                    "location": {
+                        "description": "Ciudad o región específica",
+                        "type": "string",
+                        "example": "Nueva York",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "description": "Fecha de inicio",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-06-01",
+                        "nullable": true
+                    },
+                    "end_date": {
+                        "description": "Fecha de finalización",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-12-31",
+                        "nullable": true
+                    },
+                    "application_deadline": {
+                        "description": "Fecha límite de aplicación",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-05-01",
+                        "nullable": true
+                    },
+                    "duration": {
+                        "description": "Duración del programa",
+                        "type": "string",
+                        "example": "6 meses",
+                        "nullable": true
+                    },
+                    "capacity": {
+                        "description": "Capacidad total de participantes",
+                        "type": "integer",
+                        "example": 20
+                    },
+                    "available_spots": {
+                        "description": "Cupos disponibles",
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "cost": {
+                        "description": "Costo del programa",
+                        "type": "number",
+                        "format": "float",
+                        "example": 5000
+                    },
+                    "currency_id": {
+                        "description": "ID de la moneda",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "is_active": {
+                        "description": "Estado del programa",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "datetime",
+                        "example": "2024-01-01T00:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "datetime",
+                        "example": "2024-01-01T00:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "Application": {
+                "title": "Aplicación",
+                "description": "Aplicación de un usuario a un programa",
+                "properties": {
+                    "id": {
+                        "description": "ID único de la aplicación",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "ID del usuario aplicante",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "program_id": {
+                        "description": "ID del programa",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "status": {
+                        "description": "Estado de la aplicación",
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "approved",
+                            "rejected"
+                        ],
+                        "example": "pending"
+                    },
+                    "motivation_letter": {
+                        "description": "Carta de motivación",
+                        "type": "string",
+                        "example": "Estoy muy interesado en...",
+                        "nullable": true
+                    },
+                    "emergency_contact_name": {
+                        "description": "Nombre del contacto de emergencia",
+                        "type": "string",
+                        "example": "María Pérez",
+                        "nullable": true
+                    },
+                    "emergency_contact_phone": {
+                        "description": "Teléfono del contacto de emergencia",
+                        "type": "string",
+                        "example": "+595981234567",
+                        "nullable": true
+                    },
+                    "progress_percentage": {
+                        "description": "Porcentaje de progreso",
+                        "type": "number",
+                        "format": "float",
+                        "example": 75.5
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "datetime",
+                        "example": "2024-01-01T00:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "datetime",
+                        "example": "2024-01-01T00:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "ApiResponse": {
+                "title": "Respuesta API",
+                "description": "Estructura estándar de respuesta de la API",
+                "properties": {
+                    "status": {
+                        "description": "Estado de la respuesta",
+                        "type": "string",
+                        "enum": [
+                            "success",
+                            "error"
+                        ],
+                        "example": "success"
+                    },
+                    "message": {
+                        "description": "Mensaje descriptivo",
+                        "type": "string",
+                        "example": "Operación exitosa"
+                    },
+                    "data": {
+                        "description": "Datos de la respuesta",
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "ValidationError": {
+                "title": "Error de Validación",
+                "description": "Estructura de error de validación",
+                "properties": {
+                    "status": {
+                        "description": "Estado del error",
+                        "type": "string",
+                        "example": "error"
+                    },
+                    "message": {
+                        "description": "Mensaje de error",
+                        "type": "string",
+                        "example": "The given data was invalid."
+                    },
+                    "errors": {
+                        "description": "Errores específicos por campo",
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Laravel Sanctum token authentication",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Operaciones de autenticación y gestión de sesiones"
+        },
+        {
+            "name": "Programs",
+            "description": "Gestión de programas de intercambio"
+        }
+    ]
+}

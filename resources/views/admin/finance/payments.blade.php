@@ -63,7 +63,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Pagos Registrados</h6>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
+            <div class="table-responsive" style="overflow: visible;">
                 <table class="table table-bordered" width="100%" cellspacing="0">
                     <thead>
                         <tr>
@@ -103,14 +103,33 @@
                             </td>
                             <td>{{ $payment->created_at ? \Carbon\Carbon::parse($payment->created_at)->format('d/m/Y H:i') : 'N/A' }}</td>
                             <td>
-                                @if($payment->status == 'pending')
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#verifyModal{{ $payment->id }}">
-                                        <i class="fas fa-check"></i>
+                                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-edit"></i> Cambiar Estado
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $payment->id }}">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                                    <ul class="dropdown-menu">
+                                        @if($payment->status != 'pending')
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#pendingModal{{ $payment->id }}">
+                                                <i class="fas fa-clock text-warning"></i> Marcar como Pendiente
+                                            </a>
+                                        </li>
+                                        @endif
+                                        @if($payment->status != 'verified')
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#verifyModal{{ $payment->id }}">
+                                                <i class="fas fa-check text-success"></i> Verificar
+                                            </a>
+                                        </li>
+                                        @endif
+                                        @if($payment->status != 'rejected')
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $payment->id }}">
+                                                <i class="fas fa-times text-danger"></i> Rechazar
+                                            </a>
+                                        </li>
+                                        @endif
+                                    </ul>
                                 </div>
                                 
                                 <!-- Modal Verificar -->
@@ -167,7 +186,31 @@
                                         </div>
                                     </div>
                                 </div>
-                                @endif
+                                
+                                <!-- Modal Marcar como Pendiente -->
+                                <div class="modal fade" id="pendingModal{{ $payment->id }}" tabindex="-1" aria-labelledby="pendingModalLabel{{ $payment->id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="pendingModalLabel{{ $payment->id }}">Marcar como Pendiente</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form action="{{ route('admin.finance.payments.pending', $payment->id) }}" method="POST">
+                                                @csrf
+                                                <div class="modal-body">
+                                                    <p>¿Estás seguro de que deseas marcar este pago como pendiente?</p>
+                                                    <p><strong>Usuario:</strong> {{ $payment->user_name ?? 'No disponible' }}</p>
+                                                    <p><strong>Concepto:</strong> {{ $payment->requisite_name ?? 'No disponible' }}</p>
+                                                    <p><strong>Monto:</strong> {{ ($payment->currency_symbol ?? '₲') }} {{ number_format((float) ($payment->amount ?? 0), 2) }}</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                    <button type="submit" class="btn btn-warning">Marcar como Pendiente</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         @endforeach

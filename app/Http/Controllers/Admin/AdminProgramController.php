@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Program;
 use App\Models\Currency;
+use App\Http\Requests\StoreProgramRequest;
+use App\Http\Requests\UpdateProgramRequest;
 use Illuminate\Support\Facades\Storage;
 
 class AdminProgramController extends Controller
@@ -80,27 +82,8 @@ class AdminProgramController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreProgramRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'country' => 'required|string|max:100',
-            'category' => 'required|string|max:100',
-            'location' => 'nullable|string|max:255',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'application_deadline' => 'nullable|date',
-            'duration' => 'nullable|string|max:255',
-            'credits' => 'nullable|integer|min:0',
-            'capacity' => 'required|integer|min:1',
-            'cost' => 'required|numeric|min:0',
-            'currency_id' => 'required|exists:currencies,id',
-            'image_url' => 'nullable|url',
-            'is_active' => 'required|boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
-        
         $program = new Program();
         $program->name = $request->name;
         $program->description = $request->description;
@@ -172,26 +155,8 @@ class AdminProgramController extends Controller
      * @param  \App\Models\Program  $program
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Program $program)
+    public function update(UpdateProgramRequest $request, Program $program)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'country' => 'required|string|max:100',
-            'category' => 'required|string|max:100',
-            'location' => 'nullable|string|max:255',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'application_deadline' => 'nullable|date',
-            'duration' => 'nullable|string|max:255',
-            'credits' => 'nullable|integer|min:0',
-            'capacity' => 'required|integer|min:1',
-            'cost' => 'required|numeric|min:0',
-            'currency_id' => 'required|exists:currencies,id',
-            'image_url' => 'nullable|url',
-            'is_active' => 'required|boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
         
         $program->name = $request->name;
         $program->description = $request->description;

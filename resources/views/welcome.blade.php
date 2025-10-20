@@ -75,7 +75,7 @@
                             <!-- Reemplazar con el logo real de la aplicación -->
                             <i class="fas fa-globe-americas fa-4x text-primary"></i>
                             <h1 class="brand-name">Intercultural Experience</h1>
-                            <p class="brand-tagline">Descubre, Conecta y Explora Intercambios Culturales</p>
+                            <p class="brand-tagline">Panel Administrativo</p>
                         </div>
                         
                         <form method="POST" action="{{ route('login') }}">
@@ -115,20 +115,9 @@
                             </div>
 
                             <div class="mt-3 text-center">
-                                @if (Route::has('password.request'))
-                                    <a class="text-decoration-none" href="{{ route('password.request') }}">
-                                        ¿Olvidaste tu contraseña?
-                                    </a>
-                                @endif
-                            </div>
-                            
-                            <hr>
-                            
-                            <div class="text-center">
-                                <p>¿No tienes una cuenta?</p>
-                                <a href="{{ route('register') }}" class="btn btn-outline-secondary">
-                                    Regístrate Ahora
-                                </a>
+                                <small class="text-muted">
+                                    Acceso restringido a administradores
+                                </small>
                             </div>
                         </form>
                     </div>

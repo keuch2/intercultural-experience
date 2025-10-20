@@ -1,0 +1,1904 @@
+[09-Apr-2025 08:28:45 America/Argentina/Buenos_Aires] PHP Warning:  require(/home/ieorgpy/public_html/wp-includes/version.php): Failed to open stream: No such file or directory in /home/ieorgpy/public_html/wp-settings.php on line 33
+[09-Apr-2025 08:28:45 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Failed opening required '/home/ieorgpy/public_html/wp-includes/version.php' (include_path='.:/opt/php8-0/lib/php') in /home/ieorgpy/public_html/wp-settings.php:33
+Stack trace:
+#0 /home/ieorgpy/public_html/wp-config.php(108): require_once()
+#1 /home/ieorgpy/public_html/wp-load.php(50): require_once('/home/ieorgpy/p...')
+#2 /home/ieorgpy/public_html/wp-admin/admin.php(34): require_once('/home/ieorgpy/p...')
+#3 /home/ieorgpy/public_html/wp-admin/update-core.php(10): require_once('/home/ieorgpy/p...')
+#4 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 33
+[09-Apr-2025 08:28:49 America/Argentina/Buenos_Aires] PHP Warning:  require(/home/ieorgpy/public_html/wp-includes/version.php): Failed to open stream: No such file or directory in /home/ieorgpy/public_html/wp-settings.php on line 33
+[09-Apr-2025 08:28:49 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Failed opening required '/home/ieorgpy/public_html/wp-includes/version.php' (include_path='.:/opt/php8-0/lib/php') in /home/ieorgpy/public_html/wp-settings.php:33
+Stack trace:
+#0 /home/ieorgpy/public_html/wp-config.php(108): require_once()
+#1 /home/ieorgpy/public_html/wp-load.php(50): require_once('/home/ieorgpy/p...')
+#2 /home/ieorgpy/public_html/wp-admin/admin.php(34): require_once('/home/ieorgpy/p...')
+#3 /home/ieorgpy/public_html/wp-admin/index.php(10): require_once('/home/ieorgpy/p...')
+#4 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 33
+[09-Apr-2025 08:28:55 America/Argentina/Buenos_Aires] PHP Warning:  require(/home/ieorgpy/public_html/wp-includes/version.php): Failed to open stream: No such file or directory in /home/ieorgpy/public_html/wp-settings.php on line 33
+[09-Apr-2025 08:28:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Failed opening required '/home/ieorgpy/public_html/wp-includes/version.php' (include_path='.:/opt/php8-0/lib/php') in /home/ieorgpy/public_html/wp-settings.php:33
+Stack trace:
+#0 /home/ieorgpy/public_html/wp-config.php(108): require_once()
+#1 /home/ieorgpy/public_html/wp-load.php(50): require_once('/home/ieorgpy/p...')
+#2 /home/ieorgpy/public_html/wp-blog-header.php(13): require_once('/home/ieorgpy/p...')
+#3 /home/ieorgpy/public_html/index.php(17): require('/home/ieorgpy/p...')
+#4 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 33
+[05-May-2025 19:40:34 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-settings.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 34
+[12-May-2025 18:47:57 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-settings.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 34
+[18-May-2025 21:14:57 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-settings.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 34
+[18-May-2025 21:20:48 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php on line 17
+[28-May-2025 21:58:05 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-settings.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 34
+[28-May-2025 21:58:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-settings.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 34
+[30-May-2025 19:51:18 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-settings.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 34
+[30-May-2025 19:51:26 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-settings.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 34
+[06-Jun-2025 20:46:15 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-settings.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 34
+[30-Jun-2025 23:48:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function plugin_dir_path() in /home/ieorgpy/public_html/wp-content/plugins/wp-mail-smtp/wp_mail_smtp.php:118
+Stack trace:
+#0 /home/ieorgpy/public_html/wp-content/plugins/wp-mail-smtp/wp_mail_smtp.php(178): wp_mail_smtp_check_pro_loading_allowed()
+#1 {main}
+  thrown in /home/ieorgpy/public_html/wp-content/plugins/wp-mail-smtp/wp_mail_smtp.php on line 118
+[30-Jun-2025 23:50:20 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/ieorgpy/public_html/app/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/app/config/database.php on line 19
+[01-Jul-2025 22:43:43 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_HTTP_Response" not found in /home/ieorgpy/public_html/wp-includes/rest-api/class-wp-rest-response.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/rest-api/class-wp-rest-response.php on line 17
+[01-Jul-2025 22:43:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function add_theme_support() in /home/ieorgpy/public_html/wp-includes/block-patterns.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/block-patterns.php on line 9
+[01-Jul-2025 22:43:56 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/cache.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/cache.php on line 12
+[01-Jul-2025 22:43:59 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-feed.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-feed.php on line 10
+[01-Jul-2025 22:44:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-http.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-http.php on line 11
+[01-Jul-2025 22:44:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-json.php:2
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-json.php on line 2
+[01-Jul-2025 22:44:01 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-oembed.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-oembed.php on line 12
+[01-Jul-2025 22:44:03 America/Argentina/Buenos_Aires] PHP Deprecated:  The PSR-0 `Requests_...` class names in the Requests library are deprecated. Switch to the PSR-4 `WpOrg\Requests\...` class names at your earliest convenience. in /home/ieorgpy/public_html/wp-includes/class-requests.php on line 24
+[01-Jul-2025 22:44:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/class-simplepie.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-simplepie.php on line 8
+[01-Jul-2025 22:44:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-smtp.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-smtp.php on line 6
+[01-Jul-2025 22:44:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-snoopy.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-snoopy.php on line 6
+[01-Jul-2025 22:44:05 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-category-dropdown.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-category-dropdown.php on line 17
+[01-Jul-2025 22:44:06 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-category.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-category.php on line 17
+[01-Jul-2025 22:44:07 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-comment.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-comment.php on line 17
+[01-Jul-2025 22:44:07 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-nav-menu.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-nav-menu.php on line 17
+[01-Jul-2025 22:44:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-page-dropdown.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-page-dropdown.php on line 17
+[01-Jul-2025 22:44:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-page.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-page.php on line 17
+[01-Jul-2025 22:44:19 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/class-wp-customize-section.php:408
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-customize-section.php on line 408
+[01-Jul-2025 22:44:23 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Interface "SimplePie\Cache\Base" not found in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache-transient.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache-transient.php on line 17
+[01-Jul-2025 22:44:24 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache.php on line 11
+[01-Jul-2025 22:44:26 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Client" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-ixr-client.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-ixr-client.php on line 9
+[01-Jul-2025 22:44:27 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WpOrg\Requests\Hooks" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-hooks.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-hooks.php on line 18
+[01-Jul-2025 22:44:27 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_HTTP_Response" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-response.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-response.php on line 17
+[01-Jul-2025 22:44:29 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Image_Editor" not found in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-gd.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-gd.php on line 16
+[01-Jul-2025 22:44:30 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Image_Editor" not found in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-imagick.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-imagick.php on line 16
+[01-Jul-2025 22:44:35 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "PHPMailer\PHPMailer\PHPMailer" not found in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php on line 16
+[01-Jul-2025 22:44:41 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php on line 18
+[01-Jul-2025 22:44:42 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "SimplePie\File" not found in /home/ieorgpy/public_html/wp-includes/class-wp-simplepie-file.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-simplepie-file.php on line 19
+[01-Jul-2025 22:44:44 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php on line 18
+[01-Jul-2025 22:44:46 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Text_Diff_Renderer_inline" not found in /home/ieorgpy/public_html/wp-includes/class-wp-text-diff-renderer-inline.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-text-diff-renderer-inline.php on line 17
+[01-Jul-2025 22:44:49 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Session_Tokens" not found in /home/ieorgpy/public_html/wp-includes/class-wp-user-meta-session-tokens.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-user-meta-session-tokens.php on line 17
+[01-Jul-2025 22:44:52 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Server" not found in /home/ieorgpy/public_html/wp-includes/class-wp-xmlrpc-server.php:24
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-xmlrpc-server.php on line 24
+[01-Jul-2025 22:44:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-dependencies.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-dependencies.php on line 11
+[01-Jul-2025 22:44:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-scripts.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-scripts.php on line 11
+[01-Jul-2025 22:44:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-styles.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-styles.php on line 11
+[01-Jul-2025 22:44:57 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/date.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/date.php on line 11
+[01-Jul-2025 22:44:59 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/embed-template.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/embed-template.php on line 11
+[01-Jul-2025 22:45:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-atom-comments.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-atom-comments.php on line 8
+[01-Jul-2025 22:45:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rdf.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rdf.php on line 8
+[01-Jul-2025 22:45:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss.php on line 8
+[01-Jul-2025 22:45:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss2-comments.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss2-comments.php on line 8
+[01-Jul-2025 22:45:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss2.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss2.php on line 8
+[01-Jul-2025 22:45:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/locale.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/locale.php on line 11
+[01-Jul-2025 22:45:11 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/meta.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/meta.php on line 13
+[01-Jul-2025 22:45:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home/ieorgpy/public_html/wp-includes/ms-default-filters.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/ms-default-filters.php on line 16
+[01-Jul-2025 22:45:19 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/registration-functions.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/registration-functions.php on line 9
+[01-Jul-2025 22:45:20 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/registration.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/registration.php on line 9
+[01-Jul-2025 22:45:22 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/rss.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/rss.php on line 19
+[01-Jul-2025 22:45:23 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/script-loader.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/script-loader.php on line 20
+[01-Jul-2025 22:45:24 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/session.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/session.php on line 9
+[01-Jul-2025 22:45:26 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/spl-autoload-compat.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/spl-autoload-compat.php on line 14
+[01-Jul-2025 22:45:27 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function get_the_block_template_html() in /home/ieorgpy/public_html/wp-includes/template-canvas.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/template-canvas.php on line 12
+[01-Jul-2025 22:45:28 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function wp_using_themes() in /home/ieorgpy/public_html/wp-includes/template-loader.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/template-loader.php on line 7
+[01-Jul-2025 22:45:48 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Client" not found in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-clientmulticall.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-clientmulticall.php on line 8
+[01-Jul-2025 22:45:50 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Server" not found in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-introspectionserver.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-introspectionserver.php on line 9
+[01-Jul-2025 22:45:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-control.php on line 17
+[01-Jul-2025 22:45:59 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-setting.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-setting.php on line 17
+[01-Jul-2025 22:46:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-position-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-position-control.php on line 17
+[01-Jul-2025 22:46:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-code-editor-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-code-editor-control.php on line 17
+[01-Jul-2025 22:46:01 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-color-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-color-control.php on line 17
+[01-Jul-2025 22:46:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-cropped-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-cropped-image-control.php on line 17
+[01-Jul-2025 22:46:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-custom-css-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-custom-css-setting.php on line 19
+[01-Jul-2025 22:46:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-date-time-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-date-time-control.php on line 17
+[01-Jul-2025 22:46:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-filter-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-filter-setting.php on line 19
+[01-Jul-2025 22:46:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-control.php on line 17
+[01-Jul-2025 22:46:05 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-setting.php on line 19
+[01-Jul-2025 22:46:06 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Upload_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-image-control.php on line 17
+[01-Jul-2025 22:46:07 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-media-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-media-control.php on line 17
+[01-Jul-2025 22:46:07 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-auto-add-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-auto-add-control.php on line 17
+[01-Jul-2025 22:46:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-control.php on line 17
+[01-Jul-2025 22:46:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-control.php on line 17
+[01-Jul-2025 22:46:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-setting.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-setting.php on line 20
+[01-Jul-2025 22:46:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-location-control.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-location-control.php on line 19
+[01-Jul-2025 22:46:11 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-locations-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-locations-control.php on line 17
+[01-Jul-2025 22:46:11 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-name-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-name-control.php on line 17
+[01-Jul-2025 22:46:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-section.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-section.php on line 19
+[01-Jul-2025 22:46:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-setting.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-setting.php on line 21
+[01-Jul-2025 22:46:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Panel" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menus-panel.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menus-panel.php on line 19
+[01-Jul-2025 22:46:14 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-control.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-control.php on line 11
+[01-Jul-2025 22:46:15 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-section.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-section.php on line 11
+[01-Jul-2025 22:46:16 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-sidebar-section.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-sidebar-section.php on line 17
+[01-Jul-2025 22:46:17 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Cropped_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-site-icon-control.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-site-icon-control.php on line 19
+[01-Jul-2025 22:46:18 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-theme-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-theme-control.php on line 17
+[01-Jul-2025 22:46:19 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Panel" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-panel.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-panel.php on line 17
+[01-Jul-2025 22:46:20 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-section.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-section.php on line 19
+[01-Jul-2025 22:46:21 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Media_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-upload-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-upload-control.php on line 17
+[01-Jul-2025 22:46:21 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-sidebar-block-editor-control.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-sidebar-block-editor-control.php on line 18
+[01-Jul-2025 22:46:22 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-area-customize-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-area-customize-control.php on line 17
+[01-Jul-2025 22:46:23 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-form-customize-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-form-customize-control.php on line 17
+[01-Jul-2025 22:46:59 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-nav-menu-widget.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-nav-menu-widget.php on line 17
+[01-Jul-2025 22:46:59 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-archives.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-archives.php on line 17
+[01-Jul-2025 22:47:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php on line 17
+[01-Jul-2025 22:47:01 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-calendar.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-calendar.php on line 17
+[01-Jul-2025 22:47:01 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-categories.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-categories.php on line 17
+[01-Jul-2025 22:47:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-custom-html.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-custom-html.php on line 17
+[01-Jul-2025 22:47:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-links.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-links.php on line 17
+[01-Jul-2025 22:47:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-audio.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-audio.php on line 18
+[01-Jul-2025 22:47:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-gallery.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-gallery.php on line 18
+[01-Jul-2025 22:47:05 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-image.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-image.php on line 18
+[01-Jul-2025 22:47:06 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-video.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-video.php on line 18
+[01-Jul-2025 22:47:06 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media.php on line 17
+[01-Jul-2025 22:47:07 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-meta.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-meta.php on line 19
+[01-Jul-2025 22:47:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-pages.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-pages.php on line 17
+[01-Jul-2025 22:47:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-comments.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-comments.php on line 17
+[01-Jul-2025 22:47:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-posts.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-posts.php on line 17
+[01-Jul-2025 22:47:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-rss.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-rss.php on line 17
+[01-Jul-2025 22:47:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-search.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-search.php on line 17
+[01-Jul-2025 22:47:11 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-tag-cloud.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-tag-cloud.php on line 17
+[01-Jul-2025 22:47:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-text.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-text.php on line 17
+[01-Jul-2025 22:47:28 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_HTTP_Response" not found in /home/ieorgpy/public_html/wp-includes/rest-api/class-wp-rest-response.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/rest-api/class-wp-rest-response.php on line 17
+[01-Jul-2025 22:47:39 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function add_theme_support() in /home/ieorgpy/public_html/wp-includes/block-patterns.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/block-patterns.php on line 9
+[01-Jul-2025 22:47:42 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/cache.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/cache.php on line 12
+[01-Jul-2025 22:47:45 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-feed.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-feed.php on line 10
+[01-Jul-2025 22:47:46 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-http.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-http.php on line 11
+[01-Jul-2025 22:47:46 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-json.php:2
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-json.php on line 2
+[01-Jul-2025 22:47:47 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-oembed.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-oembed.php on line 12
+[01-Jul-2025 22:47:49 America/Argentina/Buenos_Aires] PHP Deprecated:  The PSR-0 `Requests_...` class names in the Requests library are deprecated. Switch to the PSR-4 `WpOrg\Requests\...` class names at your earliest convenience. in /home/ieorgpy/public_html/wp-includes/class-requests.php on line 24
+[01-Jul-2025 22:47:49 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/class-simplepie.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-simplepie.php on line 8
+[01-Jul-2025 22:47:50 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-smtp.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-smtp.php on line 6
+[01-Jul-2025 22:47:50 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-snoopy.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-snoopy.php on line 6
+[01-Jul-2025 22:47:51 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_HTTP_Response" not found in /home/ieorgpy/public_html/wp-includes/rest-api/class-wp-rest-response.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/rest-api/class-wp-rest-response.php on line 17
+[01-Jul-2025 22:47:51 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-category-dropdown.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-category-dropdown.php on line 17
+[01-Jul-2025 22:47:52 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-category.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-category.php on line 17
+[01-Jul-2025 22:47:52 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-comment.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-comment.php on line 17
+[01-Jul-2025 22:47:53 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-nav-menu.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-nav-menu.php on line 17
+[01-Jul-2025 22:47:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-page-dropdown.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-page-dropdown.php on line 17
+[01-Jul-2025 22:47:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-page.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-page.php on line 17
+[01-Jul-2025 22:48:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function add_theme_support() in /home/ieorgpy/public_html/wp-includes/block-patterns.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/block-patterns.php on line 9
+[01-Jul-2025 22:48:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/class-wp-customize-section.php:408
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-customize-section.php on line 408
+[01-Jul-2025 22:48:06 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/cache.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/cache.php on line 12
+[01-Jul-2025 22:48:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-feed.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-feed.php on line 10
+[01-Jul-2025 22:48:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Interface "SimplePie\Cache\Base" not found in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache-transient.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache-transient.php on line 17
+[01-Jul-2025 22:48:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-http.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-http.php on line 11
+[01-Jul-2025 22:48:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache.php on line 11
+[01-Jul-2025 22:48:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-json.php:2
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-json.php on line 2
+[01-Jul-2025 22:48:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-oembed.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-oembed.php on line 12
+[01-Jul-2025 22:48:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Client" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-ixr-client.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-ixr-client.php on line 9
+[01-Jul-2025 22:48:12 America/Argentina/Buenos_Aires] PHP Deprecated:  The PSR-0 `Requests_...` class names in the Requests library are deprecated. Switch to the PSR-4 `WpOrg\Requests\...` class names at your earliest convenience. in /home/ieorgpy/public_html/wp-includes/class-requests.php on line 24
+[01-Jul-2025 22:48:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/class-simplepie.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-simplepie.php on line 8
+[01-Jul-2025 22:48:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WpOrg\Requests\Hooks" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-hooks.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-hooks.php on line 18
+[01-Jul-2025 22:48:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-smtp.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-smtp.php on line 6
+[01-Jul-2025 22:48:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_HTTP_Response" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-response.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-response.php on line 17
+[01-Jul-2025 22:48:14 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-snoopy.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-snoopy.php on line 6
+[01-Jul-2025 22:48:14 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-category-dropdown.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-category-dropdown.php on line 17
+[01-Jul-2025 22:48:15 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Image_Editor" not found in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-gd.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-gd.php on line 16
+[01-Jul-2025 22:48:15 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-category.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-category.php on line 17
+[01-Jul-2025 22:48:16 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Image_Editor" not found in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-imagick.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-imagick.php on line 16
+[01-Jul-2025 22:48:16 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-comment.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-comment.php on line 17
+[01-Jul-2025 22:48:16 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-nav-menu.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-nav-menu.php on line 17
+[01-Jul-2025 22:48:17 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-page-dropdown.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-page-dropdown.php on line 17
+[01-Jul-2025 22:48:18 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-page.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-page.php on line 17
+[01-Jul-2025 22:48:21 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "PHPMailer\PHPMailer\PHPMailer" not found in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php on line 16
+[01-Jul-2025 22:48:26 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php on line 18
+[01-Jul-2025 22:48:27 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "SimplePie\File" not found in /home/ieorgpy/public_html/wp-includes/class-wp-simplepie-file.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-simplepie-file.php on line 19
+[01-Jul-2025 22:48:27 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/class-wp-customize-section.php:408
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-customize-section.php on line 408
+[01-Jul-2025 22:48:29 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php on line 18
+[01-Jul-2025 22:48:31 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Text_Diff_Renderer_inline" not found in /home/ieorgpy/public_html/wp-includes/class-wp-text-diff-renderer-inline.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-text-diff-renderer-inline.php on line 17
+[01-Jul-2025 22:48:32 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Interface "SimplePie\Cache\Base" not found in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache-transient.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache-transient.php on line 17
+[01-Jul-2025 22:48:33 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache.php on line 11
+[01-Jul-2025 22:48:35 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Client" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-ixr-client.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-ixr-client.php on line 9
+[01-Jul-2025 22:48:35 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_HTTP_Response" not found in /home/ieorgpy/public_html/wp-includes/rest-api/class-wp-rest-response.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/rest-api/class-wp-rest-response.php on line 17
+[01-Jul-2025 22:48:35 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Session_Tokens" not found in /home/ieorgpy/public_html/wp-includes/class-wp-user-meta-session-tokens.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-user-meta-session-tokens.php on line 17
+[01-Jul-2025 22:48:36 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WpOrg\Requests\Hooks" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-hooks.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-hooks.php on line 18
+[01-Jul-2025 22:48:36 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_HTTP_Response" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-response.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-response.php on line 17
+[01-Jul-2025 22:48:38 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Server" not found in /home/ieorgpy/public_html/wp-includes/class-wp-xmlrpc-server.php:24
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-xmlrpc-server.php on line 24
+[01-Jul-2025 22:48:38 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Image_Editor" not found in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-gd.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-gd.php on line 16
+[01-Jul-2025 22:48:39 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Image_Editor" not found in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-imagick.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-imagick.php on line 16
+[01-Jul-2025 22:48:39 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-dependencies.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-dependencies.php on line 11
+[01-Jul-2025 22:48:40 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-scripts.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-scripts.php on line 11
+[01-Jul-2025 22:48:41 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-styles.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-styles.php on line 11
+[01-Jul-2025 22:48:43 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/date.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/date.php on line 11
+[01-Jul-2025 22:48:44 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "PHPMailer\PHPMailer\PHPMailer" not found in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php on line 16
+[01-Jul-2025 22:48:45 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/embed-template.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/embed-template.php on line 11
+[01-Jul-2025 22:48:46 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-atom-comments.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-atom-comments.php on line 8
+[01-Jul-2025 22:48:47 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rdf.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rdf.php on line 8
+[01-Jul-2025 22:48:48 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss.php on line 8
+[01-Jul-2025 22:48:48 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss2-comments.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss2-comments.php on line 8
+[01-Jul-2025 22:48:48 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function add_theme_support() in /home/ieorgpy/public_html/wp-includes/block-patterns.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/block-patterns.php on line 9
+[01-Jul-2025 22:48:49 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss2.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss2.php on line 8
+[01-Jul-2025 22:48:49 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php on line 18
+[01-Jul-2025 22:48:50 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "SimplePie\File" not found in /home/ieorgpy/public_html/wp-includes/class-wp-simplepie-file.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-simplepie-file.php on line 19
+[01-Jul-2025 22:48:51 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/cache.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/cache.php on line 12
+[01-Jul-2025 22:48:52 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php on line 18
+[01-Jul-2025 22:48:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-feed.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-feed.php on line 10
+[01-Jul-2025 22:48:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Text_Diff_Renderer_inline" not found in /home/ieorgpy/public_html/wp-includes/class-wp-text-diff-renderer-inline.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-text-diff-renderer-inline.php on line 17
+[01-Jul-2025 22:48:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-http.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-http.php on line 11
+[01-Jul-2025 22:48:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/locale.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/locale.php on line 11
+[01-Jul-2025 22:48:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-json.php:2
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-json.php on line 2
+[01-Jul-2025 22:48:56 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-oembed.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-oembed.php on line 12
+[01-Jul-2025 22:48:56 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/meta.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/meta.php on line 13
+[01-Jul-2025 22:48:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home/ieorgpy/public_html/wp-includes/ms-default-filters.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/ms-default-filters.php on line 16
+[01-Jul-2025 22:48:58 America/Argentina/Buenos_Aires] PHP Deprecated:  The PSR-0 `Requests_...` class names in the Requests library are deprecated. Switch to the PSR-4 `WpOrg\Requests\...` class names at your earliest convenience. in /home/ieorgpy/public_html/wp-includes/class-requests.php on line 24
+[01-Jul-2025 22:48:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/class-simplepie.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-simplepie.php on line 8
+[01-Jul-2025 22:48:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Session_Tokens" not found in /home/ieorgpy/public_html/wp-includes/class-wp-user-meta-session-tokens.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-user-meta-session-tokens.php on line 17
+[01-Jul-2025 22:48:59 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-smtp.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-smtp.php on line 6
+[01-Jul-2025 22:48:59 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-snoopy.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-snoopy.php on line 6
+[01-Jul-2025 22:49:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-category-dropdown.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-category-dropdown.php on line 17
+[01-Jul-2025 22:49:01 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-category.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-category.php on line 17
+[01-Jul-2025 22:49:01 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Server" not found in /home/ieorgpy/public_html/wp-includes/class-wp-xmlrpc-server.php:24
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-xmlrpc-server.php on line 24
+[01-Jul-2025 22:49:01 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-comment.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-comment.php on line 17
+[01-Jul-2025 22:49:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-nav-menu.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-nav-menu.php on line 17
+[01-Jul-2025 22:49:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-dependencies.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-dependencies.php on line 11
+[01-Jul-2025 22:49:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-page-dropdown.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-page-dropdown.php on line 17
+[01-Jul-2025 22:49:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-scripts.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-scripts.php on line 11
+[01-Jul-2025 22:49:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Walker" not found in /home/ieorgpy/public_html/wp-includes/class-walker-page.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-walker-page.php on line 17
+[01-Jul-2025 22:49:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-styles.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-styles.php on line 11
+[01-Jul-2025 22:49:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/registration-functions.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/registration-functions.php on line 9
+[01-Jul-2025 22:49:05 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/registration.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/registration.php on line 9
+[01-Jul-2025 22:49:06 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/date.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/date.php on line 11
+[01-Jul-2025 22:49:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/rss.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/rss.php on line 19
+[01-Jul-2025 22:49:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/embed-template.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/embed-template.php on line 11
+[01-Jul-2025 22:49:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/script-loader.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/script-loader.php on line 20
+[01-Jul-2025 22:49:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-atom-comments.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-atom-comments.php on line 8
+[01-Jul-2025 22:49:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/session.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/session.php on line 9
+[01-Jul-2025 22:49:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rdf.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rdf.php on line 8
+[01-Jul-2025 22:49:11 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss.php on line 8
+[01-Jul-2025 22:49:11 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/spl-autoload-compat.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/spl-autoload-compat.php on line 14
+[01-Jul-2025 22:49:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss2-comments.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss2-comments.php on line 8
+[01-Jul-2025 22:49:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss2.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss2.php on line 8
+[01-Jul-2025 22:49:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function get_the_block_template_html() in /home/ieorgpy/public_html/wp-includes/template-canvas.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/template-canvas.php on line 12
+[01-Jul-2025 22:49:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function wp_using_themes() in /home/ieorgpy/public_html/wp-includes/template-loader.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/template-loader.php on line 7
+[01-Jul-2025 22:49:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/class-wp-customize-section.php:408
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-customize-section.php on line 408
+[01-Jul-2025 22:49:17 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Interface "SimplePie\Cache\Base" not found in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache-transient.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache-transient.php on line 17
+[01-Jul-2025 22:49:18 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/locale.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/locale.php on line 11
+[01-Jul-2025 22:49:18 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-feed-cache.php on line 11
+[01-Jul-2025 22:49:19 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/meta.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/meta.php on line 13
+[01-Jul-2025 22:49:20 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Client" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-ixr-client.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-ixr-client.php on line 9
+[01-Jul-2025 22:49:21 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home/ieorgpy/public_html/wp-includes/ms-default-filters.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/ms-default-filters.php on line 16
+[01-Jul-2025 22:49:21 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WpOrg\Requests\Hooks" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-hooks.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-hooks.php on line 18
+[01-Jul-2025 22:49:22 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_HTTP_Response" not found in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-response.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-http-requests-response.php on line 17
+[01-Jul-2025 22:49:24 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Image_Editor" not found in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-gd.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-gd.php on line 16
+[01-Jul-2025 22:49:24 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Image_Editor" not found in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-imagick.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-image-editor-imagick.php on line 16
+[01-Jul-2025 22:49:28 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/registration-functions.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/registration-functions.php on line 9
+[01-Jul-2025 22:49:28 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/registration.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/registration.php on line 9
+[01-Jul-2025 22:49:30 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "PHPMailer\PHPMailer\PHPMailer" not found in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php on line 16
+[01-Jul-2025 22:49:31 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/rss.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/rss.php on line 19
+[01-Jul-2025 22:49:31 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/script-loader.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/script-loader.php on line 20
+[01-Jul-2025 22:49:32 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/session.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/session.php on line 9
+[01-Jul-2025 22:49:34 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Client" not found in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-clientmulticall.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-clientmulticall.php on line 8
+[01-Jul-2025 22:49:34 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/spl-autoload-compat.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/spl-autoload-compat.php on line 14
+[01-Jul-2025 22:49:35 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php on line 18
+[01-Jul-2025 22:49:35 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Server" not found in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-introspectionserver.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-introspectionserver.php on line 9
+[01-Jul-2025 22:49:36 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function get_the_block_template_html() in /home/ieorgpy/public_html/wp-includes/template-canvas.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/template-canvas.php on line 12
+[01-Jul-2025 22:49:36 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "SimplePie\File" not found in /home/ieorgpy/public_html/wp-includes/class-wp-simplepie-file.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-simplepie-file.php on line 19
+[01-Jul-2025 22:49:36 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function wp_using_themes() in /home/ieorgpy/public_html/wp-includes/template-loader.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/template-loader.php on line 7
+[01-Jul-2025 22:49:38 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php on line 18
+[01-Jul-2025 22:49:40 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "Text_Diff_Renderer_inline" not found in /home/ieorgpy/public_html/wp-includes/class-wp-text-diff-renderer-inline.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-text-diff-renderer-inline.php on line 17
+[01-Jul-2025 22:49:44 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-control.php on line 17
+[01-Jul-2025 22:49:44 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Session_Tokens" not found in /home/ieorgpy/public_html/wp-includes/class-wp-user-meta-session-tokens.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-user-meta-session-tokens.php on line 17
+[01-Jul-2025 22:49:45 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-setting.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-setting.php on line 17
+[01-Jul-2025 22:49:45 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-position-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-position-control.php on line 17
+[01-Jul-2025 22:49:46 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-code-editor-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-code-editor-control.php on line 17
+[01-Jul-2025 22:49:47 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-color-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-color-control.php on line 17
+[01-Jul-2025 22:49:47 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Server" not found in /home/ieorgpy/public_html/wp-includes/class-wp-xmlrpc-server.php:24
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-xmlrpc-server.php on line 24
+[01-Jul-2025 22:49:47 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-cropped-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-cropped-image-control.php on line 17
+[01-Jul-2025 22:49:48 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-custom-css-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-custom-css-setting.php on line 19
+[01-Jul-2025 22:49:48 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-dependencies.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-dependencies.php on line 11
+[01-Jul-2025 22:49:49 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-date-time-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-date-time-control.php on line 17
+[01-Jul-2025 22:49:49 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-scripts.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-scripts.php on line 11
+[01-Jul-2025 22:49:49 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-filter-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-filter-setting.php on line 19
+[01-Jul-2025 22:49:50 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/class.wp-styles.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class.wp-styles.php on line 11
+[01-Jul-2025 22:49:50 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-control.php on line 17
+[01-Jul-2025 22:49:51 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-setting.php on line 19
+[01-Jul-2025 22:49:51 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Upload_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-image-control.php on line 17
+[01-Jul-2025 22:49:52 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/date.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/date.php on line 11
+[01-Jul-2025 22:49:52 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-media-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-media-control.php on line 17
+[01-Jul-2025 22:49:53 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-auto-add-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-auto-add-control.php on line 17
+[01-Jul-2025 22:49:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-control.php on line 17
+[01-Jul-2025 22:49:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/embed-template.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/embed-template.php on line 11
+[01-Jul-2025 22:49:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-control.php on line 17
+[01-Jul-2025 22:49:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-setting.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-setting.php on line 20
+[01-Jul-2025 22:49:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-atom-comments.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-atom-comments.php on line 8
+[01-Jul-2025 22:49:56 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-location-control.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-location-control.php on line 19
+[01-Jul-2025 22:49:56 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rdf.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rdf.php on line 8
+[01-Jul-2025 22:49:56 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-locations-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-locations-control.php on line 17
+[01-Jul-2025 22:49:57 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss.php on line 8
+[01-Jul-2025 22:49:57 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-name-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-name-control.php on line 17
+[01-Jul-2025 22:49:57 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Client" not found in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-clientmulticall.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-clientmulticall.php on line 8
+[01-Jul-2025 22:49:57 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss2-comments.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss2-comments.php on line 8
+[01-Jul-2025 22:49:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-section.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-section.php on line 19
+[01-Jul-2025 22:49:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function feed_content_type() in /home/ieorgpy/public_html/wp-includes/feed-rss2.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/feed-rss2.php on line 8
+[01-Jul-2025 22:49:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-setting.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-setting.php on line 21
+[01-Jul-2025 22:49:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Server" not found in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-introspectionserver.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-introspectionserver.php on line 9
+[01-Jul-2025 22:49:59 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Panel" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menus-panel.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menus-panel.php on line 19
+[01-Jul-2025 22:50:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-control.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-control.php on line 11
+[01-Jul-2025 22:50:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-section.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-section.php on line 11
+[01-Jul-2025 22:50:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-sidebar-section.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-sidebar-section.php on line 17
+[01-Jul-2025 22:50:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Cropped_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-site-icon-control.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-site-icon-control.php on line 19
+[01-Jul-2025 22:50:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-theme-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-theme-control.php on line 17
+[01-Jul-2025 22:50:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Panel" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-panel.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-panel.php on line 17
+[01-Jul-2025 22:50:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/locale.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/locale.php on line 11
+[01-Jul-2025 22:50:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-section.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-section.php on line 19
+[01-Jul-2025 22:50:05 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Media_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-upload-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-upload-control.php on line 17
+[01-Jul-2025 22:50:05 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/meta.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/meta.php on line 13
+[01-Jul-2025 22:50:06 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-sidebar-block-editor-control.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-sidebar-block-editor-control.php on line 18
+[01-Jul-2025 22:50:06 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-area-customize-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-area-customize-control.php on line 17
+[01-Jul-2025 22:50:07 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home/ieorgpy/public_html/wp-includes/ms-default-filters.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/ms-default-filters.php on line 16
+[01-Jul-2025 22:50:07 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-control.php on line 17
+[01-Jul-2025 22:50:07 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-form-customize-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-form-customize-control.php on line 17
+[01-Jul-2025 22:50:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-setting.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-setting.php on line 17
+[01-Jul-2025 22:50:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-position-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-position-control.php on line 17
+[01-Jul-2025 22:50:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-code-editor-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-code-editor-control.php on line 17
+[01-Jul-2025 22:50:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-color-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-color-control.php on line 17
+[01-Jul-2025 22:50:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-cropped-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-cropped-image-control.php on line 17
+[01-Jul-2025 22:50:11 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-custom-css-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-custom-css-setting.php on line 19
+[01-Jul-2025 22:50:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-date-time-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-date-time-control.php on line 17
+[01-Jul-2025 22:50:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-filter-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-filter-setting.php on line 19
+[01-Jul-2025 22:50:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-control.php on line 17
+[01-Jul-2025 22:50:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/registration-functions.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/registration-functions.php on line 9
+[01-Jul-2025 22:50:14 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-setting.php on line 19
+[01-Jul-2025 22:50:14 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/registration.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/registration.php on line 9
+[01-Jul-2025 22:50:14 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Upload_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-image-control.php on line 17
+[01-Jul-2025 22:50:15 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-media-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-media-control.php on line 17
+[01-Jul-2025 22:50:16 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-auto-add-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-auto-add-control.php on line 17
+[01-Jul-2025 22:50:17 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-control.php on line 17
+[01-Jul-2025 22:50:17 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/rss.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/rss.php on line 19
+[01-Jul-2025 22:50:17 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-control.php on line 17
+[01-Jul-2025 22:50:17 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-includes/script-loader.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/script-loader.php on line 20
+[01-Jul-2025 22:50:18 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-setting.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-setting.php on line 20
+[01-Jul-2025 22:50:18 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/session.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/session.php on line 9
+[01-Jul-2025 22:50:19 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-location-control.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-location-control.php on line 19
+[01-Jul-2025 22:50:19 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-locations-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-locations-control.php on line 17
+[01-Jul-2025 22:50:20 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/spl-autoload-compat.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/spl-autoload-compat.php on line 14
+[01-Jul-2025 22:50:20 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-name-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-name-control.php on line 17
+[01-Jul-2025 22:50:21 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-section.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-section.php on line 19
+[01-Jul-2025 22:50:21 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function get_the_block_template_html() in /home/ieorgpy/public_html/wp-includes/template-canvas.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/template-canvas.php on line 12
+[01-Jul-2025 22:50:21 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-setting.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-setting.php on line 21
+[01-Jul-2025 22:50:22 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function wp_using_themes() in /home/ieorgpy/public_html/wp-includes/template-loader.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/template-loader.php on line 7
+[01-Jul-2025 22:50:22 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Panel" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menus-panel.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menus-panel.php on line 19
+[01-Jul-2025 22:50:23 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-control.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-control.php on line 11
+[01-Jul-2025 22:50:23 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-section.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-section.php on line 11
+[01-Jul-2025 22:50:25 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-sidebar-section.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-sidebar-section.php on line 17
+[01-Jul-2025 22:50:25 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Cropped_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-site-icon-control.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-site-icon-control.php on line 19
+[01-Jul-2025 22:50:26 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-theme-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-theme-control.php on line 17
+[01-Jul-2025 22:50:27 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Panel" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-panel.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-panel.php on line 17
+[01-Jul-2025 22:50:27 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-section.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-section.php on line 19
+[01-Jul-2025 22:50:28 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Media_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-upload-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-upload-control.php on line 17
+[01-Jul-2025 22:50:29 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-sidebar-block-editor-control.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-sidebar-block-editor-control.php on line 18
+[01-Jul-2025 22:50:29 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-area-customize-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-area-customize-control.php on line 17
+[01-Jul-2025 22:50:30 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-form-customize-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-form-customize-control.php on line 17
+[01-Jul-2025 22:50:43 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-nav-menu-widget.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-nav-menu-widget.php on line 17
+[01-Jul-2025 22:50:43 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Client" not found in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-clientmulticall.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-clientmulticall.php on line 8
+[01-Jul-2025 22:50:44 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-archives.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-archives.php on line 17
+[01-Jul-2025 22:50:44 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php on line 17
+[01-Jul-2025 22:50:45 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "IXR_Server" not found in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-introspectionserver.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/IXR/class-IXR-introspectionserver.php on line 9
+[01-Jul-2025 22:50:45 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-calendar.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-calendar.php on line 17
+[01-Jul-2025 22:50:46 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-categories.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-categories.php on line 17
+[01-Jul-2025 22:50:46 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-custom-html.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-custom-html.php on line 17
+[01-Jul-2025 22:50:47 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-links.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-links.php on line 17
+[01-Jul-2025 22:50:48 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-audio.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-audio.php on line 18
+[01-Jul-2025 22:50:48 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-gallery.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-gallery.php on line 18
+[01-Jul-2025 22:50:49 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-image.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-image.php on line 18
+[01-Jul-2025 22:50:50 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-video.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-video.php on line 18
+[01-Jul-2025 22:50:50 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media.php on line 17
+[01-Jul-2025 22:50:51 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-meta.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-meta.php on line 19
+[01-Jul-2025 22:50:52 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-pages.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-pages.php on line 17
+[01-Jul-2025 22:50:52 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-comments.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-comments.php on line 17
+[01-Jul-2025 22:50:53 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-posts.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-posts.php on line 17
+[01-Jul-2025 22:50:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-control.php on line 17
+[01-Jul-2025 22:50:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-rss.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-rss.php on line 17
+[01-Jul-2025 22:50:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-setting.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-image-setting.php on line 17
+[01-Jul-2025 22:50:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-search.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-search.php on line 17
+[01-Jul-2025 22:50:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-position-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-background-position-control.php on line 17
+[01-Jul-2025 22:50:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-tag-cloud.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-tag-cloud.php on line 17
+[01-Jul-2025 22:50:56 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-code-editor-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-code-editor-control.php on line 17
+[01-Jul-2025 22:50:56 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-text.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-text.php on line 17
+[01-Jul-2025 22:50:56 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-color-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-color-control.php on line 17
+[01-Jul-2025 22:50:57 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-cropped-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-cropped-image-control.php on line 17
+[01-Jul-2025 22:50:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-custom-css-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-custom-css-setting.php on line 19
+[01-Jul-2025 22:50:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-date-time-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-date-time-control.php on line 17
+[01-Jul-2025 22:50:59 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-filter-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-filter-setting.php on line 19
+[01-Jul-2025 22:51:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-control.php on line 17
+[01-Jul-2025 22:51:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-setting.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-header-image-setting.php on line 19
+[01-Jul-2025 22:51:01 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Upload_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-image-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-image-control.php on line 17
+[01-Jul-2025 22:51:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-media-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-media-control.php on line 17
+[01-Jul-2025 22:51:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-auto-add-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-auto-add-control.php on line 17
+[01-Jul-2025 22:51:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-control.php on line 17
+[01-Jul-2025 22:51:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-control.php on line 17
+[01-Jul-2025 22:51:05 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-setting.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-setting.php on line 20
+[01-Jul-2025 22:51:05 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-location-control.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-location-control.php on line 19
+[01-Jul-2025 22:51:06 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-locations-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-locations-control.php on line 17
+[01-Jul-2025 22:51:07 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-name-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-name-control.php on line 17
+[01-Jul-2025 22:51:07 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-section.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-section.php on line 19
+[01-Jul-2025 22:51:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-nav-menu-widget.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-nav-menu-widget.php on line 17
+[01-Jul-2025 22:51:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Setting" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-setting.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menu-setting.php on line 21
+[01-Jul-2025 22:51:08 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-archives.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-archives.php on line 17
+[01-Jul-2025 22:51:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Panel" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menus-panel.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-nav-menus-panel.php on line 19
+[01-Jul-2025 22:51:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php on line 17
+[01-Jul-2025 22:51:09 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-control.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-control.php on line 11
+[01-Jul-2025 22:51:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-calendar.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-calendar.php on line 17
+[01-Jul-2025 22:51:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function _deprecated_file() in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-section.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-new-menu-section.php on line 11
+[01-Jul-2025 22:51:10 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-categories.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-categories.php on line 17
+[01-Jul-2025 22:51:11 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-custom-html.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-custom-html.php on line 17
+[01-Jul-2025 22:51:11 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-sidebar-section.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-sidebar-section.php on line 17
+[01-Jul-2025 22:51:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-links.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-links.php on line 17
+[01-Jul-2025 22:51:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Cropped_Image_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-site-icon-control.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-site-icon-control.php on line 19
+[01-Jul-2025 22:51:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-audio.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-audio.php on line 18
+[01-Jul-2025 22:51:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-theme-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-theme-control.php on line 17
+[01-Jul-2025 22:51:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-gallery.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-gallery.php on line 18
+[01-Jul-2025 22:51:13 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Panel" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-panel.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-panel.php on line 17
+[01-Jul-2025 22:51:14 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-image.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-image.php on line 18
+[01-Jul-2025 22:51:14 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Section" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-section.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-themes-section.php on line 19
+[01-Jul-2025 22:51:15 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-video.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-video.php on line 18
+[01-Jul-2025 22:51:15 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Media_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-upload-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-customize-upload-control.php on line 17
+[01-Jul-2025 22:51:15 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media.php on line 17
+[01-Jul-2025 22:51:15 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-sidebar-block-editor-control.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-sidebar-block-editor-control.php on line 18
+[01-Jul-2025 22:51:16 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-meta.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-meta.php on line 19
+[01-Jul-2025 22:51:16 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-area-customize-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-area-customize-control.php on line 17
+[01-Jul-2025 22:51:17 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-pages.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-pages.php on line 17
+[01-Jul-2025 22:51:17 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Customize_Control" not found in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-form-customize-control.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/customize/class-wp-widget-form-customize-control.php on line 17
+[01-Jul-2025 22:51:17 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-comments.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-comments.php on line 17
+[01-Jul-2025 22:51:18 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-posts.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-posts.php on line 17
+[01-Jul-2025 22:51:19 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-rss.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-rss.php on line 17
+[01-Jul-2025 22:51:19 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-search.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-search.php on line 17
+[01-Jul-2025 22:51:20 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-tag-cloud.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-tag-cloud.php on line 17
+[01-Jul-2025 22:51:21 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-text.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-text.php on line 17
+[01-Jul-2025 22:51:52 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-nav-menu-widget.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-nav-menu-widget.php on line 17
+[01-Jul-2025 22:51:53 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-archives.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-archives.php on line 17
+[01-Jul-2025 22:51:53 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php on line 17
+[01-Jul-2025 22:51:54 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-calendar.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-calendar.php on line 17
+[01-Jul-2025 22:51:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-categories.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-categories.php on line 17
+[01-Jul-2025 22:51:56 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-custom-html.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-custom-html.php on line 17
+[01-Jul-2025 22:51:56 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-links.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-links.php on line 17
+[01-Jul-2025 22:51:57 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-audio.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-audio.php on line 18
+[01-Jul-2025 22:51:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-gallery.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-gallery.php on line 18
+[01-Jul-2025 22:51:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-image.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-image.php on line 18
+[01-Jul-2025 22:51:59 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget_Media" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-video.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media-video.php on line 18
+[01-Jul-2025 22:52:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-media.php on line 17
+[01-Jul-2025 22:52:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-meta.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-meta.php on line 19
+[01-Jul-2025 22:52:01 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-pages.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-pages.php on line 17
+[01-Jul-2025 22:52:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-comments.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-comments.php on line 17
+[01-Jul-2025 22:52:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-posts.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-recent-posts.php on line 17
+[01-Jul-2025 22:52:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-rss.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-rss.php on line 17
+[01-Jul-2025 22:52:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-search.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-search.php on line 17
+[01-Jul-2025 22:52:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-tag-cloud.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-tag-cloud.php on line 17
+[01-Jul-2025 22:52:05 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-text.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-text.php on line 17
+[02-Jul-2025 06:30:05 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "PHPMailer\PHPMailer\PHPMailer" not found in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php on line 16
+[02-Jul-2025 06:30:32 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php on line 18
+[02-Jul-2025 06:30:53 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php on line 18
+[02-Jul-2025 06:32:53 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function get_the_block_template_html() in /home/ieorgpy/public_html/wp-includes/template-canvas.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/template-canvas.php on line 12
+[02-Jul-2025 06:35:51 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php on line 17
+[02-Jul-2025 08:07:58 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "PHPMailer\PHPMailer\PHPMailer" not found in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-phpmailer.php on line 16
+[02-Jul-2025 08:08:26 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-scripts.php on line 18
+[02-Jul-2025 08:08:41 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Dependencies" not found in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/class-wp-styles.php on line 18
+[02-Jul-2025 08:10:46 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Call to undefined function get_the_block_template_html() in /home/ieorgpy/public_html/wp-includes/template-canvas.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/template-canvas.php on line 12
+[02-Jul-2025 08:14:25 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Class "WP_Widget" not found in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-includes/widgets/class-wp-widget-block.php on line 17
+[02-Jul-2025 08:45:32 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-settings.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 34
+[02-Jul-2025 11:00:34 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/ieorgpy/public_html/wp-settings.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ieorgpy/public_html/wp-settings.php on line 34
+[03-Jul-2025 16:55:14 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:12:18 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:12:21 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:19:53 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:19:55 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:20:33 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:20:59 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:21:01 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:21:02 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:21:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:21:03 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:21:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:23:24 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:24:00 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:26:28 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:26:30 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:27:01 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:27:04 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:27:31 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:30:12 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:30:15 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:30:15 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:31:48 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:31:50 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:31:51 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:37:19 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 17:46:21 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[03-Jul-2025 21:44:24 America/Argentina/Buenos_Aires] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.14. in /home/ieorgpy/public_html/app/vendor/composer/platform_check.php on line 24
+[04-Jul-2025 09:22:27 America/Argentina/Buenos_Aires] PHP Warning:  require(/home/ieorgpy/public_html/app/vendor/composer/../laravel/framework/src/Illuminate/Events/functions.php): Failed to open stream: No such file or directory in /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php on line 41
+[04-Jul-2025 09:22:27 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Failed opening required '/home/ieorgpy/public_html/app/vendor/composer/../laravel/framework/src/Illuminate/Events/functions.php' (include_path='.:/opt/php8-2/lib/php') in /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php(45): {closure}('c7a3c339e7e14b6...', '/home/ieorgpy/p...')
+#1 /home/ieorgpy/public_html/app/vendor/autoload.php(25): ComposerAutoloaderInit88970a0117c062eed55fa8728fc43833::getLoader()
+#2 /home/ieorgpy/public_html/app/public/index.php(14): require('/home/ieorgpy/p...')
+#3 {main}
+  thrown in /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php on line 41
+[04-Jul-2025 09:22:32 America/Argentina/Buenos_Aires] PHP Warning:  require(/home/ieorgpy/public_html/app/vendor/composer/../laravel/framework/src/Illuminate/Events/functions.php): Failed to open stream: No such file or directory in /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php on line 41
+[04-Jul-2025 09:22:32 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Failed opening required '/home/ieorgpy/public_html/app/vendor/composer/../laravel/framework/src/Illuminate/Events/functions.php' (include_path='.:/opt/php8-2/lib/php') in /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php(45): {closure}('c7a3c339e7e14b6...', '/home/ieorgpy/p...')
+#1 /home/ieorgpy/public_html/app/vendor/autoload.php(25): ComposerAutoloaderInit88970a0117c062eed55fa8728fc43833::getLoader()
+#2 /home/ieorgpy/public_html/app/public/index.php(14): require('/home/ieorgpy/p...')
+#3 {main}
+  thrown in /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php on line 41
+[04-Jul-2025 09:22:38 America/Argentina/Buenos_Aires] PHP Warning:  require(/home/ieorgpy/public_html/app/vendor/composer/../laravel/framework/src/Illuminate/Events/functions.php): Failed to open stream: No such file or directory in /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php on line 41
+[04-Jul-2025 09:22:38 America/Argentina/Buenos_Aires] PHP Fatal error:  Uncaught Error: Failed opening required '/home/ieorgpy/public_html/app/vendor/composer/../laravel/framework/src/Illuminate/Events/functions.php' (include_path='.:/opt/php8-2/lib/php') in /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php(45): {closure}('c7a3c339e7e14b6...', '/home/ieorgpy/p...')
+#1 /home/ieorgpy/public_html/app/vendor/autoload.php(25): ComposerAutoloaderInit88970a0117c062eed55fa8728fc43833::getLoader()
+#2 /home/ieorgpy/public_html/app/public/index.php(14): require('/home/ieorgpy/p...')
+#3 {main}
+  thrown in /home/ieorgpy/public_html/app/vendor/composer/autoload_real.php on line 41

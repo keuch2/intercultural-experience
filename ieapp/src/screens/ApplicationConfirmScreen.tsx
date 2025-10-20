@@ -42,6 +42,7 @@ const ApplicationConfirmScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isAdult, setIsAdult] = useState(false);
   const [hasActiveForm, setHasActiveForm] = useState(false);
   const [activeForm, setActiveForm] = useState<any>(null);
   
@@ -100,6 +101,11 @@ const ApplicationConfirmScreen: React.FC = () => {
     
     if (!acceptTerms) {
       Alert.alert('Términos y Condiciones', 'Debes aceptar los términos y condiciones para continuar.');
+      return;
+    }
+    
+    if (!isAdult) {
+      Alert.alert('Mayoría de Edad', 'Debes declarar que eres mayor de edad para continuar.');
       return;
     }
     
@@ -246,6 +252,19 @@ const ApplicationConfirmScreen: React.FC = () => {
             <Text style={styles.termsItem}>• Cumplo con los requisitos básicos para participar.</Text>
             <Text style={styles.termsItem}>• Proporcionaré información verídica en mi solicitud.</Text>
             <Text style={styles.termsItem}>• Acepto completar todos los documentos requeridos dentro del plazo.</Text>
+            <Text style={styles.termsItem}>• Declaro ser mayor de edad (18 años o más).</Text>
+          </View>
+          
+          <View style={styles.acceptTermsContainer}>
+            <Switch
+              value={isAdult}
+              onValueChange={setIsAdult}
+              trackColor={{ false: '#cccccc', true: '#0066cc80' }}
+              thumbColor={isAdult ? '#0066cc' : '#f4f4f4'}
+            />
+            <Text style={styles.acceptTermsText}>
+              Declaro ser mayor de edad (18 años o más)
+            </Text>
           </View>
           
           <View style={styles.acceptTermsContainer}>
@@ -274,10 +293,10 @@ const ApplicationConfirmScreen: React.FC = () => {
         <TouchableOpacity 
           style={[
             styles.confirmButton, 
-            (!acceptTerms || isApplying) && styles.disabledButton
+            (!acceptTerms || !isAdult || isApplying) && styles.disabledButton
           ]}
           onPress={handleConfirmApply}
-          disabled={!acceptTerms || isApplying}
+          disabled={!acceptTerms || !isAdult || isApplying}
         >
           {isApplying ? (
             <ActivityIndicator color="#FFFFFF" size="small" />

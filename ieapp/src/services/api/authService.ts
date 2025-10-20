@@ -88,11 +88,63 @@ const authService = {
   },
 
   /**
-   * Check if user is authenticated
+   * Check if user is authenticated and token is valid
    */
   isAuthenticated: async () => {
-    const token = await AsyncStorage.getItem('auth_token');
-    return !!token;
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      if (!token) return false;
+      
+      // Verify token is still valid by making a quick API call
+      const response = await apiClient.get('/me');
+      return response.data.status === 'success';
+    } catch (error) {
+      // If token is invalid, remove it
+      await AsyncStorage.removeItem('auth_token');
+      return false;
+    }
+  },
+
+  /**
+   * Get stored auth token
+   */
+  getStoredToken: async () => {
+    return await AsyncStorage.getItem('auth_token');
+  },
+
+  /**
+   * Clear stored auth token
+   */
+  clearStoredToken: async () => {
+    await AsyncStorage.removeItem('auth_token');
+  },
+
+  /**
+   * Request password reset link
+   */
+  forgotPassword: async (email: string) => {
+    const response = await apiClient.post('/password/forgot', { email });
+    return response.data;
+  },
+
+  /**
+   * Validate password reset token
+   */
+  validateResetToken: async (token: string) => {
+    const response = await apiClient.post('/password/validate-token', { token });
+    return response.data;
+  },
+
+  /**
+   * Reset password with token
+   */
+  resetPassword: async (token: string, password: string, passwordConfirmation: string) => {
+    const response = await apiClient.post('/password/reset', {
+      token,
+      password,
+      password_confirmation: passwordConfirmation
+    });
+    return response.data;
   }
 };
 

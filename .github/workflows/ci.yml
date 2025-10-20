@@ -1,0 +1,152 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: intercultural_experience_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, mysql, gd, bcmath, zip
+        coverage: xdebug
+
+    - name: Copy environment file
+      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+    - name: Install Composer dependencies
+      run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+    - name: Generate application key
+      run: php artisan key:generate
+
+    - name: Set up testing environment
+      run: |
+        cp .env.testing .env.test
+        php artisan config:clear
+        php artisan cache:clear
+
+    - name: Run database migrations
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: ":memory:"
+      run: php artisan migrate --env=testing
+
+    - name: Execute tests
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: ":memory:"
+      run: |
+        php artisan test --coverage --min=80
+        vendor/bin/phpunit --coverage-html coverage
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: success()
+      with:
+        file: ./coverage.xml
+        flags: unittests
+
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, mysql
+        tools: phpstan, php-cs-fixer
+
+    - name: Install dependencies
+      run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+    - name: Run PHP CS Fixer
+      run: |
+        composer require --dev friendsofphp/php-cs-fixer
+        vendor/bin/php-cs-fixer fix --dry-run --diff --verbose
+
+    - name: Run PHPStan
+      run: |
+        composer require --dev phpstan/phpstan
+        vendor/bin/phpstan analyse --memory-limit=2G
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, mysql
+
+    - name: Install dependencies
+      run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+    - name: Security Audit
+      run: |
+        composer require --dev enlightn/security-checker
+        vendor/bin/security-checker security:check composer.lock
+
+    - name: Run Psalm Security Analysis
+      run: |
+        composer require --dev psalm/plugin-laravel vimeo/psalm
+        vendor/bin/psalm --show-info=true
+
+  deploy-staging:
+    needs: [test, code-quality, security]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy to Staging
+      env:
+        DEPLOY_HOST: ${{ secrets.STAGING_HOST }}
+        DEPLOY_USER: ${{ secrets.STAGING_USER }}
+        DEPLOY_KEY: ${{ secrets.STAGING_SSH_KEY }}
+      run: |
+        echo "Deploying to staging environment..."
+        # Deployment script will be implemented
+
+  deploy-production:
+    needs: [test, code-quality, security]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy to Production
+      env:
+        DEPLOY_HOST: ${{ secrets.PRODUCTION_HOST }}
+        DEPLOY_USER: ${{ secrets.PRODUCTION_USER }}
+        DEPLOY_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+      run: |
+        echo "Deploying to production environment..."
+        # Production deployment with zero-downtime will be implemented

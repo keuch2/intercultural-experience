@@ -46,9 +46,16 @@ const Header: React.FC<HeaderProps> = ({
       
       {showProfileButton ? (
         <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</Text>
-          </View>
+          {user?.avatar_url ? (
+            <Image 
+              source={{ uri: user.avatar_url }} 
+              style={styles.avatarImage}
+            />
+          ) : (
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       ) : (
         <View style={{ width: 40 }} />
@@ -101,6 +108,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#6C4AA0', 
     justifyContent: 'center', 
     alignItems: 'center' 
+  },
+  avatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#6C4AA0'
   },
   avatarText: { 
     color: '#fff', 

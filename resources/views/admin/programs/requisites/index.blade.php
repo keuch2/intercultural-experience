@@ -8,8 +8,13 @@
     
     <ol class="breadcrumb mb-4">
         <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('admin.programs.index') }}">Programas</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('admin.programs.show', $program->id) }}">{{ $program->name }}</a></li>
+        @if($program->main_category === 'IE')
+            <li class="breadcrumb-item"><a href="{{ route('admin.ie-programs.index') }}">Programas IE</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('admin.ie-programs.show', $program->id) }}">{{ $program->name }}</a></li>
+        @else
+            <li class="breadcrumb-item"><a href="{{ route('admin.yfu-programs.index') }}">Programas YFU</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('admin.yfu-programs.show', $program->id) }}">{{ $program->name }}</a></li>
+        @endif
         <li class="breadcrumb-item active">Requisitos</li>
     </ol>
     
@@ -58,7 +63,9 @@
                         @foreach($requisites as $requisite)
                             <tr data-id="{{ $requisite->id }}">
                                 <td class="text-center">
-                                    <span class="badge bg-secondary">{{ $requisite->order }}</span>
+                                    <span class="badge bg-secondary drag-handle" style="cursor: move;" title="Arrastrar para reordenar">
+                                        <i class="fas fa-grip-vertical me-1"></i>{{ $requisite->order }}
+                                    </span>
                                 </td>
                                 <td>{{ $requisite->name }}</td>
                                 <td>
@@ -114,6 +121,9 @@
             if (requisitesList) {
                 new Sortable(requisitesList, {
                     animation: 150,
+                    handle: '.drag-handle',  // Solo arrastrar desde el badge de orden
+                    filter: '.btn',          // Ignorar botones
+                    preventOnFilter: false,  // Permitir clicks en botones
                     onEnd: function() {
                         // Actualizar el orden en la base de datos
                         const items = requisitesList.querySelectorAll('tr');

@@ -1,6 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
+import { OfflineManager } from '../../utils/OfflineUtils';
 
 // Determine the base URL based on platform
 const getBaseUrl = () => {
@@ -26,7 +28,7 @@ const USE_MOCK_DATA_IN_DEV = false;
 // Create a real API client that connects to your Laravel API
 const apiClient = axios.create({
   baseURL: getBaseUrl(),
-  timeout: 10000,
+  timeout: 30000, // Aumentado a 30 segundos
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -98,7 +100,7 @@ const mockResponses = {
 
 
 
-// Request interceptor for adding auth token
+// Request interceptor for adding auth token and handling offline requests
 apiClient.interceptors.request.use(
   async (config) => {
     try {
@@ -106,8 +108,45 @@ apiClient.interceptors.request.use(
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+
+      // Check network connectivity
+      const netState = await NetInfo.fetch();
+      const isOnline = netState.isConnected && netState.isInternetReachable !== false;
+
+      // If offline and this is a mutating request, queue it
+      if (!isOnline && config.method && ['post', 'put', 'patch', 'delete'].includes(config.method.toLowerCase())) {
+        const queueId = await OfflineManager.queueRequest(
+          config.method.toUpperCase() as any,
+          config.url || '',
+          config.data,
+          config.headers as Record<string, string>
+        );
+        
+        // Return a rejected promise with a special offline error
+        const offlineError = new Error('Request queued for when connection is restored');
+        (offlineError as any).isOfflineQueued = true;
+        (offlineError as any).queueId = queueId;
+        throw offlineError;
+      }
+
+      // For GET requests when offline, try to return cached data
+      if (!isOnline && config.method?.toLowerCase() === 'get') {
+        const cachedData = await OfflineManager.getCachedData(config.url || '');
+        if (cachedData) {
+          console.log(`Using cached data for offline GET: ${config.url}`);
+          // Return cached data as a resolved response
+          return Promise.reject({
+            isOfflineCached: true,
+            cachedData,
+            config
+          });
+        }
+      }
     } catch (error) {
-      console.error('Error getting auth token:', error);
+      if ((error as any).isOfflineQueued || (error as any).isOfflineCached) {
+        throw error;
+      }
+      console.error('Error in request interceptor:', error);
     }
     return config;
   },
@@ -116,10 +155,37 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor for handling common errors
+// Response interceptor for handling common errors and caching
 apiClient.interceptors.response.use(
-  (response) => response,
+  async (response) => {
+    // Cache successful GET responses
+    if (response.config.method?.toLowerCase() === 'get' && response.data) {
+      const url = response.config.url || '';
+      const expirationTime = getExpirationTime(url);
+      await OfflineManager.cacheData(url, response.data, expirationTime);
+    }
+    return response;
+  },
   async (error) => {
+    // Handle offline cached data
+    if (error.isOfflineCached) {
+      return Promise.resolve({
+        data: error.cachedData,
+        headers: { 'x-cached-response': 'true' },
+        config: error.config,
+        status: 200,
+        statusText: 'OK (Cached)'
+      });
+    }
+
+    // Handle offline queued requests
+    if (error.isOfflineQueued) {
+      return Promise.reject({
+        message: 'Sin conexión. La acción se realizará cuando se restablezca la conexión.',
+        isOfflineQueued: true,
+        queueId: error.queueId
+      });
+    }
     // Handle authentication errors
     if (error.response && error.response.status === 401) {
       // Clear token and redirect to login
@@ -131,15 +197,34 @@ apiClient.interceptors.response.use(
       }
     }
     
-    // Log detailed error information for debugging
-    console.error('API Error:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message
-    });
+    // Log error information safely (avoid sensitive data exposure)
+    const isDevelopment = __DEV__;
+    
+    if (isDevelopment) {
+      console.error('API Error:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        message: error.message
+      });
+      
+      // Only log response data in development and sanitize it
+      if (error.response?.data) {
+        const sanitizedData = { ...error.response.data };
+        // Remove sensitive fields from logs
+        delete sanitizedData.password;
+        delete sanitizedData.token;
+        delete sanitizedData.bank_info;
+        console.error('Response data:', sanitizedData);
+      }
+    } else {
+      // In production, only log basic error info
+      console.error('API Error:', {
+        status: error.response?.status,
+        message: 'Network or server error occurred'
+      });
+    }
     
     // If API server is not available or returns an error, use mock data only if configured to do so
     // Otherwise, let the real error propagate to the UI
@@ -190,5 +275,41 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Helper function to determine cache expiration time based on endpoint
+function getExpirationTime(url: string): number {
+  if (url.includes('/user')) {
+    return 5 * 60 * 1000; // 5 minutes for user data
+  }
+  if (url.includes('/programs')) {
+    return 10 * 60 * 1000; // 10 minutes for programs
+  }
+  if (url.includes('/applications')) {
+    return 5 * 60 * 1000; // 5 minutes for applications
+  }
+  return 3 * 60 * 1000; // 3 minutes default
+}
+
+// Function to process offline queue when connection is restored
+export async function processOfflineQueue(): Promise<void> {
+  const retryableItems = await OfflineManager.getRetryableItems();
+  
+  for (const item of retryableItems) {
+    try {
+      const response = await apiClient({
+        method: item.method.toLowerCase() as any,
+        url: item.url,
+        data: item.data,
+        headers: item.headers,
+      });
+      
+      console.log(`Successfully processed queued request: ${item.method} ${item.url}`);
+      await OfflineManager.removeFromQueue(item.id);
+    } catch (error) {
+      console.error(`Failed to process queued request: ${item.method} ${item.url}`, error);
+      await OfflineManager.updateRetryCount(item.id);
+    }
+  }
+}
 
 export default apiClient;

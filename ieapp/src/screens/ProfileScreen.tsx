@@ -12,8 +12,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Image
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -39,8 +42,14 @@ const ProfileScreen: React.FC = () => {
     birth_date: '',
     nationality: '',
     phone: '',
-    address: ''
+    address: '',
+    city: '',
+    country: '',
+    academic_level: '',
+    english_level: ''
   });
+  
+  const [uploadingImage, setUploadingImage] = useState(false);
   
   // Cargar datos del usuario en el formulario cuando está disponible
   useEffect(() => {
@@ -50,7 +59,11 @@ const ProfileScreen: React.FC = () => {
         birth_date: user.birth_date || '',
         nationality: user.nationality || '',
         phone: user.phone || '',
-        address: user.address || ''
+        address: user.address || '',
+        city: user.city || '',
+        country: user.country || '',
+        academic_level: user.academic_level || '',
+        english_level: user.english_level || ''
       });
     }
   }, [user]);
@@ -82,7 +95,11 @@ const ProfileScreen: React.FC = () => {
       const dataToUpdate = {
         name: formData.name,
         birth_date: formData.birth_date,
-        nationality: formData.nationality
+        nationality: formData.nationality,
+        city: formData.city,
+        country: formData.country,
+        academic_level: formData.academic_level,
+        english_level: formData.english_level
       };
       
       console.log('Enviando datos de actualización:', dataToUpdate);
@@ -144,6 +161,65 @@ const ProfileScreen: React.FC = () => {
     }
   };
   
+  // Subir foto de perfil
+  const handleUploadProfilePhoto = async () => {
+    try {
+      // Pedir permisos
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permisos necesarios', 'Necesitamos permisos para acceder a tus fotos');
+        return;
+      }
+
+      // Abrir selector de imagen
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setUploadingImage(true);
+        const asset = result.assets[0];
+        
+        // Para web, necesitamos convertir la imagen a Blob
+        const formData = new FormData();
+        
+        if (Platform.OS === 'web') {
+          // En web, el URI es un blob URL
+          const response = await fetch(asset.uri);
+          const blob = await response.blob();
+          formData.append('avatar', blob, 'profile.jpg');
+        } else {
+          // En móvil nativo
+          const filename = asset.uri.split('/').pop() || 'profile.jpg';
+          const match = /\.(\w+)$/.exec(filename);
+          const type = match ? `image/${match[1]}` : 'image/jpeg';
+          
+          formData.append('avatar', {
+            uri: asset.uri,
+            name: filename,
+            type
+          } as any);
+        }
+
+        // Enviar al servidor
+        await profileService.updateAvatar(formData);
+        
+        // Refrescar datos del usuario
+        await refreshUser();
+        
+        Alert.alert('Éxito', 'Foto de perfil actualizada correctamente');
+      }
+    } catch (error) {
+      console.error('Error al subir foto:', error);
+      Alert.alert('Error', 'No se pudo subir la foto. Por favor intente de nuevo.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+  
   const handleLogout = async () => {
     try {
       setLoggingOut(true);
@@ -168,14 +244,44 @@ const ProfileScreen: React.FC = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Header title="Mi Perfil" showBackButton={false} />
+      
+      {/* Sección de Foto de Perfil */}
+      <View style={styles.profilePhotoSection}>
+        <TouchableOpacity onPress={handleUploadProfilePhoto} disabled={uploadingImage}>
+          <View style={styles.avatarContainer}>
+            {user?.avatar_url ? (
+              <Image source={{ uri: user.avatar_url }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Text style={styles.avatarPlaceholderText}>
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                </Text>
+              </View>
+            )}
+            {uploadingImage && (
+              <View style={styles.uploadingOverlay}>
+                <ActivityIndicator size="small" color="#fff" />
+              </View>
+            )}
+          </View>
+          <Text style={styles.uploadPhotoText}>Toca para cambiar foto</Text>
+        </TouchableOpacity>
+      </View>
+      
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Información Personal</Text>
         <Text style={styles.infoLabel}>Nombre:</Text>
         <Text style={styles.infoValue}>{user?.name || 'No disponible'}</Text>
         <Text style={styles.infoLabel}>Fecha de Nacimiento:</Text>
         <Text style={styles.infoValue}>{formatDate(user?.birth_date)}</Text>
+        <Text style={styles.infoLabel}>Ciudad:</Text>
+        <Text style={styles.infoValue}>{user?.city || 'No disponible'}</Text>
         <Text style={styles.infoLabel}>País:</Text>
-        <Text style={styles.infoValue}>{user?.nationality || 'No disponible'}</Text>
+        <Text style={styles.infoValue}>{user?.country || 'No disponible'}</Text>
+        <Text style={styles.infoLabel}>Nivel Académico:</Text>
+        <Text style={styles.infoValue}>{user?.academic_level || 'No disponible'}</Text>
+        <Text style={styles.infoLabel}>Nivel de Inglés:</Text>
+        <Text style={styles.infoValue}>{user?.english_level || 'No disponible'}</Text>
         <TouchableOpacity 
           style={styles.editButton}
           onPress={() => setPersonalInfoVisible(true)}
@@ -262,14 +368,65 @@ const ProfileScreen: React.FC = () => {
                 keyboardType="numbers-and-punctuation"
               />
               
-              <Text style={styles.formLabel}>País:</Text>
+              <Text style={styles.formLabel}>Ciudad:</Text>
               <TextInput
                 style={styles.input}
-                value={formData.nationality}
-                onChangeText={(value) => handleChange('nationality', value)}
-                placeholder="Ingresa tu país"
+                value={formData.city}
+                onChangeText={(value) => handleChange('city', value)}
+                placeholder="Ingresa tu ciudad"
                 autoCapitalize="words"
               />
+              
+              <Text style={styles.formLabel}>País:</Text>
+              <Picker
+                selectedValue={formData.country}
+                style={styles.picker}
+                onValueChange={(value) => handleChange('country', value)}
+              >
+                <Picker.Item label="Selecciona tu país" value="" />
+                <Picker.Item label="Paraguay" value="Paraguay" />
+                <Picker.Item label="Argentina" value="Argentina" />
+                <Picker.Item label="Brasil" value="Brasil" />
+                <Picker.Item label="Uruguay" value="Uruguay" />
+                <Picker.Item label="Chile" value="Chile" />
+                <Picker.Item label="Bolivia" value="Bolivia" />
+                <Picker.Item label="Perú" value="Perú" />
+                <Picker.Item label="Colombia" value="Colombia" />
+                <Picker.Item label="Ecuador" value="Ecuador" />
+                <Picker.Item label="Venezuela" value="Venezuela" />
+                <Picker.Item label="México" value="México" />
+                <Picker.Item label="Estados Unidos" value="Estados Unidos" />
+                <Picker.Item label="Canadá" value="Canadá" />
+                <Picker.Item label="España" value="España" />
+                <Picker.Item label="Otro" value="Otro" />
+              </Picker>
+              
+              <Text style={styles.formLabel}>Nivel Académico:</Text>
+              <Picker
+                selectedValue={formData.academic_level}
+                style={styles.picker}
+                onValueChange={(value) => handleChange('academic_level', value)}
+              >
+                <Picker.Item label="Selecciona tu nivel" value="" />
+                <Picker.Item label="Bachiller" value="bachiller" />
+                <Picker.Item label="Licenciatura" value="licenciatura" />
+                <Picker.Item label="Maestría" value="maestria" />
+                <Picker.Item label="Posgrado" value="posgrado" />
+                <Picker.Item label="Doctorado" value="doctorado" />
+              </Picker>
+              
+              <Text style={styles.formLabel}>Nivel de Inglés:</Text>
+              <Picker
+                selectedValue={formData.english_level}
+                style={styles.picker}
+                onValueChange={(value) => handleChange('english_level', value)}
+              >
+                <Picker.Item label="Selecciona tu nivel" value="" />
+                <Picker.Item label="Básico" value="basico" />
+                <Picker.Item label="Intermedio" value="intermedio" />
+                <Picker.Item label="Avanzado" value="avanzado" />
+                <Picker.Item label="Nativo" value="nativo" />
+              </Picker>
                 
               <View style={styles.modalButtons}>
                 <TouchableOpacity 
@@ -366,6 +523,51 @@ const styles = StyleSheet.create({
   container: { flexGrow: 1, backgroundColor: '#fff', padding: 20 },
   centered: { justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 10, color: '#666' },
+  
+  // Estilos para foto de perfil
+  profilePhotoSection: {
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingVertical: 20,
+  },
+  avatarContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  avatar: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarPlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#6C4AA0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarPlaceholderText: {
+    fontSize: 48,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  uploadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  uploadPhotoText: {
+    color: '#6C4AA0',
+    fontSize: 14,
+    fontWeight: '500',
+  },
 
   section: { backgroundColor: '#fff', borderRadius: 10, padding: 15, marginBottom: 15, borderWidth: 1, borderColor: '#eee' },
   sectionTitle: { color: '#6C4AA0', fontWeight: 'bold', fontSize: 18, marginBottom: 10 },
@@ -423,6 +625,13 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     backgroundColor: '#f9f9f9'
+  },
+  picker: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#f9f9f9',
+    marginBottom: 10
   },
   modalButtons: {
     flexDirection: 'row',

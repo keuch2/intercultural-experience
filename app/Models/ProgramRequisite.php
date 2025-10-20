@@ -8,6 +8,7 @@ class ProgramRequisite extends Model
 {
     protected $fillable = [
         'program_id', 'name', 'description', 'type', 'is_required', 'order',
+        'payment_amount', 'currency_id',
     ];
 
     protected $casts = [
@@ -25,6 +26,11 @@ class ProgramRequisite extends Model
     public function program()
     {
         return $this->belongsTo(Program::class);
+    }
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class);
     }
 
     public function userRequisites()

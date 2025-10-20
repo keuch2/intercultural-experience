@@ -21,7 +21,8 @@ export interface Program {
   start_date: string;
   end_date: string;
   cost: number; // Changed from price to cost to match API
-  image_url?: string;
+  image?: string; // Campo original de la BD
+  image_url?: string; // Accessor del backend
   capacity: number;
   available_spots?: number;
   duration?: string;

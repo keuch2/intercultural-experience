@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
+use App\Notifications\PasswordChangedNotification;
 
 class ProfileController extends Controller
 {
@@ -92,10 +94,15 @@ class ProfileController extends Controller
         // Validar los campos que recibimos del app móvil, incluyendo los nuevos campos
         $validator = Validator::make($request->all(), [
             'name' => ['nullable', 'string', 'max:255'],
+            'bio' => ['nullable', 'string', 'max:1000'],
             'birth_date' => ['nullable', 'date'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'phone' => ['nullable', 'string', 'max:20'],
-            'address' => ['nullable', 'string', 'max:255']
+            'address' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'country' => ['nullable', 'string', 'max:100'],
+            'academic_level' => ['nullable', 'in:bachiller,licenciatura,maestria,posgrado,doctorado'],
+            'english_level' => ['nullable', 'in:basico,intermedio,avanzado,nativo']
         ]);
 
         if ($validator->fails()) {
@@ -127,8 +134,23 @@ class ProfileController extends Controller
         $user->save();
         
         return response()->json([
+            'success' => true,
             'message' => 'Perfil actualizado correctamente',
-            'user' => $user
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'bio' => $user->bio,
+                'avatar_url' => $user->avatar_url,
+                'phone' => $user->phone,
+                'address' => $user->address,
+                'nationality' => $user->nationality,
+                'birth_date' => $user->birth_date?->format('Y-m-d'),
+                'city' => $user->city,
+                'country' => $user->country,
+                'academic_level' => $user->academic_level,
+                'english_level' => $user->english_level,
+            ]
         ]);
     }
     
@@ -158,9 +180,86 @@ class ProfileController extends Controller
         $user->save();
 
         return response()->json([
-            'message' => 'Avatar updated successfully',
-            'avatar_url' => Storage::url($path),
-            'user' => $user,
+            'success' => true,
+            'message' => 'Avatar actualizado correctamente',
+            'avatar_url' => $user->avatar_url,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'bio' => $user->bio,
+                'avatar_url' => $user->avatar_url,
+            ]
+        ]);
+    }
+
+    /**
+     * Change user password
+     */
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required',
+            'new_password' => [
+                'required',
+                'min:8',
+                'regex:/[a-z]/',      // al menos una minúscula
+                'regex:/[A-Z]/',      // al menos una mayúscula
+                'regex:/[0-9]/',      // al menos un número
+                'confirmed'
+            ],
+        ], [
+            'new_password.regex' => 'La contraseña debe contener al menos una mayúscula, una minúscula y un número.',
+            'new_password.min' => 'La contraseña debe tener al menos 8 caracteres',
+            'new_password.confirmed' => 'Las contraseñas no coinciden'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        // Verificar contraseña actual
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'La contraseña actual es incorrecta'
+            ], 422);
+        }
+
+        // Verificar que no sea una contraseña usada recientemente
+        if (!$user->canUsePassword($request->new_password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No puedes usar una de tus últimas 3 contraseñas'
+            ], 422);
+        }
+
+        // Actualizar contraseña
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        // Agregar al historial
+        $user->addPasswordToHistory($request->new_password);
+
+        // Invalidar todos los tokens excepto el actual
+        $currentToken = $user->currentAccessToken();
+        $user->tokens()->where('id', '!=', $currentToken->id)->delete();
+
+        // Enviar email de notificación
+        try {
+            $user->notify(new PasswordChangedNotification());
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send password changed notification: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Contraseña actualizada exitosamente'
         ]);
     }
 }

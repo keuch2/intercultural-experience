@@ -25,7 +25,7 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/admin';
 
     /**
      * Create a new controller instance.
@@ -36,5 +36,28 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
         $this->middleware('auth')->only('logout');
+    }
+
+    /**
+     * Get the post-login redirect path.
+     * Redirects users to appropriate dashboard based on their role.
+     *
+     * @return string
+     */
+    protected function redirectTo()
+    {
+        $user = auth()->user();
+        
+        if ($user->role === 'agent') {
+            return '/agent';
+        }
+        
+        if ($user->role === 'admin') {
+            return '/admin';
+        }
+        
+        // Regular users should not access web panel
+        auth()->logout();
+        return redirect()->route('login')->with('error', 'Acceso no autorizado. Use la aplicación móvil.');
     }
 }

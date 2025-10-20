@@ -29,10 +29,13 @@ interface Requisite {
   name: string;
   description: string;
   required: boolean;
-  type: 'document' | 'form' | 'payment' | 'other';
-  status: 'pending' | 'submitted' | 'approved' | 'rejected';
+  type: 'document' | 'form' | 'payment' | 'action';
+  status: 'pending' | 'completed' | 'verified' | 'rejected';
   completed_at?: string;
-  comments?: string;
+  verified_at?: string;
+  rejected_at?: string;
+  admin_notes?: string;
+  file_path?: string;
 }
 
 const ApplicationDetailScreen: React.FC = () => {
@@ -65,42 +68,39 @@ const ApplicationDetailScreen: React.FC = () => {
           if (foundApplication) {
             setApplication(foundApplication);
             
-            // Fetch application requisites using the public URL that doesn't require authentication
+            // Fetch application requisites and progress
             try {
               console.log('Obteniendo requisitos para la aplicación ID:', applicationId);
               
-              // Usar URL completa que sabemos que funciona
-              const fullUrl = `http://127.0.0.1/intercultural-experience/public/api/public/applications/${applicationId}/requisites`;
+              // Usar apiClient con el endpoint correcto
+              const response = await programService.getApplicationRequisites(applicationId);
               
-              // Hacer un fetch directo en lugar de usar el servicio para evitar problemas de configuración
-              const response = await fetch(fullUrl, {
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json'
-                }
-              });
+              console.log('Respuesta de requisitos:', response);
               
-              if (!response.ok) {
-                throw new Error(`Error al obtener requisitos: ${response.status}`);
-              }
-              
-              const requisitesData = await response.json();
-              console.log('Requisitos obtenidos:', JSON.stringify(requisitesData));
-              
-              if (requisitesData && Array.isArray(requisitesData)) {
-                setRequisites(requisitesData);
+              // El backend devuelve { success: true, requisites: [...], total: N, progress_percentage: X }
+              if (response && response.success && response.requisites) {
+                setRequisites(response.requisites);
                 
-                // Calculate progress percentage
-                const completedRequisites = requisitesData.filter(req => 
-                  req.status === 'approved' || req.status === 'submitted'
-                ).length;
-                
-                const totalRequisites = requisitesData.length;
-                const percentage = totalRequisites > 0 
-                  ? Math.round((completedRequisites / totalRequisites) * 100) 
-                  : 0;
+                // Usar el porcentaje de progreso del backend si está disponible
+                if (response.progress_percentage !== undefined) {
+                  setProgressPercentage(response.progress_percentage);
+                } else {
+                  // Calcular manualmente si no viene del backend
+                  const completedRequisites = response.requisites.filter((req: any) => 
+                    req.status === 'verified' || req.status === 'completed'
+                  ).length;
                   
-                setProgressPercentage(percentage);
+                  const totalRequisites = response.requisites.length;
+                  const percentage = totalRequisites > 0 
+                    ? Math.round((completedRequisites / totalRequisites) * 100) 
+                    : 0;
+                    
+                  setProgressPercentage(percentage);
+                }
+                
+                console.log(`✅ Cargados ${response.total} requisitos con ${response.progress_percentage}% de progreso`);
+              } else {
+                setRequisites([]);
               }
             } catch (reqError) {
               console.error('Error al obtener requisitos para la aplicación:', reqError);
@@ -174,7 +174,7 @@ const ApplicationDetailScreen: React.FC = () => {
       setRequisites(prevRequisites => 
         prevRequisites.map(req => 
           req.id === requisiteId 
-            ? { ...req, status: 'submitted', completed_at: new Date().toISOString() } 
+            ? { ...req, status: 'completed', completed_at: new Date().toISOString() } 
             : req
         )
       );
@@ -182,12 +182,12 @@ const ApplicationDetailScreen: React.FC = () => {
       // Update progress percentage
       const updatedRequisites = requisites.map(req => 
         req.id === requisiteId 
-          ? { ...req, status: 'submitted', completed_at: new Date().toISOString() } 
+          ? { ...req, status: 'completed', completed_at: new Date().toISOString() } 
           : req
       );
       
       const completedRequisites = updatedRequisites.filter(req => 
-        req.status === 'approved' || req.status === 'submitted'
+        req.status === 'verified' || req.status === 'completed'
       ).length;
       
       const totalRequisites = updatedRequisites.length;
@@ -240,7 +240,7 @@ const ApplicationDetailScreen: React.FC = () => {
               setRequisites(prevRequisites => 
                 prevRequisites.map(req => 
                   req.id === requisiteId 
-                    ? { ...req, status: 'submitted', completed_at: new Date().toISOString() } 
+                    ? { ...req, status: 'completed', completed_at: new Date().toISOString() } 
                     : req
                 )
               );
@@ -248,12 +248,12 @@ const ApplicationDetailScreen: React.FC = () => {
               // Update progress percentage
               const updatedRequisites = requisites.map(req => 
                 req.id === requisiteId 
-                  ? { ...req, status: 'submitted', completed_at: new Date().toISOString() } 
+                  ? { ...req, status: 'completed', completed_at: new Date().toISOString() } 
                   : req
               );
               
               const completedRequisites = updatedRequisites.filter(req => 
-                req.status === 'approved' || req.status === 'submitted'
+                req.status === 'verified' || req.status === 'completed'
               ).length;
               
               const totalRequisites = updatedRequisites.length;
@@ -285,25 +285,27 @@ const ApplicationDetailScreen: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch(status) {
-      case 'approved':
-        return '#4CAF50';
-      case 'submitted':
-        return '#2196F3';
+      case 'verified':
+        return '#4CAF50'; // Verde - Verificado
+      case 'completed':
+        return '#2196F3'; // Azul - Completado (pendiente de verificación)
       case 'rejected':
-        return '#F44336';
+        return '#F44336'; // Rojo - Rechazado
+      case 'pending':
       default:
-        return '#9E9E9E';
+        return '#9E9E9E'; // Gris - Pendiente
     }
   };
 
   const getStatusText = (status: string) => {
     switch(status) {
-      case 'approved':
-        return 'Aprobado';
-      case 'submitted':
-        return 'Enviado';
+      case 'verified':
+        return 'Verificado';
+      case 'completed':
+        return 'En Revisión';
       case 'rejected':
         return 'Rechazado';
+      case 'pending':
       default:
         return 'Pendiente';
     }
@@ -365,10 +367,18 @@ const ApplicationDetailScreen: React.FC = () => {
           </View>
         )}
         
-        {isRejected && requisite.comments && (
+        {isRejected && requisite.admin_notes && (
           <View style={styles.commentsContainer}>
-            <Text style={styles.commentsLabel}>Comentarios:</Text>
-            <Text style={styles.commentsText}>{requisite.comments}</Text>
+            <Text style={styles.commentsLabel}>Comentarios del Administrador:</Text>
+            <Text style={styles.commentsText}>{requisite.admin_notes}</Text>
+          </View>
+        )}
+        
+        {requisite.status === 'verified' && requisite.verified_at && (
+          <View style={styles.verifiedContainer}>
+            <Text style={styles.verifiedText}>
+              ✅ Verificado el: {formatDate(requisite.verified_at)}
+            </Text>
           </View>
         )}
       </View>
@@ -461,17 +471,6 @@ const ApplicationDetailScreen: React.FC = () => {
           )}
         </View>
         
-        {/* Help Section */}
-        <View style={styles.helpSection}>
-          <Text style={styles.helpTitle}>¿Necesitas ayuda?</Text>
-          <Text style={styles.helpText}>
-            Si tienes dudas sobre los requisitos o el proceso de postulación, 
-            comunícate con nosotros.
-          </Text>
-          <TouchableOpacity style={styles.contactButton}>
-            <Text style={styles.contactButtonText}>Contactar Soporte</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -640,32 +639,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  helpSection: {
-    backgroundColor: '#F0E6FF',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-  },
-  helpTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#6C4AA0',
-    marginBottom: 10,
-  },
-  helpText: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 15,
-  },
-  contactButton: {
-    backgroundColor: '#6C4AA0',
-    paddingVertical: 10,
+  verifiedContainer: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: '#E8F5E9',
     borderRadius: 5,
-    alignItems: 'center',
+    borderLeftWidth: 3,
+    borderLeftColor: '#4CAF50',
   },
-  contactButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  verifiedText: {
+    fontSize: 14,
+    color: '#2E7D32',
+    fontWeight: '500',
   },
   emptyContainer: {
     padding: 30,

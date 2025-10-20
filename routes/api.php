@@ -12,10 +12,27 @@ use App\Http\Controllers\API\SupportTicketController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\ProgramRequisiteController;
 use App\Http\Controllers\API\ProgramAssignmentController;
+use App\Http\Controllers\API\PasswordResetController;
 
-// Public Routes
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// Authentication Routes with Rate Limiting
+// Login: 5 attempts/minute (R4.8)
+Route::middleware(['throttle:5,1'])->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
+// Registration: 3 attempts/minute for security (R4.8)
+Route::middleware(['throttle:3,1'])->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+});
+
+// Password Reset Routes with Rate Limiting
+// Forgot password: 3 attempts/hour for security
+Route::middleware(['throttle:3,60'])->group(function () {
+    Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLink']);
+});
+
+Route::post('/password/validate-token', [PasswordResetController::class, 'validateToken']);
+Route::post('/password/reset', [PasswordResetController::class, 'reset']);
 
 // Public programs endpoint
 Route::get('/programs', [ProgramController::class, 'index']);
@@ -26,9 +43,7 @@ Route::get('/settings/whatsapp', [\App\Http\Controllers\API\SettingsController::
 Route::get('/settings/contact', [\App\Http\Controllers\API\SettingsController::class, 'contact']);
 Route::get('/settings/app-info', [\App\Http\Controllers\API\SettingsController::class, 'appInfo']);
 
-// Rutas públicas para pruebas de requisitos (sin autenticación)
-Route::get('/public/programs/{programId}/requisites', \App\Http\Controllers\API\ProgramRequisitosPruebaController::class);
-Route::get('/public/applications/{applicationId}/requisites', [\App\Http\Controllers\API\ProgramRequisitosPruebaController::class, 'getApplicationRequisites']);
+// Removed public test routes for security reasons - use authenticated endpoints instead
 
 // Test endpoints for API connectivity
 Route::get('/ping', function() {
@@ -79,24 +94,45 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    // API para perfil de usuario
-    Route::put('/profile', [\App\Http\Controllers\API\ProfileController::class, 'apiUpdate']);
-    Route::post('/profile/avatar', [\App\Http\Controllers\API\ProfileController::class, 'apiUpdateAvatar']);
+    // API para perfil de usuario - con rate limiting para actualizaciones
+    Route::middleware(['throttle:10,1'])->group(function () {
+        Route::put('/profile', [\App\Http\Controllers\API\ProfileController::class, 'apiUpdate']);
+        Route::post('/profile/avatar', [\App\Http\Controllers\API\ProfileController::class, 'apiUpdateAvatar']);
+        Route::put('/profile/password', [\App\Http\Controllers\API\ProfileController::class, 'changePassword']);
+    });
 
-    // Authentication
+    // Authentication - no rate limiting needed for these
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
     // Participant Routes
     Route::apiResource('programs', ProgramController::class)->only(['show'])->names(['show' => 'api.programs.show']);
-    Route::apiResource('applications', ApplicationController::class)->names('api.applications');
-    Route::apiResource('application-documents', ApplicationDocumentController::class)->names('api.application-documents');
+    
+    // Critical operations with rate limiting
+    Route::middleware(['throttle:10,1'])->group(function () {
+        Route::apiResource('applications', ApplicationController::class)->names('api.applications');
+        Route::apiResource('application-documents', ApplicationDocumentController::class)->names('api.application-documents');
+    });
     
     // Program Requisites
     Route::get('/programs/{programId}/requisites', [ProgramRequisiteController::class, 'getProgramRequisites']);
     Route::get('/applications/{applicationId}/requisites', [ProgramRequisiteController::class, 'getUserRequisites']);
-    Route::post('/requisites/{requisiteId}/complete', [ProgramRequisiteController::class, 'completeRequisite']);
     Route::get('/applications/{applicationId}/progress', [ProgramRequisiteController::class, 'getApplicationProgress']);
+    Route::get('/requisites/{requisiteId}', [ProgramRequisiteController::class, 'getRequisite']);
+    
+    // Critical operations with rate limiting
+    Route::middleware(['throttle:5,1'])->group(function () {
+        Route::post('/requisites/{requisiteId}/complete', [ProgramRequisiteController::class, 'completeRequisite']);
+    });
+    
+    // Assignments Management (Asignaciones de programas por agentes)
+    Route::get('/assignments', [\App\Http\Controllers\API\AssignmentController::class, 'index']);
+    Route::get('/assignments/{id}', [\App\Http\Controllers\API\AssignmentController::class, 'show']);
+    Route::post('/assignments/{id}/apply', [\App\Http\Controllers\API\AssignmentController::class, 'apply']);
+    Route::get('/assignments/{id}/program', [\App\Http\Controllers\API\AssignmentController::class, 'getProgramDetails']);
+    Route::get('/available-programs', [\App\Http\Controllers\API\AssignmentController::class, 'availablePrograms']);
+    Route::get('/my-stats', [\App\Http\Controllers\API\AssignmentController::class, 'myStats']);
+    
     // Points Management
     Route::get('/points/balance', [PointController::class, 'balance']);
     Route::get('/points/history', [PointController::class, 'history']);
@@ -107,15 +143,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/rewards/categories', [RewardController::class, 'categories']);
     Route::apiResource('rewards', RewardController::class)->only(['index', 'show'])->names(['index' => 'api.rewards.index', 'show' => 'api.rewards.show']);
     
-    // Redemptions Management
-    Route::apiResource('redemptions', RedemptionController::class)->names('api.redemptions');
-    Route::apiResource('support-tickets', SupportTicketController::class)->names('api.support-tickets');
+    // Redemptions Management (rate limited - financial operations)
+    Route::middleware(['throttle:5,1'])->group(function () {
+        Route::apiResource('redemptions', RedemptionController::class)->names('api.redemptions');
+    });
+    
+    // Support Tickets (rate limited to prevent spam)
+    Route::middleware(['throttle:3,1'])->group(function () {
+        Route::apiResource('support-tickets', SupportTicketController::class)->names('api.support-tickets');
+    });
     Route::apiResource('notifications', NotificationController::class)->only(['index', 'show', 'update'])->names(['index' => 'api.notifications.index', 'show' => 'api.notifications.show', 'update' => 'api.notifications.update']);
 
-    // Forms
+    // Forms - with rate limiting for submissions
     Route::get('/programs/{program}/form', [\App\Http\Controllers\API\FormController::class, 'getProgramForm']);
-    Route::post('/programs/{program}/form/save', [\App\Http\Controllers\API\FormController::class, 'saveFormData']);
-    Route::post('/programs/{program}/form/submit', [\App\Http\Controllers\API\FormController::class, 'submitForm']);
+    Route::middleware(['throttle:3,1'])->group(function () {
+        Route::post('/programs/{program}/form/save', [\App\Http\Controllers\API\FormController::class, 'saveFormData']);
+        Route::post('/programs/{program}/form/submit', [\App\Http\Controllers\API\FormController::class, 'submitForm']);
+    });
     Route::get('/form-submissions', [\App\Http\Controllers\API\FormController::class, 'getUserSubmissions']);
     Route::get('/form-submissions/{submission}', [\App\Http\Controllers\API\FormController::class, 'getSubmission']);
     Route::delete('/form-submissions/{submission}', [\App\Http\Controllers\API\FormController::class, 'deleteSubmission']);

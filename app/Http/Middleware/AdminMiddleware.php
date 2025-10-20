@@ -17,10 +17,17 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->role === 'admin') {
-            return $next($request);
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Debes iniciar sesión para acceder.');
         }
         
-        return redirect('/home')->with('error', 'No tienes permisos para acceder a esta sección.');
+        $user = Auth::user();
+        
+        if ($user->role !== 'admin') {
+            Auth::logout();
+            return redirect()->route('login')->with('error', 'Solo los administradores pueden acceder al panel administrativo.');
+        }
+        
+        return $next($request);
     }
 }

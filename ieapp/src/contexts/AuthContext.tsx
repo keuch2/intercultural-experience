@@ -1,18 +1,27 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '../services/api';
+import { handleApiError, logError, retryWithBackoff, AppError } from '../utils/ErrorUtils';
+
+interface AuthResult {
+  success: boolean;
+  message?: string;
+  errors?: any;
+  appError?: AppError;
+}
 
 interface AuthContextType {
   user: any | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<{success: boolean; message?: string; errors?: any}>;
-  register: (name: string, email: string, password: string, passwordConfirmation: string) => Promise<{success: boolean; message?: string; errors?: any}>;
+  error: AppError | null;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  register: (name: string, email: string, password: string, passwordConfirmation: string) => Promise<AuthResult>;
   logout: () => Promise<void>;
   clearError: () => void;
   refreshUser: () => Promise<void>;
   updateUserData: (userData: any) => void;
+  retryAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,23 +30,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AppError | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Check if user is authenticated on app startup
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const token = await AsyncStorage.getItem('auth_token');
+        setIsLoading(true);
+        const isAuth = await retryWithBackoff(() => authService.isAuthenticated(), 2, 1000);
         
-        if (token) {
-          // Token exists, try to get user data
-          const userData = await authService.getCurrentUser();
+        if (isAuth) {
+          // Token is valid, get user data
+          const userData = await retryWithBackoff(() => authService.getCurrentUser(), 2, 1000);
           setUser(userData);
           setIsAuthenticated(true);
+          setError(null);
+        } else {
+          // Token is invalid or missing
+          setUser(null);
+          setIsAuthenticated(false);
         }
-      } catch (error) {
-        // If there's an error (like invalid token), clear auth state
-        await AsyncStorage.removeItem('auth_token');
+      } catch (err) {
+        const appError = handleApiError(err, 'AUTH_CHECK');
+        logError(appError);
+        
+        // Only set error for non-auth related issues
+        if (appError.code !== 'AUTH_ERROR') {
+          setError(appError);
+        }
+        
+        // Clear any stored tokens and reset state
+        await authService.clearStoredToken();
         setUser(null);
         setIsAuthenticated(false);
       } finally {
@@ -46,60 +70,72 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     checkAuthStatus();
-  }, []);
+  }, [retryCount]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<AuthResult> => {
     setIsLoading(true);
     setError(null);
+    
     try {
-      const response = await authService.login({ email, password });
+      const response = await retryWithBackoff(
+        () => authService.login({ email, password }),
+        1, // No retry for auth attempts to prevent account lockout
+        0
+      );
+      
       setUser(response.user);
       setIsAuthenticated(true);
       return { success: true };
     } catch (err: any) {
-      const errorMessage = err.message || 'Error al iniciar sesión';
-      setError(errorMessage);
+      const appError = handleApiError(err, 'LOGIN');
+      logError(appError);
+      setError(appError);
+      
       return { 
         success: false, 
-        message: errorMessage,
-        errors: err.errors
+        message: appError.message,
+        errors: appError.details?.errors,
+        appError
       };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (name: string, email: string, password: string, passwordConfirmation: string) => {
+  const register = async (
+    name: string, 
+    email: string, 
+    password: string, 
+    passwordConfirmation: string
+  ): Promise<AuthResult> => {
     setIsLoading(true);
     setError(null);
+    
     try {
-      const response = await authService.register({ 
-        name, 
-        email, 
-        password, 
-        password_confirmation: passwordConfirmation 
-      });
+      const response = await retryWithBackoff(
+        () => authService.register({ 
+          name, 
+          email, 
+          password, 
+          password_confirmation: passwordConfirmation 
+        }),
+        1, // No retry for registration to prevent duplicate accounts
+        0
+      );
+      
       setUser(response.user);
       setIsAuthenticated(true);
       return { success: true };
     } catch (err: any) {
-      console.error('Auth context registration error:', err);
-      
-      const errorMessage = err.message || 'Error al registrarse';
-      setError(errorMessage);
-      
-      // Check if it's a validation error (422)
-      let errors = null;
-      if (err.response && err.response.status === 422 && err.response.data && err.response.data.errors) {
-        errors = err.response.data.errors;
-      } else if (err.errors) {
-        errors = err.errors;
-      }
+      const appError = handleApiError(err, 'REGISTRATION');
+      logError(appError);
+      setError(appError);
       
       return { 
         success: false, 
-        message: errorMessage,
-        errors: errors
+        message: appError.message,
+        errors: appError.details?.errors,
+        appError
       };
     } finally {
       setIsLoading(false);
@@ -109,13 +145,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = async () => {
     setIsLoading(true);
     setError(null);
+    
     try {
+      // Try to logout from server, but don't fail if it doesn't work
       await authService.logout();
+    } catch (err: any) {
+      // Log error but don't prevent logout
+      const appError = handleApiError(err, 'LOGOUT');
+      logError(appError);
+    } finally {
+      // Always clear local state regardless of server response
       setUser(null);
       setIsAuthenticated(false);
-    } catch (err: any) {
-      setError(err.message || 'Error al cerrar sesión');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -125,17 +166,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
   };
 
+  // Retry authentication (useful for network errors)
+  const retryAuth = async () => {
+    setRetryCount(prev => prev + 1);
+  };
+
   // Función para refrescar los datos del usuario desde el servidor
   const refreshUser = async () => {
     try {
       setIsLoading(true);
-      const userData = await authService.getCurrentUser();
+      const userData = await retryWithBackoff(() => authService.getCurrentUser(), 3, 1000);
       console.log('Datos del usuario actualizados:', userData);
       setUser(userData);
+      setError(null);
       return userData;
-    } catch (error) {
-      console.error('Error al refrescar datos del usuario:', error);
-      // No cambiamos el estado del usuario en caso de error
+    } catch (err) {
+      const appError = handleApiError(err, 'USER_REFRESH');
+      logError(appError);
+      
+      // If it's an auth error, clear the session
+      if (appError.code === 'AUTH_ERROR') {
+        await authService.clearStoredToken();
+        setUser(null);
+        setIsAuthenticated(false);
+      } else {
+        setError(appError);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -144,7 +200,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Función para actualizar localmente los datos del usuario sin hacer petición al servidor
   const updateUserData = (userData: any) => {
     console.log('Actualizando datos del usuario localmente:', userData);
-    setUser(prevUser => ({
+    setUser((prevUser: any) => ({
       ...prevUser,
       ...userData
     }));
@@ -162,7 +218,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         logout,
         clearError,
         refreshUser,
-        updateUserData
+        updateUserData,
+        retryAuth
       }}
     >
       {children}

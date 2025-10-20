@@ -15,6 +15,13 @@ class Application extends Model
         'completed_at' => 'datetime',
     ];
 
+    /**
+     * Accessors que se agregan automáticamente a las respuestas JSON
+     */
+    protected $appends = [
+        'progress_percentage',
+    ];
+
     // Relationships
     public function user()
     {
@@ -54,5 +61,14 @@ class Application extends Model
             ->count();
             
         return round(($completedRequisites / $totalRequisites) * 100);
+    }
+
+    /**
+     * Accessor para progress_percentage
+     * Para sincronización con React Native
+     */
+    public function getProgressPercentageAttribute()
+    {
+        return $this->getProgressPercentage();
     }
 }

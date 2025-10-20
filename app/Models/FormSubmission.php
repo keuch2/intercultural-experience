@@ -34,6 +34,10 @@ class FormSubmission extends Model
         'reviewed_at' => 'datetime',
     ];
 
+    protected $hidden = [
+        'form_data', 'signature_data', 'parent_signature_data',
+    ];
+
     /**
      * Estados disponibles
      */

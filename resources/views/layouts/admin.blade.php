@@ -102,16 +102,10 @@
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                    <i class="fas fa-user me-2"></i> Mi Perfil
-                                </a>
-                                
-                                <div class="dropdown-divider"></div>
-                                
                                 <a class="dropdown-item" href="{{ route('logout') }}"
                                    onclick="event.preventDefault();
                                                  document.getElementById('logout-form').submit();">
-                                    <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
+                                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
                                 </a>
 
                                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
@@ -135,7 +129,7 @@
                         <ul class="nav flex-column">
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->is('admin') ? 'active' : '' }}" href="{{ url('/admin') }}">
-                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                    <i class="fas fa-tachometer-alt"></i> Tablero
                                 </a>
                             </li>
                         </ul>
@@ -145,28 +139,90 @@
                         </div>
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/users*') ? 'active' : '' }}" href="{{ url('/admin/users') }}">
-                                    <i class="fas fa-users"></i> Usuarios
+                                <a class="nav-link {{ request()->is('admin/users*') && !request()->has('program_type') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                                    <i class="fas fa-user-shield"></i> Administradores
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/agents*') ? 'active' : '' }}" href="{{ route('admin.agents.index') }}">
+                                    <i class="fas fa-user-tie"></i> Agentes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/participants*') ? 'active' : '' }}" href="{{ route('admin.participants.index') }}">
+                                    <i class="fas fa-user-graduate"></i> Participantes
                                 </a>
                             </li>
                         </ul>
                         
                         <div class="sidebar-heading">
-                            Programas
+                            Programas IE
                         </div>
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/programs*') ? 'active' : '' }}" href="{{ url('/admin/programs') }}">
-                                    <i class="fas fa-globe-americas"></i> Programas
+                                <a class="nav-link {{ request()->is('admin/ie-programs*') ? 'active' : '' }}" href="{{ route('admin.ie-programs.index') }}">
+                                    <i class="fas fa-graduation-cap"></i> Programas IE
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/applications*') && request()->input('program_type') == 'IE' ? 'active' : '' }}" href="{{ route('admin.applications.index', ['program_type' => 'IE']) }}">
+                                    <i class="fas fa-file-alt"></i> Solicitudes IE
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/documents*') && request()->input('program_type') == 'IE' ? 'active' : '' }}" href="{{ route('admin.documents.index', ['program_type' => 'IE']) }}">
+                                    <i class="fas fa-folder-open"></i> Documentos IE
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/participants*') && request()->input('program_category') == 'IE' ? 'active' : '' }}" href="{{ route('admin.participants.index', ['program_category' => 'IE']) }}">
+                                    <i class="fas fa-users"></i> Participantes IE
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            Programas YFU
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/yfu-programs*') ? 'active' : '' }}" href="{{ route('admin.yfu-programs.index') }}">
+                                    <i class="fas fa-globe-americas"></i> Programas YFU
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/applications*') && request()->input('program_type') == 'YFU' ? 'active' : '' }}" href="{{ route('admin.applications.index', ['program_type' => 'YFU']) }}">
+                                    <i class="fas fa-file-alt"></i> Solicitudes YFU
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/documents*') && request()->input('program_type') == 'YFU' ? 'active' : '' }}" href="{{ route('admin.documents.index', ['program_type' => 'YFU']) }}">
+                                    <i class="fas fa-folder-open"></i> Documentos YFU
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/participants*') && request()->input('program_category') == 'YFU' ? 'active' : '' }}" href="{{ route('admin.participants.index', ['program_category' => 'YFU']) }}">
+                                    <i class="fas fa-users"></i> Participantes YFU
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            General
+                        </div>
+                        <ul class="nav flex-column">
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->is('admin/applications*') ? 'active' : '' }}" href="{{ url('/admin/applications') }}">
-                                    <i class="fas fa-file-alt"></i> Solicitudes
+                                    <i class="fas fa-file-alt"></i> Todas las Solicitudes
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/documents*') ? 'active' : '' }}" href="{{ url('/admin/documents') }}">
+                                <a class="nav-link {{ request()->is('admin/assignments*') ? 'active' : '' }}" href="{{ route('admin.assignments.index') }}">
+                                    <i class="fas fa-user-plus"></i> Asignaciones de Programas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/documents*') && !request()->has('program_type') ? 'active' : '' }}" href="{{ route('admin.documents.index') }}">
                                     <i class="fas fa-file-pdf"></i> Documentos
                                 </a>
                             </li>
@@ -189,6 +245,33 @@
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->is('admin/points*') ? 'active' : '' }}" href="{{ url('/admin/points') }}">
                                     <i class="fas fa-coins"></i> Puntos
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            Facturación
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/invoices*') ? 'active' : '' }}" href="{{ route('admin.invoices.index') }}">
+                                    <i class="fas fa-file-invoice"></i> Facturas
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            Herramientas
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/bulk-import*') ? 'active' : '' }}" href="{{ route('admin.bulk-import.index') }}">
+                                    <i class="fas fa-file-import"></i> Importación Masiva
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/activity-logs*') ? 'active' : '' }}" href="{{ route('admin.activity-logs.index') }}">
+                                    <i class="fas fa-history"></i> Registro de Auditoría
                                 </a>
                             </li>
                         </ul>
@@ -257,7 +340,7 @@
                         <ul class="nav flex-column">
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->is('admin/reports') && !request()->is('admin/reports/*') ? 'active' : '' }}" href="{{ url('/admin/reports') }}">
-                                    <i class="fas fa-chart-line"></i> Dashboard Financiero
+                                    <i class="fas fa-chart-line"></i> Tablero Financiero
                                 </a>
                             </li>
                             <li class="nav-item">

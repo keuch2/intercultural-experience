@@ -1,0 +1,43 @@
+parameters:
+    level: 8
+    paths:
+        - app
+        - config
+        - database/factories
+        - database/seeders
+        - routes
+        - tests
+    
+    # Ignore Laravel-specific patterns
+    ignoreErrors:
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder#'
+        - '#Cannot call method .* on Illuminate\\Database\\Eloquent\\Model\|null#'
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::\$#'
+        - '#Call to an undefined method Illuminate\\Http\\Request::#'
+        - '#Parameter .* of method .* expects .*, Illuminate\\Database\\Eloquent\\Model given#'
+        - '#Property .* does not exist on .* generic class Illuminate\\Database\\Eloquent\\Collection#'
+    
+    # Laravel specific configuration
+    bootstrapFiles:
+        - bootstrap/app.php
+    
+    # Exclude generated files and vendor
+    excludePaths:
+        - bootstrap/cache/*
+        - storage/*
+        - vendor/*
+        - node_modules/*
+        - public/hot
+        - public/storage
+        - resources/views/errors/*
+    
+    # Enable Laravel extension
+    includes:
+        - vendor/nunomaduro/larastan/extension.neon
+    
+    # Check for missing types
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    
+    # Memory limit for analysis
+    memoryLimitFile: 2G

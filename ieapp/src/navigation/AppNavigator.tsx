@@ -3,6 +3,8 @@ import { View, StyleSheet } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
+import ForgotPasswordScreen from '../screens/Auth/ForgotPasswordScreen';
+import ResetPasswordScreen from '../screens/Auth/ResetPasswordScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ProgramsScreen from '../screens/ProgramsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -27,6 +29,8 @@ import { useTabNavigation } from '../contexts/NavigationContext';
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
+  ForgotPassword: undefined;
+  ResetPassword: { token: string };
   Home: undefined;
   Programs: undefined;
   Profile: undefined;
@@ -165,6 +169,8 @@ const AuthStackNavigator = () => (
   <AuthStack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
     <AuthStack.Screen name="Login" component={LoginScreen} />
     <AuthStack.Screen name="Register" component={RegisterScreen} />
+    <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+    <AuthStack.Screen name="ResetPassword" component={ResetPasswordScreen} />
     <AuthStack.Screen name="ApiTest" component={ApiTestScreen} />
   </AuthStack.Navigator>
 );

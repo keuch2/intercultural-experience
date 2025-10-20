@@ -85,9 +85,9 @@ const ProgramsScreen: React.FC = () => {
       >
         <Image 
           source={{
-            uri: program.image_url || 'https://via.placeholder.com/400x200?text=Programa'
+            uri: program.image_url || program.image || 'https://via.placeholder.com/400x200?text=Programa'
           }} 
-          style={styles.programImage} 
+          style={styles.programImage}
         />
         <View style={styles.programInfo}>
           <Text style={styles.programTitle}>{program.name}</Text>
@@ -96,9 +96,6 @@ const ProgramsScreen: React.FC = () => {
           </Text>
           <Text style={styles.programDates}>
             <Text style={styles.infoLabel}>Fechas:</Text> {formatDate(program.start_date)} - {formatDate(program.end_date)}
-          </Text>
-          <Text style={styles.programPrice}>
-            <Text style={styles.infoLabel}>Costo:</Text> A Cotizar
           </Text>
         </View>
         <View style={styles.applyButton}>

@@ -2,10 +2,15 @@
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2">Gestión de Usuarios</h1>
+    <h1 class="h2">
+        {{ isset($pageTitle) ? $pageTitle : 'Gestión de Usuarios' }}
+        @if(isset($programType))
+            <span class="badge bg-{{ $programType == 'IE' ? 'info' : 'warning' }} ms-2">{{ $programType }}</span>
+        @endif
+    </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
-            <a href="{{ url('/admin/users/export') }}" class="btn btn-sm btn-outline-secondary">
+            <a href="{{ url('/admin/users/export') }}{{ isset($programType) ? '?program_type='.$programType : '' }}" class="btn btn-sm btn-outline-secondary">
                 <i class="fas fa-download me-1"></i> Exportar
             </a>
         </div>
@@ -19,19 +24,11 @@
     </div>
     <div class="card-body">
         <form action="{{ url('/admin/users') }}" method="GET" class="row g-3">
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label for="search" class="form-label">Buscar</label>
                 <input type="text" class="form-control" id="search" name="search" value="{{ request('search') }}" placeholder="Nombre, email...">
             </div>
-            <div class="col-md-3">
-                <label for="role" class="form-label">Rol</label>
-                <select class="form-select" id="role" name="role">
-                    <option value="">Todos los roles</option>
-                    <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Administrador</option>
-                    <option value="user" {{ request('role') == 'user' ? 'selected' : '' }}>Usuario</option>
-                </select>
-            </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label for="status" class="form-label">Estado</label>
                 <select class="form-select" id="status" name="status">
                     <option value="">Todos los estados</option>
@@ -39,7 +36,7 @@
                     <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactivo</option>
                 </select>
             </div>
-            <div class="col-md-3 d-flex align-items-end">
+            <div class="col-md-4 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary me-2">
                     <i class="fas fa-search me-1"></i> Filtrar
                 </button>
@@ -68,7 +65,6 @@
                         <th>Nombre</th>
                         <th>Email</th>
                         <th>Rol</th>
-                        <th>Estado</th>
                         <th>Fecha de Registro</th>
                         <th>Acciones</th>
                     </tr>
@@ -83,18 +79,13 @@
                             <td>
                                 @if($user->role === 'admin')
                                     <span class="badge bg-primary">Administrador</span>
+                                @elseif($user->role === 'agent')
+                                    <span class="badge bg-info">Agente</span>
                                 @else
                                     <span class="badge bg-secondary">Usuario</span>
                                 @endif
                             </td>
-                            <td>
-                                @if($user->is_active)
-                                    <span class="badge bg-success">Activo</span>
-                                @else
-                                    <span class="badge bg-danger">Inactivo</span>
-                                @endif
-                            </td>
-                            <td>{{ $user->created_at }}</td>
+                            <td>{{ $user->created_at->format('d/m/Y') }}</td>
                             <td>
                                 <div class="btn-group" role="group">
                                     <a href="{{ url('/admin/users/'.$user->id) }}" class="btn btn-sm btn-info">

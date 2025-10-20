@@ -8,6 +8,7 @@ use App\Models\Program;
 use App\Models\ProgramRequisite;
 use App\Models\UserProgramRequisite;
 use App\Models\Application;
+use App\Models\Currency;
 use Illuminate\Support\Facades\Storage;
 
 class AdminProgramRequisiteController extends Controller
@@ -32,7 +33,8 @@ class AdminProgramRequisiteController extends Controller
      */
     public function create(Program $program)
     {
-        return view('admin.programs.requisites.create', compact('program'));
+        $currencies = Currency::all();
+        return view('admin.programs.requisites.create', compact('program', 'currencies'));
     }
 
     /**
@@ -50,6 +52,8 @@ class AdminProgramRequisiteController extends Controller
             'type' => 'required|in:document,action,payment',
             'is_required' => 'boolean',
             'order' => 'integer|min:0',
+            'payment_amount' => 'nullable|numeric|min:0',
+            'currency_id' => 'nullable|exists:currencies,id',
         ]);
         
         $requisite = new ProgramRequisite();
@@ -59,20 +63,49 @@ class AdminProgramRequisiteController extends Controller
         $requisite->type = $request->type;
         $requisite->is_required = $request->has('is_required');
         $requisite->order = $request->order ?? 0;
+        
+        // Solo guardar monto y moneda si el tipo es payment
+        if ($request->type === 'payment') {
+            $requisite->payment_amount = $request->payment_amount;
+            $requisite->currency_id = $request->currency_id;
+        }
+        
         $requisite->save();
         
         // Crear este requisito para todas las aplicaciones existentes del programa
         $applications = Application::where('program_id', $program->id)->get();
+        $createdCount = 0;
+        
         foreach ($applications as $application) {
-            UserProgramRequisite::create([
-                'application_id' => $application->id,
-                'program_requisite_id' => $requisite->id,
-                'status' => 'pending'
-            ]);
+            try {
+                UserProgramRequisite::create([
+                    'application_id' => $application->id,
+                    'program_requisite_id' => $requisite->id,
+                    'status' => 'pending'
+                ]);
+                $createdCount++;
+                
+                \Log::info('UserProgramRequisite creado', [
+                    'application_id' => $application->id,
+                    'program_requisite_id' => $requisite->id,
+                    'user' => $application->user->name
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Error al crear UserProgramRequisite', [
+                    'application_id' => $application->id,
+                    'program_requisite_id' => $requisite->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+        
+        $message = 'Requisito creado correctamente.';
+        if ($createdCount > 0) {
+            $message .= " Se asignó a {$createdCount} aplicación(es) existente(s).";
         }
         
         return redirect()->route('admin.programs.requisites.index', $program->id)
-            ->with('success', 'Requisito creado correctamente.');
+            ->with('success', $message);
     }
 
     /**
@@ -84,7 +117,8 @@ class AdminProgramRequisiteController extends Controller
      */
     public function edit(Program $program, ProgramRequisite $requisite)
     {
-        return view('admin.programs.requisites.edit', compact('program', 'requisite'));
+        $currencies = Currency::all();
+        return view('admin.programs.requisites.edit', compact('program', 'requisite', 'currencies'));
     }
 
     /**
@@ -103,6 +137,8 @@ class AdminProgramRequisiteController extends Controller
             'type' => 'required|in:document,action,payment',
             'is_required' => 'boolean',
             'order' => 'integer|min:0',
+            'payment_amount' => 'nullable|numeric|min:0',
+            'currency_id' => 'nullable|exists:currencies,id',
         ]);
         
         $requisite->name = $request->name;
@@ -110,6 +146,17 @@ class AdminProgramRequisiteController extends Controller
         $requisite->type = $request->type;
         $requisite->is_required = $request->has('is_required');
         $requisite->order = $request->order ?? 0;
+        
+        // Solo guardar monto y moneda si el tipo es payment
+        if ($request->type === 'payment') {
+            $requisite->payment_amount = $request->payment_amount;
+            $requisite->currency_id = $request->currency_id;
+        } else {
+            // Limpiar campos si cambia de tipo payment a otro
+            $requisite->payment_amount = null;
+            $requisite->currency_id = null;
+        }
+        
         $requisite->save();
         
         return redirect()->route('admin.programs.requisites.index', $program->id)

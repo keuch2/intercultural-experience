@@ -18,6 +18,7 @@ class FinancialTransaction extends Model
         'amount',
         'currency_id',
         'amount_pyg',
+        'exchange_rate_snapshot',
         'transaction_date',
         'reference',
         'payment_method',
@@ -34,6 +35,11 @@ class FinancialTransaction extends Model
         'transaction_date' => 'date',
         'amount' => 'decimal:2',
         'amount_pyg' => 'decimal:2',
+        'exchange_rate_snapshot' => 'decimal:4',
+    ];
+
+    protected $hidden = [
+        'reference', 'notes', 'receipt_file',
     ];
 
     // Relaciones
@@ -132,10 +138,15 @@ class FinancialTransaction extends Model
     public function convertToPyg()
     {
         if ($this->currency && $this->currency->code !== 'PYG') {
+            // Guardar el exchange rate del momento para histórico
+            $this->exchange_rate_snapshot = $this->currency->exchange_rate_to_pyg;
+            // Convertir el monto
             $this->amount_pyg = $this->currency->convertToPyg($this->amount);
             $this->save();
         } else {
+            // Si es PYG, el monto es el mismo y el exchange rate es 1
             $this->amount_pyg = $this->amount;
+            $this->exchange_rate_snapshot = 1;
             $this->save();
         }
     }

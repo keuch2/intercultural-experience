@@ -15,7 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register middleware aliases
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'agent' => \App\Http\Middleware\AgentMiddleware::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'activity.log' => \App\Http\Middleware\ActivityLogger::class,
         ]);
         
         // CORS is handled in Kernel.php for API routes

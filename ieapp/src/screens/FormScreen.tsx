@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import DynamicForm from '../components/DynamicForm';
 import formService from '../services/api/formService';
 import { FormData, ProgramForm } from '../types/forms';
@@ -23,7 +23,7 @@ type RootStackParamList = {
 };
 
 type FormScreenRouteProp = RouteProp<RootStackParamList, 'Form'>;
-type FormScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Form'>;
+type FormScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Form'>;
 
 const FormScreen: React.FC = () => {
   const route = useRoute<FormScreenRouteProp>();
@@ -48,7 +48,7 @@ const FormScreen: React.FC = () => {
       if (formId) {
         // Cargar formulario específico
         const response = await formService.getFormStructure(formId);
-        form = response.data?.form || response.form;
+        form = response.form;
       } else {
         // Cargar formulario activo del programa
         const response = await formService.getActiveForm(programId);

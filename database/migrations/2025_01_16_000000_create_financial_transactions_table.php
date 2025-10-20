@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('category'); // categoría del ingreso/egreso
             $table->string('description');
             $table->decimal('amount', 15, 2); // monto en la moneda original
-            $table->foreignId('currency_id')->nullable()->constrained()->onDelete('set null');
+            $table->unsignedBigInteger('currency_id')->nullable();
             $table->decimal('amount_pyg', 15, 2)->nullable(); // monto convertido a guaraníes
             $table->date('transaction_date'); // fecha real de la transacción
             $table->string('reference')->nullable(); // número de factura, recibo, etc.

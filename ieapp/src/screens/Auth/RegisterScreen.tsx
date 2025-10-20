@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import InputField from '../../components/InputField';
+import DropdownField from '../../components/DropdownField';
+import { allCountries } from '../../data/countries';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import {
+  validateEmail,
+  validatePassword,
+  validateName,
+  validatePasswordConfirmation,
+  validatePhone,
+  getPasswordStrengthColor,
+  getPasswordStrengthText,
+  PasswordStrength
+} from '../../utils/ValidationUtils';
 
 const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -21,34 +33,63 @@ const RegisterScreen: React.FC = () => {
   const [englishLevel, setEnglishLevel] = useState('');
   
   // Error state
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<{[key: string]: string[]}>({});
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
   
-  const validateForm = () => {
-    const newErrors: {[key: string]: string} = {};
+  // Dropdown options
+  const academicLevelOptions = [
+    { label: 'Bachiller', value: 'bachiller' },
+    { label: 'Licenciatura', value: 'licenciatura' },
+    { label: 'Maestría', value: 'maestria' },
+    { label: 'Posgrado', value: 'posgrado' },
+    { label: 'Doctorado', value: 'doctorado' }
+  ];
+  
+  const englishLevelOptions = [
+    { label: 'Básico', value: 'basico' },
+    { label: 'Intermedio', value: 'intermedio' },
+    { label: 'Avanzado', value: 'avanzado' },
+    { label: 'Nativo', value: 'nativo' }
+  ];
+  
+  const validateForm = useCallback(() => {
+    setIsValidating(true);
+    const newErrors: {[key: string]: string[]} = {};
     
-    if (!name) newErrors.name = 'El nombre es requerido';
-    
-    if (!email) {
-      newErrors.email = 'El correo electrónico es requerido';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Correo electrónico inválido';
+    // Validate name
+    const nameValidation = validateName(name);
+    if (!nameValidation.isValid) {
+      newErrors.name = nameValidation.errors;
     }
     
-    if (!password) {
-      newErrors.password = 'La contraseña es requerida';
-    } else if (password.length < 8) {
-      newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
+    // Validate email
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      newErrors.email = emailValidation.errors;
     }
     
-    if (!passwordConfirmation) {
-      newErrors.passwordConfirmation = 'Confirma tu contraseña';
-    } else if (password !== passwordConfirmation) {
-      newErrors.passwordConfirmation = 'Las contraseñas no coinciden';
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (passwordValidation.score < 2) { // Require at least 'Regular' strength
+      newErrors.password = passwordValidation.feedback;
+    }
+    
+    // Validate password confirmation
+    const confirmationValidation = validatePasswordConfirmation(password, passwordConfirmation);
+    if (!confirmationValidation.isValid) {
+      newErrors.passwordConfirmation = confirmationValidation.errors;
+    }
+    
+    // Validate optional fields if filled
+    if (city && city.trim().length > 0 && city.trim().length < 2) {
+      newErrors.city = ['La ciudad debe tener al menos 2 caracteres'];
     }
     
     setErrors(newErrors);
+    setIsValidating(false);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [name, email, password, passwordConfirmation, city]);
   
   const handleRegister = async () => {
     if (!validateForm()) return;
@@ -65,20 +106,70 @@ const RegisterScreen: React.FC = () => {
       
       if (result.errors) {
         // Validation errors
-        const formattedErrors: {[key: string]: string} = {};
+        const formattedErrors: {[key: string]: string[]} = {};
         
         Object.keys(result.errors).forEach(key => {
           const errorArray = result.errors[key];
-          formattedErrors[key] = Array.isArray(errorArray) ? errorArray[0] : errorArray;
+          formattedErrors[key] = Array.isArray(errorArray) ? errorArray : [errorArray];
         });
         
         setErrors(formattedErrors);
-        Alert.alert('Error de validación', 'Por favor corrige los errores en el formulario.');
+        const firstError = Object.values(formattedErrors)[0];
+        Alert.alert('Error de validación', Array.isArray(firstError) ? firstError[0] : firstError);
       } else {
         // General error
         Alert.alert('Error', result.message || 'Ha ocurrido un error al registrarte. Inténtalo de nuevo.');
       }
     }
+  };
+
+  // Real-time password validation
+  const handlePasswordChange = useCallback((newPassword: string) => {
+    setPassword(newPassword);
+    const strength = validatePassword(newPassword);
+    setPasswordStrength(strength);
+    
+    // Clear password errors when user starts typing
+    if (errors.password) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.password;
+        return newErrors;
+      });
+    }
+  }, [errors.password]);
+
+  // Real-time field validation
+  const handleFieldChange = useCallback((field: string, value: string) => {
+    // Clear errors when user starts typing
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+    
+    switch (field) {
+      case 'name':
+        setName(value);
+        break;
+      case 'email':
+        setEmail(value);
+        break;
+      case 'passwordConfirmation':
+        setPasswordConfirmation(value);
+        break;
+      case 'city':
+        setCity(value);
+        break;
+    }
+  }, [errors]);
+
+  // Format error messages for display
+  const getErrorMessage = (field: string): string | undefined => {
+    const fieldErrors = errors[field];
+    return fieldErrors && fieldErrors.length > 0 ? fieldErrors[0] : undefined;
   };
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -95,77 +186,113 @@ const RegisterScreen: React.FC = () => {
       <InputField
         label="Nombre completo"
         value={name}
-        onChangeText={setName}
+        onChangeText={(value) => handleFieldChange('name', value)}
         placeholder="Ingresa tu nombre completo"
-        error={errors.name}
+        error={getErrorMessage('name')}
+        autoCapitalize="words"
       />
       
       <InputField
         label="Correo electrónico"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(value) => handleFieldChange('email', value)}
         placeholder="ejemplo@correo.com"
         keyboardType="email-address"
-        error={errors.email}
+        autoCapitalize="none"
+        error={getErrorMessage('email')}
       />
       
-      <InputField
-        label="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Mínimo 8 caracteres"
-        secureTextEntry
-        error={errors.password}
-      />
+      <View>
+        <InputField
+          label="Contraseña"
+          value={password}
+          onChangeText={handlePasswordChange}
+          placeholder="Mínimo 8 caracteres"
+          secureTextEntry
+          error={getErrorMessage('password')}
+        />
+        {passwordStrength && password.length > 0 && (
+          <View style={styles.passwordStrengthContainer}>
+            <View style={styles.strengthBar}>
+              <View 
+                style={[
+                  styles.strengthFill, 
+                  { 
+                    width: `${(passwordStrength.score / 4) * 100}%`,
+                    backgroundColor: getPasswordStrengthColor(passwordStrength.score)
+                  }
+                ]} 
+              />
+            </View>
+            <Text style={[
+              styles.strengthText,
+              { color: getPasswordStrengthColor(passwordStrength.score) }
+            ]}>
+              {getPasswordStrengthText(passwordStrength.score)}
+            </Text>
+          </View>
+        )}
+      </View>
       
       <InputField
         label="Confirmar contraseña"
         value={passwordConfirmation}
-        onChangeText={setPasswordConfirmation}
+        onChangeText={(value) => handleFieldChange('passwordConfirmation', value)}
         placeholder="Repite tu contraseña"
         secureTextEntry
-        error={errors.passwordConfirmation}
+        error={getErrorMessage('passwordConfirmation')}
       />
       
       <InputField
-        label="Ciudad"
+        label="Ciudad (opcional)"
         value={city}
-        onChangeText={setCity}
+        onChangeText={(value) => handleFieldChange('city', value)}
         placeholder="Tu ciudad"
-        error={errors.city}
+        error={getErrorMessage('city')}
+        autoCapitalize="words"
       />
       
-      <InputField
-        label="País"
+      <DropdownField
+        label="País (opcional)"
+        options={allCountries}
         value={country}
-        onChangeText={setCountry}
-        placeholder="Tu país"
-        error={errors.country}
+        onSelect={setCountry}
+        placeholder="Selecciona tu país"
+        error={getErrorMessage('country')}
+        searchable={true}
+        maxHeight={250}
       />
       
-      <InputField
-        label="Nivel Académico"
+      <DropdownField
+        label="Nivel Académico (opcional)"
+        options={academicLevelOptions}
         value={academicLevel}
-        onChangeText={setAcademicLevel}
-        placeholder="Ej: Licenciatura, Maestría"
-        error={errors.academicLevel}
+        onSelect={setAcademicLevel}
+        placeholder="Selecciona tu nivel académico"
+        error={getErrorMessage('academicLevel')}
       />
       
-      <InputField
-        label="Nivel de Inglés"
+      <DropdownField
+        label="Nivel de Inglés (opcional)"
+        options={englishLevelOptions}
         value={englishLevel}
-        onChangeText={setEnglishLevel}
-        placeholder="Ej: Básico, Intermedio, Avanzado"
-        error={errors.englishLevel}
+        onSelect={setEnglishLevel}
+        placeholder="Selecciona tu nivel de inglés"
+        error={getErrorMessage('englishLevel')}
       />
       
       <TouchableOpacity 
         style={styles.button} 
         onPress={handleRegister}
-        disabled={isLoading}
+        disabled={isLoading || isValidating}
       >
-        {isLoading ? (
-          <ActivityIndicator color="#FFFFFF" />
+        {isLoading || isValidating ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator color="#FFFFFF" />
+            <Text style={styles.loadingText}>
+              {isValidating ? 'Validando...' : 'Registrando...'}
+            </Text>
+          </View>
         ) : (
           <Text style={styles.buttonText}>REGISTRARSE</Text>
         )}
@@ -226,6 +353,35 @@ const styles = StyleSheet.create({
     marginTop: 15, 
     marginBottom: 30,
     fontWeight: 'bold' 
+  },
+  passwordStrengthContainer: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  strengthBar: {
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  strengthFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  strengthText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

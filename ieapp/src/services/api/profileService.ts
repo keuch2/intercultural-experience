@@ -20,6 +20,10 @@ export interface ProfileUpdateData {
   avatar?: File;
   birth_date?: string;
   nationality?: string;
+  city?: string;
+  country?: string;
+  academic_level?: string;
+  english_level?: string;
 }
 
 const profileService = {
@@ -65,6 +69,23 @@ const profileService = {
       return response.data;
     } catch (error) {
       console.error('Error detallado en actualización de perfil:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update user avatar/profile photo
+   */
+  updateAvatar: async (formData: FormData) => {
+    try {
+      const response = await apiClient.post('/profile/avatar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error al actualizar avatar:', error);
       throw error;
     }
   },

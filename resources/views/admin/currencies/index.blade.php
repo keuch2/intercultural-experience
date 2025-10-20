@@ -10,9 +10,14 @@
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h3 class="card-title">Gestión de Valores - Monedas</h3>
-                        <a href="{{ route('admin.currencies.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Agregar Nueva Moneda
-                        </a>
+                        <div class="btn-group me-2">
+                            <a href="{{ route('admin.currencies.create') }}" class="btn btn-sm btn-success">
+                                <i class="fas fa-plus"></i> Nueva Moneda
+                            </a>
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#converterModal">
+                                <i class="fas fa-exchange-alt"></i> Conversor
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -173,6 +178,171 @@
         </div>
     </div>
 </div>
+<!-- Modal Conversor de Monedas -->
+<div class="modal fade" id="converterModal" tabindex="-1" aria-labelledby="converterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="converterModalLabel">
+                    <i class="fas fa-exchange-alt"></i> Conversor de Monedas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">Convertir Monto</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="converterForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Monto</label>
+                                        <input type="number" step="0.01" class="form-control" id="amount" placeholder="0.00" required>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">De</label>
+                                            <select class="form-select" id="fromCurrency" required>
+                                                @foreach($currencies as $currency)
+                                                    <option value="{{ $currency->code }}">{{ $currency->code }} - {{ $currency->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">A</label>
+                                            <select class="form-select" id="toCurrency" required>
+                                                @foreach($currencies as $currency)
+                                                    <option value="{{ $currency->code }}" {{ $currency->code == 'PYG' ? 'selected' : '' }}>{{ $currency->code }} - {{ $currency->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-calculator"></i> Convertir
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">Resultado</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="conversionResult" class="text-center p-4">
+                                    <i class="fas fa-calculator text-muted fa-3x mb-3"></i>
+                                    <p class="text-muted">Ingresa un monto y selecciona las monedas para convertir</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">Tasas Actuales (Base: PYG)</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Moneda</th>
+                                                <th>Tasa</th>
+                                                <th>Actualizado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($currencies->where('code', '!=', 'PYG') as $currency)
+                                            <tr>
+                                                <td>
+                                                    <span class="badge bg-primary">{{ $currency->code }}</span>
+                                                    {{ $currency->symbol }}
+                                                </td>
+                                                <td>{{ number_format($currency->exchange_rate_to_pyg, 0) }} PYG</td>
+                                                <td>
+                                                    <small class="text-muted">
+                                                        {{ $currency->updated_at->diffForHumans() }}
+                                                    </small>
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script>
+document.getElementById('converterForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const amount = document.getElementById('amount').value;
+    const fromCurrency = document.getElementById('fromCurrency').value;
+    const toCurrency = document.getElementById('toCurrency').value;
+    
+    if (!amount || !fromCurrency || !toCurrency) {
+        alert('Por favor completa todos los campos');
+        return;
+    }
+    
+    try {
+        const response = await fetch('{{ route("admin.currencies.convert") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                amount: parseFloat(amount),
+                from_currency: fromCurrency,
+                to_currency: toCurrency
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const resultDiv = document.getElementById('conversionResult');
+            resultDiv.innerHTML = `
+                <div class="conversion-success">
+                    <h4 class="text-success">${formatCurrency(data.converted_amount)} ${data.to_currency}</h4>
+                    <p class="mb-2">
+                        <strong>${formatCurrency(data.original_amount)} ${data.from_currency}</strong>
+                        <i class="fas fa-arrow-right mx-2 text-primary"></i>
+                        <strong>${formatCurrency(data.converted_amount)} ${data.to_currency}</strong>
+                    </p>
+                    <small class="text-muted">
+                        Tasa utilizada: 1 ${data.from_currency} = ${data.rate_used} ${data.to_currency}<br>
+                        Calculado: ${new Date(data.calculation_date).toLocaleString()}
+                    </small>
+                </div>
+            `;
+        } else {
+            throw new Error('Error en la conversión');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al realizar la conversión. Por favor intenta de nuevo.');
+    }
+});
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('es-PY').format(amount);
+}
+</script>
 @endsection
 
 @push('scripts')
