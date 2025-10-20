@@ -250,6 +250,27 @@
                         </ul>
                         
                         <div class="sidebar-heading">
+                            Work & Travel
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/sponsors*') ? 'active' : '' }}" href="{{ route('admin.sponsors.index') }}">
+                                    <i class="fas fa-handshake"></i> Sponsors
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/host-companies*') ? 'active' : '' }}" href="{{ route('admin.host-companies.index') }}">
+                                    <i class="fas fa-building"></i> Empresas Host
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/job-offers*') ? 'active' : '' }}" href="#">
+                                    <i class="fas fa-briefcase"></i> Ofertas Laborales
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
                             Facturación
                         </div>
                         <ul class="nav flex-column">
