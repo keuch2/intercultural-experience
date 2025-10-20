@@ -119,6 +119,9 @@ class AdminUserController extends Controller
      */
     public function edit(User $user)
     {
+        // Cargar relaciones para mostrar en la vista
+        $user->load(['emergencyContacts', 'workExperiences']);
+        
         return view('admin.users.edit', compact('user'));
     }
 
@@ -131,6 +134,7 @@ class AdminUserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
+        // Información general
         $user->name = $request->name;
         $user->email = $request->email;
         if ($request->filled('password')) {
@@ -138,11 +142,28 @@ class AdminUserController extends Controller
         }
         $user->role = $request->role;
         $user->phone = $request->phone;
+        $user->birth_date = $request->birth_date;
         $user->nationality = $request->nationality;
+        $user->city = $request->city;
+        $user->country = $request->country;
         $user->address = $request->address;
+        $user->academic_level = $request->academic_level;
+        $user->english_level = $request->english_level;
+        $user->bio = $request->bio;
+        
+        // Información de salud
+        $user->blood_type = $request->blood_type;
+        $user->health_insurance = $request->health_insurance;
+        $user->health_insurance_number = $request->health_insurance_number;
+        $user->medical_conditions = $request->medical_conditions;
+        $user->allergies = $request->allergies;
+        $user->medications = $request->medications;
+        $user->emergency_medical_contact = $request->emergency_medical_contact;
+        $user->emergency_medical_phone = $request->emergency_medical_phone;
+        
         $user->save();
         
-        return redirect()->route('admin.users.index')
+        return redirect()->route('admin.users.show', $user->id)
             ->with('success', 'Usuario actualizado correctamente.');
     }
 
