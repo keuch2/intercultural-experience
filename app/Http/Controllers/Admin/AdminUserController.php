@@ -83,7 +83,12 @@ class AdminUserController extends Controller
     public function show(User $user)
     {
         // Cargar relaciones para mostrar en la vista
-        $user->load(['applications', 'redemptions']);
+        $user->load([
+            'applications.program', 
+            'redemptions',
+            'emergencyContacts',
+            'workExperiences'
+        ]);
         
         // Calcular estadísticas
         $applicationStats = [
