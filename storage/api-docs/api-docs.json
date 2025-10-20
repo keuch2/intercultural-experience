@@ -295,6 +295,508 @@
                 ]
             }
         },
+        "/english-evaluations": {
+            "get": {
+                "tags": [
+                    "English Tests"
+                ],
+                "summary": "Listar evaluaciones de inglés del usuario",
+                "description": "Obtiene todas las evaluaciones de inglés del usuario autenticado, ordenadas por fecha descendente",
+                "operationId": "5128f8cd8ce61e4198f189b6d8f9e87d",
+                "responses": {
+                    "200": {
+                        "description": "Lista de evaluaciones obtenida exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "score": {
+                                                        "type": "integer",
+                                                        "example": 75
+                                                    },
+                                                    "cefr_level": {
+                                                        "type": "string",
+                                                        "example": "B2"
+                                                    },
+                                                    "ef_set_id": {
+                                                        "type": "string",
+                                                        "example": "EF123456"
+                                                    },
+                                                    "evaluated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-10-20T14:30:00Z"
+                                                    },
+                                                    "notes": {
+                                                        "type": "string",
+                                                        "example": "Excelente comprensión oral"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "remaining_attempts": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "can_attempt": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "English Tests"
+                ],
+                "summary": "Registrar nueva evaluación de inglés",
+                "description": "Registra una nueva evaluación de inglés. Máximo 3 intentos por usuario. El nivel CEFR se calcula automáticamente según el puntaje.",
+                "operationId": "dce8b7507397a8112313f151ddef35d5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "score"
+                                ],
+                                "properties": {
+                                    "score": {
+                                        "description": "Puntaje obtenido (0-100)",
+                                        "type": "integer",
+                                        "maximum": 100,
+                                        "minimum": 0,
+                                        "example": 75
+                                    },
+                                    "ef_set_id": {
+                                        "description": "ID del test EF SET (opcional)",
+                                        "type": "string",
+                                        "example": "EF123456"
+                                    },
+                                    "notes": {
+                                        "description": "Notas adicionales (opcional)",
+                                        "type": "string",
+                                        "example": "Test realizado en línea"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Evaluación registrada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Evaluación registrada exitosamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "score": {
+                                                    "type": "integer",
+                                                    "example": 75
+                                                },
+                                                "cefr_level": {
+                                                    "type": "string",
+                                                    "example": "B2"
+                                                },
+                                                "classification": {
+                                                    "type": "string",
+                                                    "example": "Upper Intermediate"
+                                                },
+                                                "attempt_number": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "remaining_attempts": {
+                                            "type": "integer",
+                                            "example": 2
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Límite de intentos alcanzado"
+                    },
+                    "422": {
+                        "description": "Errores de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/job-offers": {
+            "get": {
+                "tags": [
+                    "Job Offers"
+                ],
+                "summary": "Listar ofertas laborales disponibles",
+                "description": "Obtiene todas las ofertas laborales disponibles con filtros opcionales",
+                "operationId": "7535dea4abe3bcc7b6c1882cb0d24ef4",
+                "parameters": [
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "description": "Filtrar por ciudad",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Miami"
+                        }
+                    },
+                    {
+                        "name": "state",
+                        "in": "query",
+                        "description": "Filtrar por estado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Florida"
+                        }
+                    },
+                    {
+                        "name": "english_level",
+                        "in": "query",
+                        "description": "Filtrar por nivel de inglés requerido",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "A2",
+                                "B1",
+                                "B1+",
+                                "B2",
+                                "C1",
+                                "C2"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "gender",
+                        "in": "query",
+                        "description": "Filtrar por género requerido",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "male",
+                                "female",
+                                "any"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Resultados por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de ofertas obtenida exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "job_offer_id": {
+                                                                "type": "string",
+                                                                "example": "JO-2025-001"
+                                                            },
+                                                            "position": {
+                                                                "type": "string",
+                                                                "example": "Lifeguard"
+                                                            },
+                                                            "city": {
+                                                                "type": "string",
+                                                                "example": "Miami"
+                                                            },
+                                                            "state": {
+                                                                "type": "string",
+                                                                "example": "Florida"
+                                                            },
+                                                            "salary_min": {
+                                                                "type": "number",
+                                                                "example": 2000
+                                                            },
+                                                            "salary_max": {
+                                                                "type": "number",
+                                                                "example": 2500
+                                                            },
+                                                            "available_slots": {
+                                                                "type": "integer",
+                                                                "example": 5
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/job-offers/{id}": {
+            "get": {
+                "tags": [
+                    "Job Offers"
+                ],
+                "summary": "Obtener detalles de una oferta laboral",
+                "description": "Obtiene los detalles completos de una oferta laboral específica",
+                "operationId": "3c0768a152e77f135ae6e20d9efd2608",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la oferta laboral",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles de la oferta obtenidos exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "job_offer_id": {
+                                                    "type": "string",
+                                                    "example": "JO-2025-001"
+                                                },
+                                                "position": {
+                                                    "type": "string",
+                                                    "example": "Lifeguard"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "city": {
+                                                    "type": "string",
+                                                    "example": "Miami"
+                                                },
+                                                "state": {
+                                                    "type": "string",
+                                                    "example": "Florida"
+                                                },
+                                                "salary_min": {
+                                                    "type": "number",
+                                                    "example": 2000
+                                                },
+                                                "salary_max": {
+                                                    "type": "number",
+                                                    "example": 2500
+                                                },
+                                                "hours_per_week": {
+                                                    "type": "integer",
+                                                    "example": 40
+                                                },
+                                                "housing_type": {
+                                                    "type": "string",
+                                                    "example": "provided"
+                                                },
+                                                "total_slots": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "available_slots": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "required_english_level": {
+                                                    "type": "string",
+                                                    "example": "B2"
+                                                },
+                                                "required_gender": {
+                                                    "type": "string",
+                                                    "example": "any"
+                                                },
+                                                "start_date": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                },
+                                                "end_date": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Oferta no encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/job-offers/recommended": {
+            "get": {
+                "tags": [
+                    "Job Offers"
+                ],
+                "summary": "Obtener ofertas recomendadas",
+                "description": "Obtiene ofertas laborales recomendadas basadas en el perfil del usuario (nivel de inglés y género)",
+                "operationId": "f62f97b3923c696972d9276d7eefc776",
+                "responses": {
+                    "200": {
+                        "description": "Ofertas recomendadas obtenidas exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "position": {
+                                                        "type": "string"
+                                                    },
+                                                    "city": {
+                                                        "type": "string"
+                                                    },
+                                                    "match_score": {
+                                                        "description": "Porcentaje de compatibilidad",
+                                                        "type": "integer",
+                                                        "example": 95
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/programs": {
             "get": {
                 "tags": [
@@ -684,6 +1186,14 @@
         {
             "name": "Programs",
             "description": "Gestión de programas de intercambio"
+        },
+        {
+            "name": "English Tests",
+            "description": "Evaluaciones de nivel de inglés"
+        },
+        {
+            "name": "Job Offers",
+            "description": "Ofertas laborales y matching"
         }
     ]
 }

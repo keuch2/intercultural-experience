@@ -78,6 +78,36 @@ use Illuminate\Routing\Controller as BaseController;
  *     name="Support",
  *     description="Sistema de tickets de soporte"
  * )
+ * 
+ * @OA\Tag(
+ *     name="English Tests",
+ *     description="Evaluaciones de nivel de inglés"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Job Offers",
+ *     description="Ofertas laborales y matching"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Reservations",
+ *     description="Reservas de ofertas laborales"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Visa Process",
+ *     description="Proceso de visa y estados"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Sponsors",
+ *     description="Gestión de sponsors"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Host Companies",
+ *     description="Gestión de empresas anfitrionas"
+ * )
  */
 class Controller extends BaseController
 {

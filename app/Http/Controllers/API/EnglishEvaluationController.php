@@ -10,6 +10,37 @@ use Illuminate\Support\Facades\Validator;
 class EnglishEvaluationController extends Controller
 {
     /**
+     * @OA\Get(
+     *     path="/english-evaluations",
+     *     tags={"English Tests"},
+     *     summary="Listar evaluaciones de inglés del usuario",
+     *     description="Obtiene todas las evaluaciones de inglés del usuario autenticado, ordenadas por fecha descendente",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de evaluaciones obtenida exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="user_id", type="integer", example=1),
+     *                     @OA\Property(property="score", type="integer", example=75),
+     *                     @OA\Property(property="cefr_level", type="string", example="B2"),
+     *                     @OA\Property(property="ef_set_id", type="string", example="EF123456"),
+     *                     @OA\Property(property="evaluated_at", type="string", format="date-time", example="2025-10-20T14:30:00Z"),
+     *                     @OA\Property(property="notes", type="string", example="Excelente comprensión oral")
+     *                 )
+     *             ),
+     *             @OA\Property(property="remaining_attempts", type="integer", example=2),
+     *             @OA\Property(property="can_attempt", type="boolean", example=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="No autenticado")
+     * )
+     * 
      * Display a listing of user's evaluations
      */
     public function index(Request $request)
@@ -29,6 +60,43 @@ class EnglishEvaluationController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/english-evaluations",
+     *     tags={"English Tests"},
+     *     summary="Registrar nueva evaluación de inglés",
+     *     description="Registra una nueva evaluación de inglés. Máximo 3 intentos por usuario. El nivel CEFR se calcula automáticamente según el puntaje.",
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"score"},
+     *             @OA\Property(property="score", type="integer", minimum=0, maximum=100, example=75, description="Puntaje obtenido (0-100)"),
+     *             @OA\Property(property="ef_set_id", type="string", example="EF123456", description="ID del test EF SET (opcional)"),
+     *             @OA\Property(property="notes", type="string", example="Test realizado en línea", description="Notas adicionales (opcional)")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Evaluación registrada exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Evaluación registrada exitosamente"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="user_id", type="integer", example=1),
+     *                 @OA\Property(property="score", type="integer", example=75),
+     *                 @OA\Property(property="cefr_level", type="string", example="B2"),
+     *                 @OA\Property(property="classification", type="string", example="Upper Intermediate"),
+     *                 @OA\Property(property="attempt_number", type="integer", example=1)
+     *             ),
+     *             @OA\Property(property="remaining_attempts", type="integer", example=2)
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Límite de intentos alcanzado"),
+     *     @OA\Response(response=422, description="Errores de validación")
+     * )
+     * 
      * Store a new evaluation
      */
     public function store(Request $request)
