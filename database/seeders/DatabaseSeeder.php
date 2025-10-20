@@ -44,6 +44,9 @@ class DatabaseSeeder extends Seeder
             NotificationSeeder::class,
             PointRewardSeeder::class,
             RedemptionSeeder::class,
+            // NEW: Audit Phase 2-3 Seeders
+            SponsorSeeder::class,
+            HostCompanySeeder::class,
         ]);
     }
 }
