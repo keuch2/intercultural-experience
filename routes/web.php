@@ -331,4 +331,16 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         ]);
         Route::post('/host-companies/{company}/toggle-status', [\App\Http\Controllers\Admin\HostCompanyController::class, 'toggleStatus'])->name('admin.host-companies.toggle-status');
         Route::post('/host-companies/{company}/update-rating', [\App\Http\Controllers\Admin\HostCompanyController::class, 'updateRating'])->name('admin.host-companies.update-rating');
+        
+        // Job Offers Management
+        Route::resource('job-offers', \App\Http\Controllers\Admin\JobOfferController::class)->names([
+            'index' => 'admin.job-offers.index',
+            'create' => 'admin.job-offers.create',
+            'store' => 'admin.job-offers.store',
+            'show' => 'admin.job-offers.show',
+            'edit' => 'admin.job-offers.edit',
+            'update' => 'admin.job-offers.update',
+            'destroy' => 'admin.job-offers.destroy',
+        ]);
+        Route::post('/job-offers/{offer}/toggle-status', [\App\Http\Controllers\Admin\JobOfferController::class, 'toggleStatus'])->name('admin.job-offers.toggle-status');
     });

@@ -264,7 +264,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/job-offers*') ? 'active' : '' }}" href="#">
+                                <a class="nav-link {{ request()->is('admin/job-offers*') ? 'active' : '' }}" href="{{ route('admin.job-offers.index') }}">
                                     <i class="fas fa-briefcase"></i> Ofertas Laborales
                                 </a>
                             </li>
