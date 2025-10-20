@@ -187,6 +187,52 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/available-programs', [\App\Http\Controllers\API\ProgramAssignmentController::class, 'getAvailablePrograms']);
     Route::get('/my-stats', [\App\Http\Controllers\API\ProgramAssignmentController::class, 'getMyStats']);
 
+    // ========================================
+    // NEW CRITICAL MODULES - AUDIT PHASE 2-3
+    // ========================================
+    
+    // English Evaluations (Max 3 attempts per user)
+    Route::prefix('english-evaluations')->group(function () {
+        Route::get('/', [\App\Http\Controllers\API\EnglishEvaluationController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\API\EnglishEvaluationController::class, 'store'])->middleware('throttle:3,60'); // Max 3/hour
+        Route::get('/best', [\App\Http\Controllers\API\EnglishEvaluationController::class, 'best']);
+        Route::get('/stats', [\App\Http\Controllers\API\EnglishEvaluationController::class, 'stats']);
+        Route::get('/{id}', [\App\Http\Controllers\API\EnglishEvaluationController::class, 'show']);
+    });
+
+    // Job Offers (Public listings + Recommendations)
+    Route::prefix('job-offers')->group(function () {
+        Route::get('/', [\App\Http\Controllers\API\JobOfferController::class, 'index']);
+        Route::get('/recommended', [\App\Http\Controllers\API\JobOfferController::class, 'recommended']);
+        Route::get('/search', [\App\Http\Controllers\API\JobOfferController::class, 'search']);
+        Route::get('/by-location', [\App\Http\Controllers\API\JobOfferController::class, 'byLocation']);
+        Route::get('/states', [\App\Http\Controllers\API\JobOfferController::class, 'states']);
+        Route::get('/cities', [\App\Http\Controllers\API\JobOfferController::class, 'cities']);
+        Route::get('/{id}', [\App\Http\Controllers\API\JobOfferController::class, 'show']);
+    });
+
+    // Job Offer Reservations (Critical - Financial Operations)
+    Route::middleware(['throttle:5,1'])->prefix('reservations')->group(function () {
+        Route::get('/', [\App\Http\Controllers\API\JobOfferReservationController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\API\JobOfferReservationController::class, 'store']);
+        Route::get('/active', [\App\Http\Controllers\API\JobOfferReservationController::class, 'active']);
+        Route::get('/{id}', [\App\Http\Controllers\API\JobOfferReservationController::class, 'show']);
+        Route::post('/{id}/confirm', [\App\Http\Controllers\API\JobOfferReservationController::class, 'confirm']);
+        Route::post('/{id}/cancel', [\App\Http\Controllers\API\JobOfferReservationController::class, 'cancel']);
+        Route::post('/{id}/mark-paid', [\App\Http\Controllers\API\JobOfferReservationController::class, 'markAsPaid']);
+    });
+
+    // Visa Process (15 states workflow)
+    Route::prefix('visa-process')->group(function () {
+        Route::get('/application/{applicationId}', [\App\Http\Controllers\API\VisaProcessController::class, 'byApplication']);
+        Route::get('/stats', [\App\Http\Controllers\API\VisaProcessController::class, 'stats']);
+        Route::get('/{id}/timeline', [\App\Http\Controllers\API\VisaProcessController::class, 'timeline']);
+        Route::get('/{id}/history', [\App\Http\Controllers\API\VisaProcessController::class, 'history']);
+        Route::get('/{id}/appointment', [\App\Http\Controllers\API\VisaProcessController::class, 'appointment']);
+        Route::get('/{id}/payments', [\App\Http\Controllers\API\VisaProcessController::class, 'payments']);
+        Route::get('/{id}/documents', [\App\Http\Controllers\API\VisaProcessController::class, 'documents']);
+    });
+
     // Admin Routes
     Route::middleware('role:admin')->group(function () {
         // User Management

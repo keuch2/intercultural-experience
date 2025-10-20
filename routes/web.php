@@ -302,4 +302,33 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::delete('/assignments/{assignment}', [\App\Http\Controllers\Admin\AdminProgramAssignmentController::class, 'destroy'])->name('admin.assignments.destroy');
         Route::post('/assignments/bulk-assign', [\App\Http\Controllers\Admin\AdminProgramAssignmentController::class, 'bulkAssign'])->name('admin.assignments.bulk-assign');
         Route::get('/assignments/stats', [\App\Http\Controllers\Admin\AdminProgramAssignmentController::class, 'getStats'])->name('admin.assignments.stats');
+
+        // ========================================
+        // NEW CRITICAL MODULES - AUDIT PHASE 2-3
+        // ========================================
+        
+        // Sponsors Management
+        Route::resource('sponsors', \App\Http\Controllers\Admin\SponsorController::class)->names([
+            'index' => 'admin.sponsors.index',
+            'create' => 'admin.sponsors.create',
+            'store' => 'admin.sponsors.store',
+            'show' => 'admin.sponsors.show',
+            'edit' => 'admin.sponsors.edit',
+            'update' => 'admin.sponsors.update',
+            'destroy' => 'admin.sponsors.destroy',
+        ]);
+        Route::post('/sponsors/{sponsor}/toggle-status', [\App\Http\Controllers\Admin\SponsorController::class, 'toggleStatus'])->name('admin.sponsors.toggle-status');
+
+        // Host Companies Management
+        Route::resource('host-companies', \App\Http\Controllers\Admin\HostCompanyController::class)->names([
+            'index' => 'admin.host-companies.index',
+            'create' => 'admin.host-companies.create',
+            'store' => 'admin.host-companies.store',
+            'show' => 'admin.host-companies.show',
+            'edit' => 'admin.host-companies.edit',
+            'update' => 'admin.host-companies.update',
+            'destroy' => 'admin.host-companies.destroy',
+        ]);
+        Route::post('/host-companies/{company}/toggle-status', [\App\Http\Controllers\Admin\HostCompanyController::class, 'toggleStatus'])->name('admin.host-companies.toggle-status');
+        Route::post('/host-companies/{company}/update-rating', [\App\Http\Controllers\Admin\HostCompanyController::class, 'updateRating'])->name('admin.host-companies.update-rating');
     });
