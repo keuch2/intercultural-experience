@@ -17,7 +17,11 @@ class User extends Authenticatable
         'name', 'email', 'password', 'role', 'role_id', 'phone', 'nationality', 
         'birth_date', 'address', 'bank_info', 'email_verified_at',
         'city', 'country', 'academic_level', 'english_level', 'profile_photo',
-        'created_by_agent_id', 'bio', 'avatar'
+        'created_by_agent_id', 'bio', 'avatar',
+        // Health fields
+        'medical_conditions', 'allergies', 'medications', 'health_insurance',
+        'health_insurance_number', 'blood_type', 'emergency_medical_contact',
+        'emergency_medical_phone'
     ];
 
     protected $casts = [
@@ -333,5 +337,37 @@ class User extends Authenticatable
                 ->take($historyCount - 3)
                 ->delete();
         }
+    }
+
+    /**
+     * Get emergency contacts for the user
+     */
+    public function emergencyContacts()
+    {
+        return $this->hasMany(EmergencyContact::class);
+    }
+
+    /**
+     * Get primary emergency contact
+     */
+    public function primaryEmergencyContact()
+    {
+        return $this->hasOne(EmergencyContact::class)->where('is_primary', true);
+    }
+
+    /**
+     * Get work experiences for the user
+     */
+    public function workExperiences()
+    {
+        return $this->hasMany(WorkExperience::class)->orderBy('start_date', 'desc');
+    }
+
+    /**
+     * Get current work experience
+     */
+    public function currentWorkExperience()
+    {
+        return $this->hasOne(WorkExperience::class)->where('is_current', true);
     }
 }
