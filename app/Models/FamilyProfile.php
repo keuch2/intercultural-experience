@@ -56,11 +56,11 @@ class FamilyProfile extends Model
     }
 
     /**
-     * Get the confirmed match.
+     * Get the confirmed match relationship.
      */
     public function confirmedMatch()
     {
-        return $this->matches()->where('is_matched', true)->first();
+        return $this->hasOne(AuPairMatch::class)->where('is_matched', true);
     }
 
     /**
