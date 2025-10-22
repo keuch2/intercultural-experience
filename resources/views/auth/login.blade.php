@@ -33,11 +33,25 @@
             text-align: center;
             margin-bottom: 25px;
         }
+        .brand-logo img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            object-fit: contain;
+        }
         .brand-name {
             font-size: 1.8rem;
             color: #3490dc;
             font-weight: 700;
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        .brand-name img {
+            width: 50px;
+            height: 50px;
         }
         .brand-tagline {
             color: #666;
@@ -67,8 +81,10 @@
                     <div class="login-card">
                         <div class="login-body">
                             <div class="brand-logo">
-                                <i class="fas fa-globe-americas fa-4x text-primary"></i>
-                                <h1 class="brand-name">Intercultural Experience</h1>
+                                <h1 class="brand-name">
+                                    <img src="{{ asset('images/ie-icon.png') }}" alt="IE Logo">
+                                    <span>Intercultural Experience</span>
+                                </h1>
                                 <p class="brand-tagline">Panel Administrativo</p>
                             </div>
                             

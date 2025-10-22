@@ -18,6 +18,17 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     
     <style>
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        .navbar-brand img {
+            width: 35px;
+            height: 35px;
+            object-fit: contain;
+        }
         .sidebar {
             min-height: calc(100vh - 56px);
             background-color: #343a40;
@@ -82,7 +93,8 @@
         <nav class="navbar navbar-expand-md navbar-dark bg-dark shadow-sm">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ url('/admin') }}">
-                    <i class="fas fa-globe-americas me-2"></i>{{ config('app.name', 'Experiencia Intercultural') }}
+                    <img src="{{ asset('images/ie-icon.png') }}" alt="IE Logo">
+                    <span>{{ config('app.name', 'Experiencia Intercultural') }}</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
