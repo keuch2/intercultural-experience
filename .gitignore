@@ -22,3 +22,9 @@ yarn-error.log
 /.vscode
 /.zed
 Archive.zip
+
+# Archivos .md en la carpeta principal
+/*.md
+
+# Carpeta IE-FORMS
+/IE-FORMS/
