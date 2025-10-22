@@ -135,6 +135,7 @@
                 <!-- Sidebar -->
                 <div class="col-md-3 col-lg-2 px-0 sidebar">
                     <div class="position-sticky pt-3">
+                        @if(Auth::user()->role != 'finance')
                         <div class="sidebar-heading">
                             Principal
                         </div>
@@ -166,7 +167,9 @@
                                 </a>
                             </li>
                         </ul>
+                        @endif
                         
+                        @if(Auth::user()->role != 'finance')
                         <div class="sidebar-heading">
                             Au Pair Program
                         </div>
@@ -479,6 +482,7 @@
                                 </a>
                             </li>
                         </ul>
+                        @endif
                         
                         <div class="sidebar-heading">
                             Facturación
@@ -491,6 +495,7 @@
                             </li>
                         </ul>
                         
+                        @if(Auth::user()->role != 'finance')
                         <div class="sidebar-heading">
                             Herramientas
                         </div>
@@ -506,11 +511,13 @@
                                 </a>
                             </li>
                         </ul>
+                        @endif
                         
                         <div class="sidebar-heading">
                             Configuración
                         </div>
                         <ul class="nav flex-column">
+                            @if(Auth::user()->role != 'finance')
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->is('admin/settings/general*') ? 'active' : '' }}" href="{{ url('/admin/settings/general') }}">
                                     <i class="fas fa-cogs"></i> General
@@ -521,6 +528,7 @@
                                     <i class="fab fa-whatsapp text-success"></i> WhatsApp
                                 </a>
                             </li>
+                            @endif
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->is('admin/currencies*') ? 'active' : '' }}" href="{{ url('/admin/currencies') }}">
                                     <i class="fas fa-dollar-sign"></i> Valores (Monedas)
@@ -549,6 +557,7 @@
                             </li>
                         </ul>
                         
+                        @if(Auth::user()->role != 'finance')
                         <div class="sidebar-heading">
                             Soporte
                         </div>
@@ -606,6 +615,7 @@
                                 </a>
                             </li>
                         </ul>
+                        @endif
                     </div>
                 </div>
                 

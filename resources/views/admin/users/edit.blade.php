@@ -144,6 +144,8 @@
                                         id="role" name="role" required>
                                     <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>Participante</option>
                                     <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Administrador</option>
+                                    <option value="agent" {{ old('role', $user->role) == 'agent' ? 'selected' : '' }}>Agente</option>
+                                    <option value="finance" {{ old('role', $user->role) == 'finance' ? 'selected' : '' }}>Finanzas</option>
                                 </select>
                                 @error('role')
                                     <div class="invalid-feedback">{{ $message }}</div>
