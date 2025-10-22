@@ -15,6 +15,7 @@ class EnglishEvaluation extends Model
         'score',
         'attempt_number',
         'evaluated_at',
+        'evaluated_by',
         'notes',
     ];
 

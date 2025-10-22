@@ -156,27 +156,178 @@
                         </ul>
                         
                         <div class="sidebar-heading">
-                            Programas IE
+                            Au Pair Program
                         </div>
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/ie-programs*') ? 'active' : '' }}" href="{{ route('admin.ie-programs.index') }}">
-                                    <i class="fas fa-graduation-cap"></i> Programas IE
+                                <a class="nav-link {{ request()->is('admin/au-pair/dashboard*') ? 'active' : '' }}" href="{{ route('admin.au-pair.dashboard') }}">
+                                    <i class="fas fa-chart-pie"></i> Dashboard
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/applications*') && request()->input('program_type') == 'IE' ? 'active' : '' }}" href="{{ route('admin.applications.index', ['program_type' => 'IE']) }}">
-                                    <i class="fas fa-file-alt"></i> Solicitudes IE
+                                <a class="nav-link {{ request()->is('admin/au-pair/profiles*') ? 'active' : '' }}" href="{{ route('admin.au-pair.profiles') }}">
+                                    <i class="fas fa-user-circle"></i> Perfiles Au Pair
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/documents*') && request()->input('program_type') == 'IE' ? 'active' : '' }}" href="{{ route('admin.documents.index', ['program_type' => 'IE']) }}">
-                                    <i class="fas fa-folder-open"></i> Documentos IE
+                                <a class="nav-link {{ request()->is('admin/au-pair/families*') ? 'active' : '' }}" href="{{ route('admin.au-pair.families') }}">
+                                    <i class="fas fa-home"></i> Familias Host
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/participants*') && request()->input('program_category') == 'IE' ? 'active' : '' }}" href="{{ route('admin.participants.index', ['program_category' => 'IE']) }}">
-                                    <i class="fas fa-users"></i> Participantes IE
+                                <a class="nav-link {{ request()->is('admin/au-pair/matching*') ? 'active' : '' }}" href="{{ route('admin.au-pair.matching') }}">
+                                    <i class="fas fa-heart"></i> Sistema de Matching
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            Teachers Program
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/teachers/dashboard*') ? 'active' : '' }}" href="{{ route('admin.teachers.dashboard') }}">
+                                    <i class="fas fa-chalkboard-teacher"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/teachers/validations*') ? 'active' : '' }}" href="{{ route('admin.teachers.validations') }}">
+                                    <i class="fas fa-user-check"></i> Validaciones MEC
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/teachers/schools*') ? 'active' : '' }}" href="{{ route('admin.teachers.schools') }}">
+                                    <i class="fas fa-school"></i> Escuelas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/teachers/job-fairs*') ? 'active' : '' }}" href="{{ route('admin.teachers.job-fairs') }}">
+                                    <i class="fas fa-calendar-check"></i> Job Fairs
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            Work & Travel
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/work-travel/dashboard*') ? 'active' : '' }}" href="{{ route('admin.work-travel.dashboard') }}">
+                                    <i class="fas fa-chart-pie"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/work-travel/validations*') ? 'active' : '' }}" href="{{ route('admin.work-travel.validations') }}">
+                                    <i class="fas fa-user-graduate"></i> Validaciones
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/work-travel/employers*') ? 'active' : '' }}" href="{{ route('admin.work-travel.employers') }}">
+                                    <i class="fas fa-building"></i> Empleadores
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/work-travel/contracts*') ? 'active' : '' }}" href="{{ route('admin.work-travel.contracts') }}">
+                                    <i class="fas fa-file-contract"></i> Contratos
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            Intern/Trainee Program
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/intern-trainee/dashboard*') ? 'active' : '' }}" href="{{ route('admin.intern-trainee.dashboard') }}">
+                                    <i class="fas fa-chart-line"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/intern-trainee/validations*') ? 'active' : '' }}" href="{{ route('admin.intern-trainee.validations') }}">
+                                    <i class="fas fa-check-circle"></i> Validaciones
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/intern-trainee/companies*') ? 'active' : '' }}" href="{{ route('admin.intern-trainee.companies') }}">
+                                    <i class="fas fa-building"></i> Empresas Host
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/intern-trainee/training-plans*') ? 'active' : '' }}" href="{{ route('admin.intern-trainee.plans') }}">
+                                    <i class="fas fa-clipboard-list"></i> Training Plans
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            Higher Education
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/higher-education/dashboard*') ? 'active' : '' }}" href="{{ route('admin.higher-education.dashboard') }}">
+                                    <i class="fas fa-university"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/higher-education/universities*') ? 'active' : '' }}" href="{{ route('admin.higher-education.universities') }}">
+                                    <i class="fas fa-graduation-cap"></i> Universidades
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/higher-education/applications*') ? 'active' : '' }}" href="{{ route('admin.higher-education.applications') }}">
+                                    <i class="fas fa-file-alt"></i> Aplicaciones
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/higher-education/scholarships*') ? 'active' : '' }}" href="{{ route('admin.higher-education.scholarships') }}">
+                                    <i class="fas fa-award"></i> Becas
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            Work & Study
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/work-study/dashboard*') ? 'active' : '' }}" href="{{ route('admin.work-study.dashboard') }}">
+                                    <i class="fas fa-book-open"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/work-study/programs*') ? 'active' : '' }}" href="{{ route('admin.work-study.programs') }}">
+                                    <i class="fas fa-list"></i> Programas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/work-study/employers*') ? 'active' : '' }}" href="{{ route('admin.work-study.employers') }}">
+                                    <i class="fas fa-briefcase"></i> Empleadores
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/work-study/placements*') ? 'active' : '' }}" href="{{ route('admin.work-study.placements') }}">
+                                    <i class="fas fa-map-marked-alt"></i> Colocaciones
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            Language Program
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/language-program/dashboard*') ? 'active' : '' }}" href="{{ route('admin.language-program.dashboard') }}">
+                                    <i class="fas fa-language"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/language-program/programs*') ? 'active' : '' }}" href="{{ route('admin.language-program.programs') }}">
+                                    <i class="fas fa-book"></i> Programas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/language-program/schools*') ? 'active' : '' }}" href="{{ route('admin.language-program.schools') }}">
+                                    <i class="fas fa-school"></i> Escuelas
                                 </a>
                             </li>
                         </ul>
@@ -250,22 +401,69 @@
                         </ul>
                         
                         <div class="sidebar-heading">
-                            Work & Travel
+                            Proceso de Visa
                         </div>
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/sponsors*') ? 'active' : '' }}" href="{{ route('admin.sponsors.index') }}">
-                                    <i class="fas fa-handshake"></i> Sponsors
+                                <a class="nav-link {{ request()->is('admin/visa/dashboard*') ? 'active' : '' }}" href="{{ route('admin.visa.dashboard') }}">
+                                    <i class="fas fa-chart-line"></i> Dashboard Visa
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/host-companies*') ? 'active' : '' }}" href="{{ route('admin.host-companies.index') }}">
-                                    <i class="fas fa-building"></i> Empresas Host
+                                <a class="nav-link {{ request()->is('admin/visa') && !request()->is('admin/visa/dashboard*') && !request()->is('admin/visa/calendar*') ? 'active' : '' }}" href="{{ route('admin.visa.index') }}">
+                                    <i class="fas fa-list"></i> Todos los Procesos
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/job-offers*') ? 'active' : '' }}" href="{{ route('admin.job-offers.index') }}">
-                                    <i class="fas fa-briefcase"></i> Ofertas Laborales
+                                <a class="nav-link {{ request()->is('admin/visa/calendar*') ? 'active' : '' }}" href="{{ route('admin.visa.calendar') }}">
+                                    <i class="fas fa-calendar-alt"></i> Calendario de Citas
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            Evaluación de Inglés
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/english-evaluations/dashboard*') ? 'active' : '' }}" href="{{ route('admin.english-evaluations.dashboard') }}">
+                                    <i class="fas fa-chart-bar"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/english-evaluations') && !request()->is('admin/english-evaluations/dashboard*') && !request()->is('admin/english-evaluations/create*') ? 'active' : '' }}" href="{{ route('admin.english-evaluations.index') }}">
+                                    <i class="fas fa-list"></i> Todas las Evaluaciones
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/english-evaluations/create*') ? 'active' : '' }}" href="{{ route('admin.english-evaluations.create') }}">
+                                    <i class="fas fa-plus-circle"></i> Nueva Evaluación
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="sidebar-heading">
+                            Comunicaciones
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/communications') && !request()->is('admin/communications/*') ? 'active' : '' }}" href="{{ route('admin.communications.index') }}">
+                                    <i class="fas fa-envelope"></i> Todas las Comunicaciones
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/communications/create*') ? 'active' : '' }}" href="{{ route('admin.communications.create') }}">
+                                    <i class="fas fa-paper-plane"></i> Enviar Email Masivo
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/communications/templates*') ? 'active' : '' }}" href="{{ route('admin.communications.templates') }}">
+                                    <i class="fas fa-file-alt"></i> Templates
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/communications/history*') ? 'active' : '' }}" href="{{ route('admin.communications.history') }}">
+                                    <i class="fas fa-history"></i> Historial
                                 </a>
                             </li>
                         </ul>

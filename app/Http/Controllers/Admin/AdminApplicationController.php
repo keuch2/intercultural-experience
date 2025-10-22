@@ -198,4 +198,108 @@ class AdminApplicationController extends Controller
         return redirect()->route('admin.applications.index')
             ->with('info', 'La funcionalidad de exportación estará disponible próximamente.');
     }
+
+    /**
+     * Show timeline for specific application
+     */
+    public function timeline($id)
+    {
+        $application = Application::with(['user', 'program', 'documents', 'statusHistory'])
+            ->findOrFail($id);
+
+        // Define workflow steps
+        $steps = [
+            ['key' => 'draft', 'label' => 'Borrador', 'icon' => 'fa-file-alt', 'color' => 'secondary'],
+            ['key' => 'submitted', 'label' => 'Enviada', 'icon' => 'fa-paper-plane', 'color' => 'info'],
+            ['key' => 'under_review', 'label' => 'En Revisión', 'icon' => 'fa-search', 'color' => 'warning'],
+            ['key' => 'documents_pending', 'label' => 'Documentos Pendientes', 'icon' => 'fa-file-upload', 'color' => 'warning'],
+            ['key' => 'interview_scheduled', 'label' => 'Entrevista Programada', 'icon' => 'fa-calendar-check', 'color' => 'info'],
+            ['key' => 'interview_completed', 'label' => 'Entrevista Completada', 'icon' => 'fa-check-circle', 'color' => 'success'],
+            ['key' => 'approved', 'label' => 'Aprobada', 'icon' => 'fa-thumbs-up', 'color' => 'success'],
+            ['key' => 'rejected', 'label' => 'Rechazada', 'icon' => 'fa-times-circle', 'color' => 'danger'],
+        ];
+
+        // Calculate progress
+        $currentStepIndex = array_search($application->status, array_column($steps, 'key'));
+        $progress = $currentStepIndex !== false ? (($currentStepIndex + 1) / count($steps)) * 100 : 0;
+
+        // Days in current status
+        $daysInStatus = $application->updated_at->diffInDays(now());
+
+        return view('admin.applications.timeline', compact('application', 'steps', 'progress', 'daysInStatus'));
+    }
+
+    /**
+     * Update application status
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:draft,submitted,under_review,documents_pending,interview_scheduled,interview_completed,approved,rejected',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $application = Application::findOrFail($id);
+        $oldStatus = $application->status;
+
+        $application->update([
+            'status' => $request->status,
+            'status_notes' => $request->notes,
+        ]);
+
+        // Log status change
+        \DB::table('application_status_history')->insert([
+            'application_id' => $application->id,
+            'old_status' => $oldStatus,
+            'new_status' => $request->status,
+            'changed_by' => auth()->id(),
+            'notes' => $request->notes,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Estado actualizado exitosamente.');
+    }
+
+    /**
+     * Dashboard showing applications timeline overview
+     */
+    public function timelineDashboard()
+    {
+        // Count by status
+        $statusCounts = Application::select('status', \DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        // Applications stuck in status > 7 days
+        $stuckApplications = Application::with(['user', 'program'])
+            ->where('updated_at', '<', now()->subDays(7))
+            ->whereNotIn('status', ['approved', 'rejected'])
+            ->orderBy('updated_at', 'asc')
+            ->limit(10)
+            ->get();
+
+        // Recent status changes
+        $recentChanges = \DB::table('application_status_history')
+            ->join('applications', 'application_status_history.application_id', '=', 'applications.id')
+            ->join('users', 'applications.user_id', '=', 'users.id')
+            ->select('application_status_history.*', 'users.name as user_name', 'applications.id as app_id')
+            ->orderBy('application_status_history.created_at', 'desc')
+            ->limit(15)
+            ->get();
+
+        // Average time per status
+        $avgTimeByStatus = \DB::table('application_status_history')
+            ->select('new_status', \DB::raw('AVG(TIMESTAMPDIFF(DAY, created_at, updated_at)) as avg_days'))
+            ->groupBy('new_status')
+            ->get();
+
+        return view('admin.applications.timeline-dashboard', compact(
+            'statusCounts',
+            'stuckApplications',
+            'recentChanges',
+            'avgTimeByStatus'
+        ));
+    }
 }

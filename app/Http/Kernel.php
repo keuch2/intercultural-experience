@@ -47,6 +47,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'role' => \App\Http\Middleware\CheckRole::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'finance' => \App\Http\Middleware\FinanceMiddleware::class,
         'activity.log' => \App\Http\Middleware\ActivityLogger::class,
         'validate.json' => \App\Http\Middleware\ValidateJsonInput::class,
     ];

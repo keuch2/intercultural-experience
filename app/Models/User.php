@@ -21,12 +21,37 @@ class User extends Authenticatable
         // Health fields
         'medical_conditions', 'allergies', 'medications', 'health_insurance',
         'health_insurance_number', 'blood_type', 'emergency_medical_contact',
-        'emergency_medical_phone'
+        'emergency_medical_phone',
+        // New fields from migration
+        'ci_number', 'passport_number', 'passport_expiry', 'marital_status',
+        'skype', 'instagram', 'university', 'career', 'academic_year',
+        'study_modality', 'current_job', 'job_position', 'work_address',
+        'has_been_to_usa', 'usa_times', 'has_relatives_in_usa',
+        'relatives_in_usa_location', 'previous_visa_type', 'visa_denied',
+        'entry_denied', 'visa_denial_reason', 'smoker', 'has_drivers_license',
+        'driving_years', 'can_swim', 'first_aid_certified', 'cpr_certified',
+        'mec_registration', 'teaching_degree', 'teaching_years',
+        'program_expectations', 'hobbies', 'gender', 'date_of_birth'
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
         'birth_date' => 'date',
+        'passport_expiry' => 'date',
+        'date_of_birth' => 'date',
+        'hobbies' => 'array',
+        'has_been_to_usa' => 'boolean',
+        'has_relatives_in_usa' => 'boolean',
+        'visa_denied' => 'boolean',
+        'entry_denied' => 'boolean',
+        'smoker' => 'boolean',
+        'has_drivers_license' => 'boolean',
+        'can_swim' => 'boolean',
+        'first_aid_certified' => 'boolean',
+        'cpr_certified' => 'boolean',
+        'usa_times' => 'integer',
+        'driving_years' => 'integer',
+        'teaching_years' => 'integer',
     ];
 
     protected $hidden = [
@@ -369,5 +394,101 @@ class User extends Authenticatable
     public function currentWorkExperience()
     {
         return $this->hasOne(WorkExperience::class)->where('is_current', true);
+    }
+    
+    /**
+     * Get visa process for the user
+     */
+    public function visaProcess()
+    {
+        return $this->hasOne(VisaProcess::class);
+    }
+
+    /**
+     * Get health declaration for the user
+     */
+    public function healthDeclaration()
+    {
+        return $this->hasOne(HealthDeclaration::class)->latest();
+    }
+
+    /**
+     * Get childcare experiences for the user
+     */
+    public function childcareExperiences()
+    {
+        return $this->hasMany(ChildcareExperience::class);
+    }
+
+    /**
+     * Get references for the user
+     */
+    public function references()
+    {
+        return $this->hasMany(Reference::class);
+    }
+
+    /**
+     * Get Au Pair profile for the user
+     */
+    public function auPairProfile()
+    {
+        return $this->hasOne(AuPairProfile::class);
+    }
+
+    /**
+     * Get teacher certifications for the user
+     */
+    public function teacherCertifications()
+    {
+        return $this->hasMany(TeacherCertification::class);
+    }
+
+    /**
+     * Get detailed work experiences for the user
+     */
+    public function workExperiencesDetailed()
+    {
+        return $this->hasMany(WorkExperienceDetailed::class);
+    }
+
+    /**
+     * Get user's age from birth_date or date_of_birth
+     */
+    public function getAgeAttribute()
+    {
+        $birthDate = $this->date_of_birth ?? $this->birth_date;
+        
+        if (!$birthDate) {
+            return null;
+        }
+
+        return $birthDate->age;
+    }
+
+    /**
+     * Check if user is eligible for Au Pair
+     */
+    public function isEligibleForAuPair()
+    {
+        $age = $this->age;
+        
+        if (!$age) {
+            return false;
+        }
+
+        // Au Pair age requirements: 18-26 years old
+        return $age >= 18 && $age <= 26;
+    }
+
+    /**
+     * Check if user has complete Au Pair requirements
+     */
+    public function hasCompleteAuPairRequirements()
+    {
+        return $this->childcareExperiences()->count() > 0
+            && $this->references()->count() >= 3
+            && $this->healthDeclaration !== null
+            && $this->emergencyContacts()->count() >= 2;
     }
 }

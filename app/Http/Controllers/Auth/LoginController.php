@@ -56,6 +56,10 @@ class LoginController extends Controller
             return '/admin';
         }
         
+        if ($user->role === 'finance') {
+            return '/finance/dashboard';
+        }
+        
         // Regular users should not access web panel
         auth()->logout();
         return redirect()->route('login')->with('error', 'Acceso no autorizado. Use la aplicación móvil.');

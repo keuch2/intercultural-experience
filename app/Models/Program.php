@@ -70,6 +70,37 @@ class Program extends Model
         return $this->belongsTo(Institution::class);
     }
 
+    /**
+     * Relación many-to-many con Countries (múltiples destinos)
+     */
+    public function countries()
+    {
+        return $this->belongsToMany(Country::class, 'program_country')
+            ->withPivot(['is_primary', 'display_order', 'specific_locations'])
+            ->withTimestamps()
+            ->orderBy('program_country.display_order');
+    }
+
+    /**
+     * Obtener solo el país principal del programa
+     */
+    public function primaryCountry()
+    {
+        return $this->belongsToMany(Country::class, 'program_country')
+            ->wherePivot('is_primary', true)
+            ->withPivot(['is_primary', 'display_order', 'specific_locations'])
+            ->withTimestamps()
+            ->first();
+    }
+
+    /**
+     * Obtener países activos del programa
+     */
+    public function activeCountries()
+    {
+        return $this->countries()->where('countries.is_active', true);
+    }
+
     public function forms()
     {
         return $this->hasMany(ProgramForm::class);

@@ -18,37 +18,97 @@ class AdminParticipantController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::where('role', 'user');
+        $query = User::where('role', 'user')->with(['applications.program', 'englishEvaluations']);
         
         // Filtrar por categoría de programa (IE o YFU)
-        if ($request->has('program_category') && $request->input('program_category') != '') {
-            $category = $request->input('program_category');
+        if ($request->filled('program_category')) {
+            $category = $request->program_category;
             $query->whereHas('applications.program', function($q) use ($category) {
                 $q->where('main_category', $category);
             });
         }
         
-        // Aplicar filtros si existen
-        if ($request->has('search')) {
-            $search = $request->input('search');
+        // Búsqueda general
+        if ($request->filled('search')) {
+            $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
                   ->orWhere('city', 'like', "%{$search}%")
-                  ->orWhere('country', 'like', "%{$search}%");
+                  ->orWhere('country', 'like', "%{$search}%")
+                  ->orWhere('nationality', 'like', "%{$search}%");
             });
         }
         
-        if ($request->has('country') && $request->input('country') != '') {
-            $query->where('country', 'like', "%{$request->input('country')}%");
+        // Filtro por país
+        if ($request->filled('country')) {
+            $query->where('country', 'like', "%{$request->country}%");
         }
         
-        $participants = $query->orderBy('created_at', 'desc')->paginate(15);
+        // Filtro por ciudad
+        if ($request->filled('city')) {
+            $query->where('city', 'like', "%{$request->city}%");
+        }
         
-        // Pasar la categoría a la vista para mostrar el título correcto
-        $programCategory = $request->input('program_category');
+        // Filtro por programa específico
+        if ($request->filled('program_id')) {
+            $query->whereHas('applications', function($q) use ($request) {
+                $q->where('program_id', $request->program_id);
+            });
+        }
         
-        return view('admin.participants.index', compact('participants', 'programCategory'));
+        // Filtro por estado de aplicación
+        if ($request->filled('application_status')) {
+            $query->whereHas('applications', function($q) use ($request) {
+                $q->where('status', $request->application_status);
+            });
+        }
+        
+        // Filtro por nivel de inglés
+        if ($request->filled('english_level')) {
+            $query->whereHas('englishEvaluations', function($q) use ($request) {
+                $q->where('cefr_level', $request->english_level)
+                  ->whereRaw('id IN (SELECT MAX(id) FROM english_evaluations GROUP BY user_id)');
+            });
+        }
+        
+        // Filtro por género
+        if ($request->filled('gender')) {
+            $query->where('gender', $request->gender);
+        }
+        
+        // Filtro por rango de edad
+        if ($request->filled('age_from')) {
+            $query->whereRaw('TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= ?', [$request->age_from]);
+        }
+        if ($request->filled('age_to')) {
+            $query->whereRaw('TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) <= ?', [$request->age_to]);
+        }
+        
+        // Filtro por fecha de registro
+        if ($request->filled('registered_from')) {
+            $query->whereDate('created_at', '>=', $request->registered_from);
+        }
+        if ($request->filled('registered_to')) {
+            $query->whereDate('created_at', '<=', $request->registered_to);
+        }
+        
+        // Ordenamiento
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+        
+        $participants = $query->paginate(15)->appends($request->except('page'));
+        
+        // Datos para filtros
+        $programs = Program::select('id', 'name', 'main_category')->orderBy('name')->get();
+        $countries = User::where('role', 'user')->distinct()->pluck('country')->filter()->sort()->values();
+        $cities = User::where('role', 'user')->distinct()->pluck('city')->filter()->sort()->values();
+        
+        $programCategory = $request->program_category;
+        
+        return view('admin.participants.index', compact('participants', 'programCategory', 'programs', 'countries', 'cities'));
     }
 
     /**
@@ -121,9 +181,27 @@ class AdminParticipantController extends Controller
             abort(404);
         }
         
-        $participant->load(['applications.program', 'points', 'supportTickets']);
+        // Cargar todas las relaciones necesarias incluyendo las nuevas
+        $participant->load([
+            'applications.program',
+            'points',
+            'supportTickets',
+            'emergencyContacts',
+            'workExperiences'
+        ]);
         
-        return view('admin.participants.show', compact('participant'));
+        // Calcular estadísticas de aplicaciones
+        $applicationStats = [
+            'total' => $participant->applications->count(),
+            'pending' => $participant->applications->where('status', 'pending')->count(),
+            'approved' => $participant->applications->where('status', 'approved')->count(),
+            'rejected' => $participant->applications->where('status', 'rejected')->count(),
+        ];
+        
+        // Calcular total de puntos
+        $totalPoints = $participant->points->sum('points');
+        
+        return view('admin.participants.show', compact('participant', 'applicationStats', 'totalPoints'));
     }
 
     /**
@@ -142,8 +220,12 @@ class AdminParticipantController extends Controller
             ->orderBy('name')
             ->get();
         
-        // Cargar aplicaciones del participante
-        $participant->load('applications.program');
+        // Cargar relaciones incluyendo las nuevas
+        $participant->load([
+            'applications.program',
+            'emergencyContacts',
+            'workExperiences'
+        ]);
         
         return view('admin.participants.edit', compact('participant', 'programs'));
     }
@@ -167,9 +249,19 @@ class AdminParticipantController extends Controller
             'address' => ['nullable', 'string'],
             'city' => ['nullable', 'string', 'max:255'],
             'country' => ['nullable', 'string', 'max:255'],
-            'academic_level' => ['nullable', 'in:bachiller,licenciatura,maestria,posgrado,doctorado'],
-            'english_level' => ['nullable', 'in:basico,intermedio,avanzado,nativo'],
+            'academic_level' => ['nullable', 'in:bachiller,licenciatura,maestria,posgrado,doctorado,high_school,bachelor,master,phd'],
+            'english_level' => ['nullable', 'in:basico,intermedio,avanzado,nativo,A1,A2,B1,B1+,B2,C1,C2'],
+            'bio' => ['nullable', 'string'],
             'program_id' => ['nullable', 'exists:programs,id'],
+            // Campos de salud
+            'blood_type' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
+            'health_insurance' => ['nullable', 'string', 'max:100'],
+            'health_insurance_number' => ['nullable', 'string', 'max:100'],
+            'medical_conditions' => ['nullable', 'string'],
+            'allergies' => ['nullable', 'string'],
+            'medications' => ['nullable', 'string'],
+            'emergency_medical_contact' => ['nullable', 'string', 'max:100'],
+            'emergency_medical_phone' => ['nullable', 'string', 'max:50'],
         ];
         
         // Solo validar contraseña si se proporciona
@@ -186,6 +278,7 @@ class AdminParticipantController extends Controller
             $data['password'] = Hash::make($request->password);
         }
         
+        // Actualizar participante con todos los campos incluyendo salud
         $participant->update($data);
         
         // Crear aplicación si se asigna un programa
@@ -205,7 +298,7 @@ class AdminParticipantController extends Controller
             }
         }
         
-        return redirect()->route('admin.participants.index')
+        return redirect()->route('admin.participants.show', $participant->id)
             ->with('success', 'Participante actualizado correctamente.');
     }
 
@@ -223,5 +316,84 @@ class AdminParticipantController extends Controller
         
         return redirect()->route('admin.participants.index')
             ->with('success', 'Participante eliminado correctamente.');
+    }
+
+    /**
+     * Export participants to Excel
+     */
+    public function export(Request $request)
+    {
+        // Aplicar mismos filtros que index
+        $query = User::where('role', 'user')->with(['applications.program', 'englishEvaluations']);
+        
+        if ($request->filled('program_category')) {
+            $query->whereHas('applications.program', function($q) use ($request) {
+                $q->where('main_category', $request->program_category);
+            });
+        }
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+        
+        if ($request->filled('english_level')) {
+            $query->whereHas('englishEvaluations', function($q) use ($request) {
+                $q->where('cefr_level', $request->english_level);
+            });
+        }
+        
+        $participants = $query->get();
+        
+        // Crear archivo CSV
+        $filename = 'participants_' . date('Y-m-d_His') . '.csv';
+        $handle = fopen('php://temp', 'r+');
+        
+        // Headers
+        fputcsv($handle, [
+            'ID',
+            'Nombre',
+            'Email',
+            'Teléfono',
+            'País',
+            'Ciudad',
+            'Género',
+            'Fecha Nacimiento',
+            'Nivel Inglés',
+            'Programas',
+            'Fecha Registro',
+        ]);
+        
+        // Datos
+        foreach ($participants as $participant) {
+            $lastEval = $participant->englishEvaluations->sortByDesc('created_at')->first();
+            $programs = $participant->applications->pluck('program.name')->unique()->join(', ');
+            
+            fputcsv($handle, [
+                $participant->id,
+                $participant->name,
+                $participant->email,
+                $participant->phone,
+                $participant->country,
+                $participant->city,
+                $participant->gender,
+                $participant->date_of_birth ? $participant->date_of_birth->format('Y-m-d') : '',
+                $lastEval ? $lastEval->cefr_level : 'N/A',
+                $programs,
+                $participant->created_at->format('Y-m-d H:i:s'),
+            ]);
+        }
+        
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+        
+        return response($csv, 200)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 }

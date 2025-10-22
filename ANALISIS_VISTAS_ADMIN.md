@@ -199,8 +199,9 @@
 - `edit.blade.php` - Editar (actualizada ayer con tabs)
 - `show.blade.php` - Ver detalle (actualizada ayer con 5 tabs)
 
-**Estado:** ✅ COMPLETO (Mejorado ayer)  
-**Alineación:** Fase 4 completada al 100%
+**Estado:** ✅ COMPLETO (Mejorado ayer, corregido hoy)  
+**Alineación:** Fase 4 completada al 100%  
+**Corrección 21/Oct/2025:** Variable inconsistente `$user` → `$participant` en show.blade.php (ver CORRECCION_VISTAS_PARTICIPANTES.md)
 
 ---
 

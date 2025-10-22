@@ -47,6 +47,11 @@ class DatabaseSeeder extends Seeder
             // NEW: Audit Phase 2-3 Seeders
             SponsorSeeder::class,
             HostCompanySeeder::class,
+            // NEW: Au Pair Module Seeder
+            AuPairSeeder::class,
+            // NEW: Work & Travel and Teachers Module Seeders
+            WorkTravelSeeder::class,
+            TeacherSeeder::class,
         ]);
     }
 }

@@ -9,28 +9,62 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class VisaProcess extends Model
 {
     protected $fillable = [
+        'user_id',
         'application_id',
-        'current_status',
-        'ds160_number',
-        'ds2019_number',
-        'sevis_id',
+        'documentation_complete',
+        'documentation_complete_date',
+        'sponsor_interview_status',
+        'sponsor_interview_date',
+        'sponsor_interview_notes',
+        'job_interview_status',
+        'job_interview_date',
+        'job_interview_notes',
+        'ds160_completed',
+        'ds160_completed_date',
+        'ds160_confirmation_number',
+        'ds160_file_path',
+        'ds2019_received',
+        'ds2019_received_date',
+        'ds2019_file_path',
+        'sevis_paid',
+        'sevis_paid_date',
         'sevis_amount',
-        'sevis_paid_at',
+        'sevis_receipt_path',
+        'consular_fee_paid',
+        'consular_fee_paid_date',
         'consular_fee_amount',
-        'consular_fee_paid_at',
-        'appointment_date',
-        'appointment_location',
-        'interview_result',
-        'rejection_reason',
-        'notes',
+        'consular_fee_receipt_path',
+        'consular_appointment_scheduled',
+        'consular_appointment_date',
+        'consular_appointment_location',
+        'visa_result',
+        'visa_result_date',
+        'visa_result_notes',
+        'passport_file_path',
+        'visa_photo_path',
+        'process_notes',
+        'current_step',
+        'progress_percentage',
     ];
 
     protected $casts = [
+        'documentation_complete' => 'boolean',
+        'documentation_complete_date' => 'date',
+        'sponsor_interview_date' => 'datetime',
+        'job_interview_date' => 'datetime',
+        'ds160_completed' => 'boolean',
+        'ds160_completed_date' => 'date',
+        'ds2019_received' => 'boolean',
+        'ds2019_received_date' => 'date',
+        'sevis_paid' => 'boolean',
+        'sevis_paid_date' => 'date',
         'sevis_amount' => 'decimal:2',
+        'consular_fee_paid' => 'boolean',
+        'consular_fee_paid_date' => 'date',
         'consular_fee_amount' => 'decimal:2',
-        'sevis_paid_at' => 'datetime',
-        'consular_fee_paid_at' => 'datetime',
-        'appointment_date' => 'datetime',
+        'consular_appointment_scheduled' => 'boolean',
+        'consular_appointment_date' => 'datetime',
+        'visa_result_date' => 'date',
     ];
 
     /**
@@ -55,6 +89,14 @@ class VisaProcess extends Model
     ];
 
     /**
+     * Relación con User
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
      * Relación con Application
      */
     public function application(): BelongsTo
@@ -75,7 +117,7 @@ class VisaProcess extends Model
      */
     public function scopeByStatus($query, $status)
     {
-        return $query->where('current_status', $status);
+        return $query->where('current_step', $status);
     }
 
     /**
@@ -83,7 +125,7 @@ class VisaProcess extends Model
      */
     public function scopeApproved($query)
     {
-        return $query->where('current_status', 'visa_approved');
+        return $query->where('visa_result', 'approved');
     }
 
     /**
@@ -91,7 +133,7 @@ class VisaProcess extends Model
      */
     public function scopeRejected($query)
     {
-        return $query->where('current_status', 'visa_rejected');
+        return $query->where('visa_result', 'rejected');
     }
 
     /**
@@ -99,7 +141,7 @@ class VisaProcess extends Model
      */
     public function scopeInProgress($query)
     {
-        return $query->whereNotIn('current_status', ['visa_approved', 'visa_rejected']);
+        return $query->whereNotIn('visa_result', ['approved', 'rejected']);
     }
 
     /**
@@ -107,8 +149,8 @@ class VisaProcess extends Model
      */
     public function scopePendingSevisPayment($query)
     {
-        return $query->where('current_status', 'ds2019_received')
-            ->whereNull('sevis_paid_at');
+        return $query->where('current_step', 'ds2019_received')
+            ->where('sevis_paid', false);
     }
 
     /**
@@ -116,8 +158,8 @@ class VisaProcess extends Model
      */
     public function scopeWithAppointment($query)
     {
-        return $query->where('current_status', 'appointment_scheduled')
-            ->whereNotNull('appointment_date');
+        return $query->where('consular_appointment_scheduled', true)
+            ->whereNotNull('consular_appointment_date');
     }
 
     /**
@@ -129,7 +171,7 @@ class VisaProcess extends Model
             return false;
         }
 
-        $oldStatus = $this->current_status;
+        $oldStatus = $this->current_step;
 
         // Crear registro en el historial
         $this->statusHistory()->create([
@@ -141,7 +183,7 @@ class VisaProcess extends Model
         ]);
 
         // Actualizar el estado actual
-        $this->update(['current_status' => $newStatus]);
+        $this->update(['current_step' => $newStatus]);
 
         return true;
     }
@@ -151,19 +193,19 @@ class VisaProcess extends Model
      */
     public function getProgressPercentage(): int
     {
-        $currentIndex = array_search($this->current_status, self::STATUS_ORDER);
+        $currentIndex = array_search($this->current_step, self::STATUS_ORDER);
         
         if ($currentIndex === false) {
             return 0;
         }
 
         // Visa aprobada = 100%
-        if ($this->current_status === 'visa_approved') {
+        if ($this->visa_result === 'approved') {
             return 100;
         }
 
         // Visa rechazada = 0%
-        if ($this->current_status === 'visa_rejected') {
+        if ($this->visa_result === 'rejected') {
             return 0;
         }
 
@@ -177,7 +219,7 @@ class VisaProcess extends Model
      */
     public function getNextStep(): ?string
     {
-        $currentIndex = array_search($this->current_status, self::STATUS_ORDER);
+        $currentIndex = array_search($this->current_step, self::STATUS_ORDER);
         
         if ($currentIndex === false || $currentIndex >= count(self::STATUS_ORDER) - 1) {
             return null;
@@ -192,20 +234,20 @@ class VisaProcess extends Model
     public function canAdvanceToNextStatus(): bool
     {
         // No puede avanzar si ya está aprobada o rechazada
-        if (in_array($this->current_status, ['visa_approved', 'visa_rejected'])) {
+        if (in_array($this->visa_result, ['approved', 'rejected'])) {
             return false;
         }
 
         // Validaciones específicas por estado
-        switch ($this->current_status) {
+        switch ($this->current_step) {
             case 'ds2019_received':
-                return $this->sevis_paid_at !== null;
+                return $this->sevis_paid === true;
             
             case 'sevis_paid':
-                return $this->consular_fee_paid_at !== null;
+                return $this->consular_fee_paid === true;
             
             case 'consular_fee_paid':
-                return $this->appointment_date !== null;
+                return $this->consular_appointment_scheduled === true;
             
             default:
                 return true;
@@ -219,10 +261,11 @@ class VisaProcess extends Model
     {
         $this->update([
             'sevis_amount' => $amount,
-            'sevis_paid_at' => now(),
+            'sevis_paid' => true,
+            'sevis_paid_date' => now(),
         ]);
 
-        if ($this->current_status === 'ds2019_received') {
+        if ($this->current_step === 'ds2019_received') {
             $this->changeStatus('sevis_paid', auth()->id() ?? 1, 'Pago SEVIS procesado');
         }
     }
@@ -234,10 +277,11 @@ class VisaProcess extends Model
     {
         $this->update([
             'consular_fee_amount' => $amount,
-            'consular_fee_paid_at' => now(),
+            'consular_fee_paid' => true,
+            'consular_fee_paid_date' => now(),
         ]);
 
-        if ($this->current_status === 'sevis_paid') {
+        if ($this->current_step === 'sevis_paid') {
             $this->changeStatus('consular_fee_paid', auth()->id() ?? 1, 'Tasa consular pagada');
         }
     }
@@ -248,11 +292,12 @@ class VisaProcess extends Model
     public function scheduleAppointment(\DateTime $date, string $location): void
     {
         $this->update([
-            'appointment_date' => $date,
-            'appointment_location' => $location,
+            'consular_appointment_date' => $date,
+            'consular_appointment_location' => $location,
+            'consular_appointment_scheduled' => true,
         ]);
 
-        if ($this->current_status === 'consular_fee_paid') {
+        if ($this->current_step === 'consular_fee_paid') {
             $this->changeStatus('appointment_scheduled', auth()->id() ?? 1, "Cita programada para {$date->format('Y-m-d')}");
         }
     }
@@ -262,12 +307,12 @@ class VisaProcess extends Model
      */
     public function getDaysUntilAppointment(): ?int
     {
-        if (!$this->appointment_date) {
+        if (!$this->consular_appointment_date) {
             return null;
         }
 
         $now = now();
-        $appointment = $this->appointment_date;
+        $appointment = $this->consular_appointment_date;
 
         return $now->diffInDays($appointment, false);
     }
@@ -280,8 +325,8 @@ class VisaProcess extends Model
         $timeline = [];
         
         foreach (self::STATUS_ORDER as $status) {
-            $isPast = array_search($status, self::STATUS_ORDER) < array_search($this->current_status, self::STATUS_ORDER);
-            $isCurrent = $status === $this->current_status;
+            $isPast = array_search($status, self::STATUS_ORDER) < array_search($this->current_step, self::STATUS_ORDER);
+            $isCurrent = $status === $this->current_step;
             
             $timeline[] = [
                 'status' => $status,

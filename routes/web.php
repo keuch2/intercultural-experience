@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\AdminProgramRequisiteController;
 use App\Http\Controllers\Admin\AdminUserProgramRequisiteController;
 use App\Http\Controllers\Admin\AdminCurrencyController;
 use App\Http\Controllers\Admin\AdminAgentController;
+use App\Http\Controllers\Admin\AdminVisaController;
 use App\Http\Controllers\Agent\AgentController;
 
 // Redirect root to admin login
@@ -143,17 +144,38 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::post('/applications/{application}/notes', [AdminApplicationController::class, 'storeNote'])->name('admin.applications.notes.store');
         Route::delete('/applications/notes/{note}', [AdminApplicationController::class, 'destroyNote'])->name('admin.applications.notes.destroy');
         Route::get('/applications/export', [AdminApplicationController::class, 'export'])->name('admin.applications.export');
+        Route::get('/applications/timeline-dashboard', [AdminApplicationController::class, 'timelineDashboard'])->name('admin.applications.timeline-dashboard');
+        Route::get('/applications/{application}/timeline', [AdminApplicationController::class, 'timeline'])->name('admin.applications.timeline');
+        Route::put('/applications/{application}/update-status', [AdminApplicationController::class, 'updateStatus'])->name('admin.applications.update-status');
         
         Route::get('/applications/{application}/requisites', [AdminUserProgramRequisiteController::class, 'index'])->name('admin.applications.requisites.index');
         Route::put('/applications/requisites/{requisite}/verify', [AdminUserProgramRequisiteController::class, 'verify'])->name('admin.applications.requisites.verify');
         Route::put('/applications/requisites/{requisite}/reject', [AdminUserProgramRequisiteController::class, 'reject'])->name('admin.applications.requisites.reject');
         Route::put('/applications/requisites/{requisite}/reset', [AdminUserProgramRequisiteController::class, 'reset'])->name('admin.applications.requisites.reset');
         
+        // Participants Management (MVP)
+        Route::resource('participants', \App\Http\Controllers\Admin\ParticipantController::class)->names('admin.participants');
+        Route::put('/participants/{participant}/status', [\App\Http\Controllers\Admin\ParticipantController::class, 'updateStatus'])->name('admin.participants.update-status');
+        Route::get('/participants/{participant}/program-history', [\App\Http\Controllers\Admin\ParticipantController::class, 'programHistory'])->name('admin.participants.program-history');
+        Route::get('/participants/{participant}/program-form/{formType}', [\App\Http\Controllers\Admin\ParticipantController::class, 'getProgramForm'])->name('admin.participants.program-form');
+        
+        // Payments Management
+        Route::post('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'store'])->name('admin.payments.store');
+        Route::post('/payments/{payment}/verify', [\App\Http\Controllers\Admin\PaymentController::class, 'verify'])->name('admin.payments.verify');
+        Route::post('/payments/{payment}/reject', [\App\Http\Controllers\Admin\PaymentController::class, 'reject'])->name('admin.payments.reject');
+        Route::put('/payments/{payment}', [\App\Http\Controllers\Admin\PaymentController::class, 'update'])->name('admin.payments.update');
+        Route::delete('/payments/{payment}', [\App\Http\Controllers\Admin\PaymentController::class, 'destroy'])->name('admin.payments.destroy');
+        
         // Documents Management
         Route::get('/documents', [AdminDocumentController::class, 'index'])->name('admin.documents.index');
+        Route::get('/documents/pending/list', [AdminDocumentController::class, 'pending'])->name('admin.documents.pending');
+        Route::get('/documents/expired/list', [AdminDocumentController::class, 'expired'])->name('admin.documents.expired');
+        Route::get('/documents/{id}/review', [AdminDocumentController::class, 'review'])->name('admin.documents.review');
+        Route::post('/documents/bulk-approve', [AdminDocumentController::class, 'bulkApprove'])->name('admin.documents.bulk-approve');
+        Route::post('/documents/bulk-reject', [AdminDocumentController::class, 'bulkReject'])->name('admin.documents.bulk-reject');
         Route::get('/documents/{document}', [AdminDocumentController::class, 'show'])->name('admin.documents.show');
         Route::post('/documents/{document}/verify', [AdminDocumentController::class, 'verify'])->name('admin.documents.verify');
-        Route::post('/documents/{document}/reject', [AdminDocumentController::class, 'reject'])->name('admin.documents.reject');
+        Route::put('/documents/{document}/reject', [AdminDocumentController::class, 'reject'])->name('admin.documents.reject');
         Route::get('/documents/{document}/download', [AdminDocumentController::class, 'download'])->name('admin.documents.download');
         Route::delete('/documents/{document}', [AdminDocumentController::class, 'destroy'])->name('admin.documents.destroy');
         
@@ -343,4 +365,215 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             'destroy' => 'admin.job-offers.destroy',
         ]);
         Route::post('/job-offers/{offer}/toggle-status', [\App\Http\Controllers\Admin\JobOfferController::class, 'toggleStatus'])->name('admin.job-offers.toggle-status');
+        Route::get('/job-offers-dashboard', [\App\Http\Controllers\Admin\JobOfferController::class, 'dashboard'])->name('admin.job-offers.dashboard');
+        Route::get('/job-offers/{offer}/matching', [\App\Http\Controllers\Admin\JobOfferController::class, 'showMatching'])->name('admin.job-offers.matching');
+        Route::post('/job-offers/{offer}/assign', [\App\Http\Controllers\Admin\JobOfferController::class, 'assignParticipant'])->name('admin.job-offers.assign-participant');
+        Route::get('/job-offers/{offer}/history', [\App\Http\Controllers\Admin\JobOfferController::class, 'reservationHistory'])->name('admin.job-offers.history');
+        Route::put('/job-offers/reservations/{reservation}/update-status', [\App\Http\Controllers\Admin\JobOfferController::class, 'updateReservationStatus'])->name('admin.job-offers.update-reservation');
+        
+        // Visa Process Management
+        Route::prefix('visa')->name('admin.visa.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminVisaController::class, 'dashboard'])->name('dashboard');
+            Route::get('/', [\App\Http\Controllers\Admin\AdminVisaController::class, 'index'])->name('index');
+            Route::get('/timeline/{user}', [\App\Http\Controllers\Admin\AdminVisaController::class, 'timeline'])->name('timeline');
+            Route::post('/timeline/{user}/update', [\App\Http\Controllers\Admin\AdminVisaController::class, 'updateStep'])->name('update-step');
+            Route::get('/calendar', [\App\Http\Controllers\Admin\AdminVisaController::class, 'calendar'])->name('calendar');
+            Route::post('/bulk-update', [\App\Http\Controllers\Admin\AdminVisaController::class, 'bulkUpdate'])->name('bulk-update');
+            Route::post('/{user}/upload', [\App\Http\Controllers\Admin\AdminVisaController::class, 'uploadDocument'])->name('upload');
+            Route::get('/{user}/download/{type}', [\App\Http\Controllers\Admin\AdminVisaController::class, 'downloadDocument'])->name('download');
+        });
+        
+        // English Evaluations Management
+        Route::prefix('english-evaluations')->name('admin.english-evaluations.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\EnglishEvaluationController::class, 'dashboard'])->name('dashboard');
+            Route::get('/', [\App\Http\Controllers\Admin\EnglishEvaluationController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\EnglishEvaluationController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\EnglishEvaluationController::class, 'store'])->name('store');
+            Route::get('/{id}', [\App\Http\Controllers\Admin\EnglishEvaluationController::class, 'show'])->name('show');
+            Route::delete('/{id}', [\App\Http\Controllers\Admin\EnglishEvaluationController::class, 'destroy'])->name('destroy');
+        });
+        
+        // Communications Management
+        Route::prefix('communications')->name('admin.communications.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\CommunicationController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\CommunicationController::class, 'create'])->name('create');
+            Route::post('/send', [\App\Http\Controllers\Admin\CommunicationController::class, 'send'])->name('send');
+            Route::get('/templates', [\App\Http\Controllers\Admin\CommunicationController::class, 'templates'])->name('templates');
+            Route::get('/history', [\App\Http\Controllers\Admin\CommunicationController::class, 'history'])->name('history');
+            Route::get('/get-recipients', [\App\Http\Controllers\Admin\CommunicationController::class, 'getRecipients'])->name('get-recipients');
+        });
+        
+        // Au Pair Management
+        Route::prefix('au-pair')->name('admin.au-pair.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\AuPairController::class, 'dashboard'])->name('dashboard');
+            Route::get('/profiles', [\App\Http\Controllers\Admin\AuPairController::class, 'profiles'])->name('profiles');
+            Route::get('/profiles/{id}', [\App\Http\Controllers\Admin\AuPairController::class, 'profileShow'])->name('profile.show');
+            Route::post('/profiles/{id}/approve', [\App\Http\Controllers\Admin\AuPairController::class, 'approveProfile'])->name('profile.approve');
+            Route::get('/families', [\App\Http\Controllers\Admin\AuPairController::class, 'families'])->name('families');
+            Route::get('/families/create', [\App\Http\Controllers\Admin\AuPairController::class, 'createFamily'])->name('families.create');
+            Route::post('/families', [\App\Http\Controllers\Admin\AuPairController::class, 'storeFamily'])->name('families.store');
+            Route::get('/families/{id}', [\App\Http\Controllers\Admin\AuPairController::class, 'familyShow'])->name('families.show');
+            Route::get('/families/{id}/edit', [\App\Http\Controllers\Admin\AuPairController::class, 'familyEdit'])->name('families.edit');
+            Route::put('/families/{id}', [\App\Http\Controllers\Admin\AuPairController::class, 'familyUpdate'])->name('families.update');
+            Route::get('/matching', [\App\Http\Controllers\Admin\AuPairController::class, 'matching'])->name('matching');
+            Route::post('/matching/suggest', [\App\Http\Controllers\Admin\AuPairController::class, 'suggestMatch'])->name('matching.suggest');
+            Route::post('/matching/{id}/confirm', [\App\Http\Controllers\Admin\AuPairController::class, 'confirmMatch'])->name('matching.confirm');
+            Route::get('/matches/{id}', [\App\Http\Controllers\Admin\AuPairController::class, 'matchShow'])->name('matches.show');
+            Route::get('/childcare/{userId}', [\App\Http\Controllers\Admin\AuPairController::class, 'childcareExperiences'])->name('childcare');
+            Route::post('/childcare/{userId}', [\App\Http\Controllers\Admin\AuPairController::class, 'storeChildcareExperience'])->name('childcare.store');
+            Route::get('/references/{userId}', [\App\Http\Controllers\Admin\AuPairController::class, 'references'])->name('references');
+            Route::post('/references/{id}/verify', [\App\Http\Controllers\Admin\AuPairController::class, 'verifyReference'])->name('references.verify');
+            Route::get('/stats', [\App\Http\Controllers\Admin\AuPairController::class, 'matchingStats'])->name('stats');
+        });
+        
+        // Work & Travel Management
+        Route::prefix('work-travel')->name('admin.work-travel.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\WorkTravelController::class, 'dashboard'])->name('dashboard');
+            
+            // Validations
+            Route::get('/validations', [\App\Http\Controllers\Admin\WorkTravelController::class, 'validations'])->name('validations');
+            Route::get('/validations/{id}', [\App\Http\Controllers\Admin\WorkTravelController::class, 'showValidation'])->name('validation.show');
+            Route::post('/validations/{id}/validate', [\App\Http\Controllers\Admin\WorkTravelController::class, 'validateStudent'])->name('validation.validate');
+            
+            // Employers
+            Route::get('/employers', [\App\Http\Controllers\Admin\WorkTravelController::class, 'employers'])->name('employers');
+            Route::get('/employers/create', [\App\Http\Controllers\Admin\WorkTravelController::class, 'createEmployer'])->name('employer.create');
+            Route::post('/employers', [\App\Http\Controllers\Admin\WorkTravelController::class, 'storeEmployer'])->name('employer.store');
+            Route::get('/employers/{id}', [\App\Http\Controllers\Admin\WorkTravelController::class, 'showEmployer'])->name('employer.show');
+            Route::post('/employers/{id}/verify', [\App\Http\Controllers\Admin\WorkTravelController::class, 'verifyEmployer'])->name('employer.verify');
+            
+            // Contracts
+            Route::get('/contracts', [\App\Http\Controllers\Admin\WorkTravelController::class, 'contracts'])->name('contracts');
+            Route::get('/contracts/{id}', [\App\Http\Controllers\Admin\WorkTravelController::class, 'showContract'])->name('contract.show');
+            Route::post('/contracts/{id}/verify', [\App\Http\Controllers\Admin\WorkTravelController::class, 'verifyContract'])->name('contract.verify');
+            
+            // Matching
+            Route::get('/matching', [\App\Http\Controllers\Admin\WorkTravelController::class, 'matching'])->name('matching');
+        });
+        
+        // Teachers Program Management
+        Route::prefix('teachers')->name('admin.teachers.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\TeacherController::class, 'dashboard'])->name('dashboard');
+            
+            // Validations
+            Route::get('/validations', [\App\Http\Controllers\Admin\TeacherController::class, 'validations'])->name('validations');
+            Route::get('/validations/{id}', [\App\Http\Controllers\Admin\TeacherController::class, 'showValidation'])->name('validation.show');
+            Route::post('/validations/{id}/mec', [\App\Http\Controllers\Admin\TeacherController::class, 'validateMEC'])->name('validation.mec');
+            Route::post('/validations/{id}/validate', [\App\Http\Controllers\Admin\TeacherController::class, 'validateTeacher'])->name('validation.validate');
+            
+            // Job Fairs
+            Route::get('/job-fairs', [\App\Http\Controllers\Admin\TeacherController::class, 'jobFairs'])->name('job-fairs');
+            Route::get('/job-fairs/create', [\App\Http\Controllers\Admin\TeacherController::class, 'createJobFair'])->name('job-fair.create');
+            Route::post('/job-fairs', [\App\Http\Controllers\Admin\TeacherController::class, 'storeJobFair'])->name('job-fair.store');
+            Route::get('/job-fairs/{id}', [\App\Http\Controllers\Admin\TeacherController::class, 'showJobFair'])->name('job-fair.show');
+            Route::post('/job-fairs/{id}/open', [\App\Http\Controllers\Admin\TeacherController::class, 'openRegistration'])->name('job-fair.open');
+            
+            // Schools
+            Route::get('/schools', [\App\Http\Controllers\Admin\TeacherController::class, 'schools'])->name('schools');
+            Route::get('/schools/create', [\App\Http\Controllers\Admin\TeacherController::class, 'createSchool'])->name('school.create');
+            Route::post('/schools', [\App\Http\Controllers\Admin\TeacherController::class, 'storeSchool'])->name('school.store');
+            Route::get('/schools/{id}', [\App\Http\Controllers\Admin\TeacherController::class, 'showSchool'])->name('school.show');
+            Route::post('/schools/{id}/verify', [\App\Http\Controllers\Admin\TeacherController::class, 'verifySchool'])->name('school.verify');
+            
+            // Matching & Registration
+            Route::get('/matching', [\App\Http\Controllers\Admin\TeacherController::class, 'matching'])->name('matching');
+            Route::post('/teachers/{id}/register', [\App\Http\Controllers\Admin\TeacherController::class, 'registerForJobFair'])->name('register-job-fair');
+        });
+        
+        // Intern/Trainee Program Management
+        Route::prefix('intern-trainee')->name('admin.intern-trainee.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\InternTraineeController::class, 'dashboard'])->name('dashboard');
+            
+            // Validations
+            Route::get('/validations', [\App\Http\Controllers\Admin\InternTraineeController::class, 'validations'])->name('validations');
+            Route::get('/validations/{id}', [\App\Http\Controllers\Admin\InternTraineeController::class, 'showValidation'])->name('validation.show');
+            Route::post('/validations/{id}/validate', [\App\Http\Controllers\Admin\InternTraineeController::class, 'validateParticipant'])->name('validation.validate');
+            
+            // Host Companies
+            Route::get('/companies', [\App\Http\Controllers\Admin\InternTraineeController::class, 'companies'])->name('companies');
+            Route::get('/companies/{id}', [\App\Http\Controllers\Admin\InternTraineeController::class, 'showCompany'])->name('company.show');
+            Route::post('/companies/{id}/verify', [\App\Http\Controllers\Admin\InternTraineeController::class, 'verifyCompany'])->name('company.verify');
+            
+            // Training Plans
+            Route::get('/training-plans', [\App\Http\Controllers\Admin\InternTraineeController::class, 'trainingPlans'])->name('plans');
+            Route::get('/training-plans/{id}', [\App\Http\Controllers\Admin\InternTraineeController::class, 'showTrainingPlan'])->name('plan.show');
+            Route::post('/training-plans/{id}/approve', [\App\Http\Controllers\Admin\InternTraineeController::class, 'approvePlan'])->name('plan.approve');
+            Route::post('/training-plans/{id}/terminate', [\App\Http\Controllers\Admin\InternTraineeController::class, 'terminatePlan'])->name('plan.terminate');
+            
+            // Matching
+            Route::get('/matching', [\App\Http\Controllers\Admin\InternTraineeController::class, 'matching'])->name('matching');
+        });
+        
+        // Higher Education Program Management
+        Route::prefix('higher-education')->name('admin.higher-education.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\HigherEducationController::class, 'dashboard'])->name('dashboard');
+            
+            // Universities
+            Route::get('/universities', [\App\Http\Controllers\Admin\HigherEducationController::class, 'universities'])->name('universities');
+            Route::get('/universities/{id}', [\App\Http\Controllers\Admin\HigherEducationController::class, 'showUniversity'])->name('university.show');
+            
+            // Applications
+            Route::get('/applications', [\App\Http\Controllers\Admin\HigherEducationController::class, 'applications'])->name('applications');
+            Route::get('/applications/{id}', [\App\Http\Controllers\Admin\HigherEducationController::class, 'showApplication'])->name('application.show');
+            Route::post('/applications/{id}/status', [\App\Http\Controllers\Admin\HigherEducationController::class, 'updateApplicationStatus'])->name('application.status');
+            Route::post('/applications/{id}/i20', [\App\Http\Controllers\Admin\HigherEducationController::class, 'issueI20'])->name('application.i20');
+            
+            // Scholarships
+            Route::get('/scholarships', [\App\Http\Controllers\Admin\HigherEducationController::class, 'scholarships'])->name('scholarships');
+            Route::get('/scholarships/{id}', [\App\Http\Controllers\Admin\HigherEducationController::class, 'showScholarship'])->name('scholarship.show');
+            
+            // Scholarship Applications
+            Route::get('/scholarship-applications', [\App\Http\Controllers\Admin\HigherEducationController::class, 'scholarshipApplications'])->name('scholarship-applications');
+            Route::post('/scholarship-applications/{id}/award', [\App\Http\Controllers\Admin\HigherEducationController::class, 'awardScholarship'])->name('scholarship-application.award');
+            
+            // Matching
+            Route::get('/matching', [\App\Http\Controllers\Admin\HigherEducationController::class, 'matching'])->name('matching');
+        });
+        
+        // Work & Study Program Management
+        Route::prefix('work-study')->name('admin.work-study.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\WorkStudyController::class, 'dashboard'])->name('dashboard');
+            
+            // Programs
+            Route::get('/programs', [\App\Http\Controllers\Admin\WorkStudyController::class, 'programs'])->name('programs');
+            Route::get('/programs/{id}', [\App\Http\Controllers\Admin\WorkStudyController::class, 'showProgram'])->name('program.show');
+            Route::post('/programs/{id}/status', [\App\Http\Controllers\Admin\WorkStudyController::class, 'updateProgramStatus'])->name('program.status');
+            Route::post('/programs/{id}/i20', [\App\Http\Controllers\Admin\WorkStudyController::class, 'issueI20'])->name('program.i20');
+            
+            // Employers
+            Route::get('/employers', [\App\Http\Controllers\Admin\WorkStudyController::class, 'employers'])->name('employers');
+            Route::get('/employers/{id}', [\App\Http\Controllers\Admin\WorkStudyController::class, 'showEmployer'])->name('employer.show');
+            Route::post('/employers/{id}/verify', [\App\Http\Controllers\Admin\WorkStudyController::class, 'verifyEmployer'])->name('employer.verify');
+            
+            // Placements
+            Route::get('/placements', [\App\Http\Controllers\Admin\WorkStudyController::class, 'placements'])->name('placements');
+            Route::get('/placements/{id}', [\App\Http\Controllers\Admin\WorkStudyController::class, 'showPlacement'])->name('placement.show');
+            Route::post('/placements/{id}/activate', [\App\Http\Controllers\Admin\WorkStudyController::class, 'activatePlacement'])->name('placement.activate');
+            Route::post('/placements/{id}/complete', [\App\Http\Controllers\Admin\WorkStudyController::class, 'completePlacement'])->name('placement.complete');
+            Route::post('/placements/{id}/terminate', [\App\Http\Controllers\Admin\WorkStudyController::class, 'terminatePlacement'])->name('placement.terminate');
+            
+            // Matching
+            Route::get('/matching', [\App\Http\Controllers\Admin\WorkStudyController::class, 'matching'])->name('matching');
+        });
+        
+        // Language Program Management
+        Route::prefix('language-program')->name('admin.language-program.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\LanguageProgramController::class, 'dashboard'])->name('dashboard');
+            
+            // Programs
+            Route::get('/programs', [\App\Http\Controllers\Admin\LanguageProgramController::class, 'programs'])->name('programs');
+            Route::get('/programs/{id}', [\App\Http\Controllers\Admin\LanguageProgramController::class, 'showProgram'])->name('program.show');
+            Route::post('/programs/{id}/status', [\App\Http\Controllers\Admin\LanguageProgramController::class, 'updateProgramStatus'])->name('program.status');
+            Route::post('/programs/{id}/progress', [\App\Http\Controllers\Admin\LanguageProgramController::class, 'updateProgress'])->name('program.progress');
+            Route::post('/programs/{id}/certificate', [\App\Http\Controllers\Admin\LanguageProgramController::class, 'issueCertificate'])->name('program.certificate');
+            
+            // Reports
+            Route::get('/statistics', [\App\Http\Controllers\Admin\LanguageProgramController::class, 'statistics'])->name('statistics');
+            Route::get('/schools', [\App\Http\Controllers\Admin\LanguageProgramController::class, 'schools'])->name('schools');
+        });
     });
+
+// Finance Routes - Solo accesible para usuarios con rol 'finance' o 'admin'
+Route::middleware(['auth', 'finance'])->prefix('finance')->name('finance.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Finance\FinanceController::class, 'dashboard'])->name('dashboard');
+});

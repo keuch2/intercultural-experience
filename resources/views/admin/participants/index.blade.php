@@ -74,8 +74,12 @@
                     @forelse($participants as $participant)
                     <tr>
                         <td>{{ $participant->id }}</td>
-                        <td>{{ $participant->name }}</td>
-                        <td>{{ $participant->email }}</td>
+                        <td>
+                            <a href="{{ route('admin.participants.show', $participant->id) }}" class="text-decoration-none">
+                                {{ $participant->full_name }}
+                            </a>
+                        </td>
+                        <td>{{ $participant->user->email ?? 'N/A' }}</td>
                         <td>
                             @if($participant->city && $participant->country)
                                 {{ $participant->city }}, {{ $participant->country }}
@@ -88,39 +92,33 @@
                             @endif
                         </td>
                         <td>
-                            @php
-                                $latestApplication = $participant->applications()->with('program')->latest()->first();
-                            @endphp
-                            @if($latestApplication && $latestApplication->program)
-                                <a href="{{ route('admin.applications.show', $latestApplication->id) }}" class="text-decoration-none">
-                                    {{ $latestApplication->program->name }}
-                                </a>
+                            @if($participant->program)
+                                <span class="badge bg-primary text-white">
+                                    {{ $participant->program->name }}
+                                </span>
                             @else
-                                <span class="text-muted">Sin aplicación</span>
+                                <span class="text-muted">Sin programa</span>
                             @endif
                         </td>
                         <td>
-                            @if($latestApplication)
-                                @php
-                                    $statusColors = [
-                                        'pending' => 'warning',
-                                        'in_progress' => 'info',
-                                        'approved' => 'success',
-                                        'rejected' => 'danger',
-                                    ];
-                                    $statusLabels = [
-                                        'pending' => 'Pendiente',
-                                        'in_progress' => 'En Proceso',
-                                        'approved' => 'Aprobado',
-                                        'rejected' => 'Rechazado',
-                                    ];
-                                    $color = $statusColors[$latestApplication->status] ?? 'secondary';
-                                    $label = $statusLabels[$latestApplication->status] ?? ucfirst($latestApplication->status);
-                                @endphp
-                                <span class="badge bg-{{ $color }}">{{ $label }}</span>
-                            @else
-                                <span class="text-muted">-</span>
-                            @endif
+                            @php
+                                $statusColors = [
+                                    'pending' => 'warning',
+                                    'in_review' => 'info',
+                                    'approved' => 'success',
+                                    'rejected' => 'danger',
+                                ];
+                                $statusLabels = [
+                                    'pending' => 'Pendiente',
+                                    'in_review' => 'En Revisión',
+                                    'approved' => 'Aprobado',
+                                    'rejected' => 'Rechazado',
+                                ];
+                                $color = $statusColors[$participant->status] ?? 'secondary';
+                                $label = $statusLabels[$participant->status] ?? ucfirst($participant->status);
+                                $textColor = in_array($color, ['warning', 'info']) ? 'text-dark' : 'text-white';
+                            @endphp
+                            <span class="badge bg-{{ $color }} {{ $textColor }}">{{ $label }}</span>
                         </td>
                         <td>{{ $participant->created_at->format('d/m/Y') }}</td>
                         <td>
@@ -131,36 +129,13 @@
                                 <a href="{{ route('admin.participants.edit', $participant) }}" class="btn btn-sm btn-warning" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="{{ route('admin.assignments.create', ['user_id' => $participant->id]) }}" class="btn btn-sm btn-success" title="Asignar Programa">
-                                    <i class="fas fa-user-plus"></i>
-                                </a>
-                                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $participant->id }}" title="Eliminar">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-
-                            <!-- Delete Modal -->
-                            <div class="modal fade" id="deleteModal{{ $participant->id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ $participant->id }}" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="deleteModalLabel{{ $participant->id }}">Confirmar Eliminación</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            ¿Está seguro de que desea eliminar al participante <strong>{{ $participant->name }}</strong>?
-                                            <br><small class="text-muted">Esta acción no se puede deshacer.</small>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                            <form action="{{ route('admin.participants.destroy', $participant) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger">Eliminar</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
+                                <form action="{{ route('admin.participants.destroy', $participant) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de eliminar este participante?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
