@@ -15,7 +15,7 @@ class AdminActivityLogController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ActivityLog::with(['causer', 'subject'])->latest('created_at');
+        $query = ActivityLog::with(['causer'])->latest('created_at');
 
         // Filtros
         if ($request->filled('log_name')) {

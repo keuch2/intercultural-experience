@@ -301,7 +301,7 @@
         </div>
         
         <!-- Pagination -->
-        @if(isset($recentRedemptions) && $recentRedemptions->hasPages())
+        @if(isset($recentRedemptions) && method_exists($recentRedemptions, 'hasPages') && $recentRedemptions->hasPages())
         <div class="d-flex justify-content-center mt-4">
             {{ $recentRedemptions->links() }}
         </div>

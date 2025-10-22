@@ -143,10 +143,7 @@ return new class extends Migration
             $table->softDeletes();
             
             // Indexes
-            $table->index('application_status');
-            $table->index('degree_level');
-            $table->index('admission_term');
-            $table->index(['admission_year', 'admission_term']);
+            $table->index(['admission_year', 'admission_term'], 'he_apps_admission_idx');
         });
     }
 
