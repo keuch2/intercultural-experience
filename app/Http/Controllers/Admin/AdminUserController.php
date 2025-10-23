@@ -17,8 +17,8 @@ class AdminUserController extends Controller
      */
     public function index(Request $request)
     {
-        // Por defecto, solo mostrar administradores en esta vista
-        $query = User::where('role', 'admin');
+        // Mostrar administradores y personal de finanzas
+        $query = User::whereIn('role', ['admin', 'finance']);
         
         // Aplicar filtros adicionales si existen
         if ($request->has('search')) {
