@@ -22,7 +22,7 @@ class UpdateUserRequest extends BaseFormRequest
             'nationality' => $commonRules['nationality'],
             'birth_date' => $commonRules['birth_date'],
             'address' => $commonRules['address'],
-            'role' => 'sometimes|required|in:user,admin',
+            'role' => 'sometimes|required|in:user,admin,agent,finance',
             'city' => 'nullable|string|max:100',
             'country' => 'nullable|string|max:100',
             'academic_level' => 'nullable|string|max:100',
