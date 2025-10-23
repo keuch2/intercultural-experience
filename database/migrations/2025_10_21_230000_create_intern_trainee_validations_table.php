@@ -114,8 +114,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             
-            // Indexes
-            $table->index('program_type');
+            // Indexes (program_type ya tiene index en línea 19)
             $table->index('validation_status');
             $table->index('industry_sector');
             $table->index('program_start_date');
