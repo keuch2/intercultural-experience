@@ -79,6 +79,8 @@
                             <td>
                                 @if($user->role === 'admin')
                                     <span class="badge bg-primary">Administrador</span>
+                                @elseif($user->role === 'finance')
+                                    <span class="badge bg-success">Finanzas</span>
                                 @elseif($user->role === 'agent')
                                     <span class="badge bg-info">Agente</span>
                                 @else

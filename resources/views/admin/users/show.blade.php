@@ -24,9 +24,15 @@
                          width="150" height="150">
                     <h4>{{ $user->name }}</h4>
                     <p class="text-muted">{{ $user->email }}</p>
-                    <span class="badge {{ $user->role === 'admin' ? 'badge-danger' : 'badge-primary' }}">
-                        {{ $user->role === 'admin' ? 'Administrador' : 'Participante' }}
-                    </span>
+                    @if($user->role === 'admin')
+                        <span class="badge badge-danger">Administrador</span>
+                    @elseif($user->role === 'finance')
+                        <span class="badge badge-success">Finanzas</span>
+                    @elseif($user->role === 'agent')
+                        <span class="badge badge-info">Agente</span>
+                    @else
+                        <span class="badge badge-primary">Participante</span>
+                    @endif
                 </div>
             </div>
 
