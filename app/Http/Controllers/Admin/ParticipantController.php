@@ -412,20 +412,24 @@ class ParticipantController extends Controller
     public function getProgramForm($id, $formType)
     {
         try {
-            $participant = Application::findOrFail($id);
+            // $id is a User ID (participant), not an Application ID
+            $user = User::findOrFail($id);
+            $application = Application::where('user_id', $user->id)
+                ->latest()
+                ->first();
             
-            // Load existing data or create empty model
+            // Load existing data from application or create empty model
             switch($formType) {
                 case 'work_travel':
-                    $workTravelData = $participant->workTravelData ?? new \App\Models\WorkTravelData();
+                    $workTravelData = $application ? ($application->workTravelData ?? new \App\Models\WorkTravelData()) : new \App\Models\WorkTravelData();
                     return view('admin.participants.forms.work_travel', compact('workTravelData'))->render();
                     
                 case 'au_pair':
-                    $auPairData = $participant->auPairData ?? new \App\Models\AuPairData();
+                    $auPairData = $application ? ($application->auPairData ?? new \App\Models\AuPairData()) : new \App\Models\AuPairData();
                     return view('admin.participants.forms.au_pair', compact('auPairData'))->render();
                     
                 case 'teacher':
-                    $teacherData = $participant->teacherData ?? new \App\Models\TeacherData();
+                    $teacherData = $application ? ($application->teacherData ?? new \App\Models\TeacherData()) : new \App\Models\TeacherData();
                     return view('admin.participants.forms.teacher', compact('teacherData'))->render();
                     
                 default:
