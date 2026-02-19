@@ -84,14 +84,14 @@
                         <tr>
                             <td>{{ $payment->id }}</td>
                             <td>
-                                {{ $payment->user_name }}
-                                <small class="d-block text-muted">{{ $payment->email }}</small>
+                                {{ $payment->user->name ?? 'N/A' }}
+                                <small class="d-block text-muted">{{ $payment->user->email ?? '' }}</small>
                             </td>
-                            <td>{{ $payment->program_name }}</td>
-                            <td>{{ $payment->requisite_name }}</td>
-                            <td>{{ ($payment->currency_symbol ?? '₲') }} {{ number_format((float) $payment->amount, 2) }}</td>
+                            <td>{{ $payment->program->name ?? 'N/A' }}</td>
+                            <td>{{ $payment->concept }}</td>
+                            <td>{{ ($payment->currency->symbol ?? '$') }} {{ number_format((float) $payment->amount, 2) }}</td>
                             <td>{{ $payment->payment_method ?? 'No especificado' }}</td>
-                            <td>{{ $payment->payment_reference ?? $payment->file_path }}</td>
+                            <td>{{ $payment->reference_number ?? '-' }}</td>
                             <td>
                                 @if($payment->status == 'pending')
                                     <span class="badge badge-warning">Pendiente</span>
@@ -101,7 +101,7 @@
                                     <span class="badge badge-danger">Rechazado</span>
                                 @endif
                             </td>
-                            <td>{{ $payment->created_at ? \Carbon\Carbon::parse($payment->created_at)->format('d/m/Y H:i') : 'N/A' }}</td>
+                            <td>{{ $payment->created_at ? $payment->created_at->format('d/m/Y H:i') : 'N/A' }}</td>
                             <td>
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -142,9 +142,9 @@
                                             </div>
                                             <div class="modal-body">
                                                 <p>¿Estás seguro de que deseas verificar este pago?</p>
-                                                <p><strong>Usuario:</strong> {{ $payment->user_name ?? 'No disponible' }}</p>
-                                                <p><strong>Concepto:</strong> {{ $payment->requisite_name ?? 'No disponible' }}</p>
-                                                <p><strong>Monto:</strong> {{ ($payment->currency_symbol ?? '₲') }} {{ number_format((float) ($payment->amount ?? 0), 2) }}</p>
+                                                <p><strong>Usuario:</strong> {{ $payment->user->name ?? 'No disponible' }}</p>
+                                                <p><strong>Concepto:</strong> {{ $payment->concept ?? 'No disponible' }}</p>
+                                                <p><strong>Monto:</strong> {{ ($payment->currency->symbol ?? '$') }} {{ number_format((float) ($payment->amount ?? 0), 2) }}</p>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -169,9 +169,9 @@
                                                 @csrf
                                                 <div class="modal-body">
                                                     <p>¿Estás seguro de que deseas rechazar este pago?</p>
-                                                    <p><strong>Usuario:</strong> {{ $payment->user_name ?? 'No disponible' }}</p>
-                                                    <p><strong>Concepto:</strong> {{ $payment->requisite_name ?? 'No disponible' }}</p>
-                                                    <p><strong>Monto:</strong> {{ ($payment->currency_symbol ?? '₲') }} {{ number_format((float) ($payment->amount ?? 0), 2) }}</p>
+                                                    <p><strong>Usuario:</strong> {{ $payment->user->name ?? 'No disponible' }}</p>
+                                                    <p><strong>Concepto:</strong> {{ $payment->concept ?? 'No disponible' }}</p>
+                                                    <p><strong>Monto:</strong> {{ ($payment->currency->symbol ?? '$') }} {{ number_format((float) ($payment->amount ?? 0), 2) }}</p>
                                                     
                                                     <div class="mb-3">
                                                         <label for="rejection_reason" class="form-label">Motivo del rechazo</label>
@@ -199,9 +199,9 @@
                                                 @csrf
                                                 <div class="modal-body">
                                                     <p>¿Estás seguro de que deseas marcar este pago como pendiente?</p>
-                                                    <p><strong>Usuario:</strong> {{ $payment->user_name ?? 'No disponible' }}</p>
-                                                    <p><strong>Concepto:</strong> {{ $payment->requisite_name ?? 'No disponible' }}</p>
-                                                    <p><strong>Monto:</strong> {{ ($payment->currency_symbol ?? '₲') }} {{ number_format((float) ($payment->amount ?? 0), 2) }}</p>
+                                                    <p><strong>Usuario:</strong> {{ $payment->user->name ?? 'No disponible' }}</p>
+                                                    <p><strong>Concepto:</strong> {{ $payment->concept ?? 'No disponible' }}</p>
+                                                    <p><strong>Monto:</strong> {{ ($payment->currency->symbol ?? '$') }} {{ number_format((float) ($payment->amount ?? 0), 2) }}</p>
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

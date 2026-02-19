@@ -147,43 +147,27 @@ class AdminFinanceController extends Controller
      */
     public function payments(Request $request)
     {
-        $query = DB::table('user_program_requisites')
-            ->join('program_requisites', 'user_program_requisites.program_requisite_id', '=', 'program_requisites.id')
-            ->join('programs', 'program_requisites.program_id', '=', 'programs.id')
-            ->join('applications', 'user_program_requisites.application_id', '=', 'applications.id')
-            ->join('users', 'applications.user_id', '=', 'users.id')
-            ->leftJoin('currencies', 'program_requisites.currency_id', '=', 'currencies.id')
-            ->where('program_requisites.type', 'payment')
-            ->select(
-                'user_program_requisites.*', 
-                'program_requisites.name as requisite_name',
-                'program_requisites.payment_amount as amount',
-                'programs.name as program_name',
-                'users.name as user_name',
-                'users.email',
-                'user_program_requisites.file_path as payment_reference',
-                'currencies.symbol as currency_symbol',
-                'currencies.code as currency_code'
-            );
+        $query = \App\Models\Payment::query()
+            ->with(['user', 'program', 'currency']);
         
         // Filtros
         if ($request->has('status') && $request->status != '') {
-            $query->where('user_program_requisites.status', $request->status);
+            $query->where('status', $request->status);
         }
         
         if ($request->has('program_id') && $request->program_id != '') {
-            $query->where('programs.id', $request->program_id);
+            $query->where('program_id', $request->program_id);
         }
         
         if ($request->has('date_from') && $request->date_from != '') {
-            $query->whereDate('user_program_requisites.created_at', '>=', $request->date_from);
+            $query->whereDate('created_at', '>=', $request->date_from);
         }
         
         if ($request->has('date_to') && $request->date_to != '') {
-            $query->whereDate('user_program_requisites.created_at', '<=', $request->date_to);
+            $query->whereDate('created_at', '<=', $request->date_to);
         }
         
-        $payments = $query->orderBy('user_program_requisites.created_at', 'desc')
+        $payments = $query->orderBy('created_at', 'desc')
             ->paginate(15);
             
         $programs = Program::orderBy('name')->get();
@@ -341,51 +325,41 @@ class AdminFinanceController extends Controller
      */
     public function verifyPayment(Request $request, $id)
     {
-        $payment = UserProgramRequisite::with(['programRequisite.currency', 'application.user', 'application.program'])->findOrFail($id);
+        $payment = \App\Models\Payment::with(['user', 'program', 'currency'])->findOrFail($id);
         
         // Marcar como verificado
         $payment->status = 'verified';
+        $payment->verified_by = auth()->id();
         $payment->verified_at = now();
         $payment->save();
         
         // Crear transacción financiera si no existe
         $existingTransaction = FinancialTransaction::where('application_id', $payment->application_id)
-            ->where('reference', 'PAYMENT-REQ-' . $payment->id)
+            ->where('reference', 'PAYMENT-' . $payment->id)
             ->first();
             
         if (!$existingTransaction) {
-            $programRequisite = $payment->programRequisite;
-            $amount = $programRequisite->payment_amount ?? 0;
-            $currency = $programRequisite->currency;
-            
-            // Crear transacción de ingreso
             $transaction = new FinancialTransaction();
             $transaction->type = 'income';
             $transaction->category = 'program_payment';
-            $transaction->description = 'Pago verificado: ' . $programRequisite->name . ' - ' . $payment->application->user->name;
-            $transaction->amount = $amount;
-            $transaction->currency_id = $currency ? $currency->id : null;
+            $transaction->description = 'Pago verificado: ' . $payment->concept . ' - ' . ($payment->user->name ?? 'N/A');
+            $transaction->amount = $payment->amount;
+            $transaction->currency_id = $payment->currency_id;
             $transaction->transaction_date = now();
-            $transaction->payment_method = $payment->file_path ?? 'bank_transfer'; // Método de pago del comprobante
-            $transaction->reference = 'PAYMENT-REQ-' . $payment->id; // Referencia única
+            $transaction->payment_method = $payment->payment_method ?? 'bank_transfer';
+            $transaction->reference = 'PAYMENT-' . $payment->id;
             $transaction->application_id = $payment->application_id;
-            $transaction->program_id = $payment->application->program_id;
-            $transaction->user_id = $payment->application->user_id;
+            $transaction->program_id = $payment->program_id;
+            $transaction->user_id = $payment->user_id;
             $transaction->created_by = auth()->id();
-            $transaction->notes = 'Pago verificado automáticamente desde requisito de programa';
+            $transaction->notes = 'Pago verificado desde gestión de pagos';
             $transaction->status = 'confirmed';
             $transaction->save();
             
-            // Convertir a guaraníes con el exchange rate del momento
-            // Esto guarda amount_pyg con la conversión actual
-            $transaction->convertToPyg();
-            
-            // El amount_pyg ahora tiene la conversión al momento de verificación
-            // y NO cambiará aunque se modifique la cotización posteriormente
+            if (method_exists($transaction, 'convertToPyg')) {
+                $transaction->convertToPyg();
+            }
         }
-        
-        // Disparar evento de pago verificado
-        event(new \App\Events\PaymentVerified($payment));
         
         return redirect()->route('admin.finance.payments')->with('success', 'Pago verificado y registrado en contabilidad correctamente.');
     }
@@ -399,9 +373,11 @@ class AdminFinanceController extends Controller
             'rejection_reason' => 'required|string',
         ]);
         
-        $payment = UserProgramRequisite::findOrFail($id);
+        $payment = \App\Models\Payment::findOrFail($id);
         $payment->status = 'rejected';
-        $payment->observations = $request->rejection_reason; // Guardar razón de rechazo en observations
+        $payment->notes = $request->rejection_reason;
+        $payment->verified_by = auth()->id();
+        $payment->verified_at = now();
         $payment->save();
         
         return redirect()->route('admin.finance.payments')->with('success', 'Pago rechazado correctamente.');
@@ -412,13 +388,11 @@ class AdminFinanceController extends Controller
      */
     public function pendingPayment(Request $request, $id)
     {
-        $payment = UserProgramRequisite::findOrFail($id);
+        $payment = \App\Models\Payment::findOrFail($id);
         $payment->status = 'pending';
+        $payment->verified_by = null;
         $payment->verified_at = null;
         $payment->save();
-        
-        // Clear any query cache
-        \DB::connection()->getPdo()->exec('SELECT 1');
         
         return redirect()->route('admin.finance.payments')->with('success', 'Pago marcado como pendiente correctamente.');
     }
