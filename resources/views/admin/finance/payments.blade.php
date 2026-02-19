@@ -94,11 +94,13 @@
                             <td>{{ $payment->reference_number ?? '-' }}</td>
                             <td>
                                 @if($payment->status == 'pending')
-                                    <span class="badge badge-warning">Pendiente</span>
+                                    <span class="badge bg-warning text-dark">Pendiente</span>
                                 @elseif($payment->status == 'verified')
-                                    <span class="badge badge-success">Verificado</span>
+                                    <span class="badge bg-success">Verificado</span>
                                 @elseif($payment->status == 'rejected')
-                                    <span class="badge badge-danger">Rechazado</span>
+                                    <span class="badge bg-danger">Rechazado</span>
+                                @else
+                                    <span class="badge bg-secondary">{{ $payment->status ?? 'Sin estado' }}</span>
                                 @endif
                             </td>
                             <td>{{ $payment->created_at ? $payment->created_at->format('d/m/Y H:i') : 'N/A' }}</td>
