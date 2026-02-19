@@ -264,10 +264,11 @@
                                     <label for="academic_level" class="form-label">Nivel Académico</label>
                                     <select class="form-control" id="academic_level" name="academic_level">
                                         <option value="">Seleccionar...</option>
-                                        <option value="high_school" {{ old('academic_level') == 'high_school' ? 'selected' : '' }}>Secundaria</option>
-                                        <option value="bachelor" {{ old('academic_level') == 'bachelor' ? 'selected' : '' }}>Licenciatura</option>
-                                        <option value="master" {{ old('academic_level') == 'master' ? 'selected' : '' }}>Maestría</option>
-                                        <option value="doctorate" {{ old('academic_level') == 'doctorate' ? 'selected' : '' }}>Doctorado</option>
+                                        <option value="bachiller" {{ old('academic_level') == 'bachiller' ? 'selected' : '' }}>Secundaria/Bachiller</option>
+                                        <option value="licenciatura" {{ old('academic_level') == 'licenciatura' ? 'selected' : '' }}>Licenciatura</option>
+                                        <option value="maestria" {{ old('academic_level') == 'maestria' ? 'selected' : '' }}>Maestría</option>
+                                        <option value="posgrado" {{ old('academic_level') == 'posgrado' ? 'selected' : '' }}>Posgrado</option>
+                                        <option value="doctorado" {{ old('academic_level') == 'doctorado' ? 'selected' : '' }}>Doctorado</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -400,10 +401,10 @@
                                     <label for="english_level" class="form-label">Nivel de Inglés</label>
                                     <select class="form-control" id="english_level" name="english_level">
                                         <option value="">Seleccionar...</option>
-                                        <option value="beginner" {{ old('english_level') == 'beginner' ? 'selected' : '' }}>Principiante</option>
-                                        <option value="intermediate" {{ old('english_level') == 'intermediate' ? 'selected' : '' }}>Intermedio</option>
-                                        <option value="advanced" {{ old('english_level') == 'advanced' ? 'selected' : '' }}>Avanzado</option>
-                                        <option value="native" {{ old('english_level') == 'native' ? 'selected' : '' }}>Nativo</option>
+                                        <option value="basico" {{ old('english_level') == 'basico' ? 'selected' : '' }}>Básico/Principiante</option>
+                                        <option value="intermedio" {{ old('english_level') == 'intermedio' ? 'selected' : '' }}>Intermedio</option>
+                                        <option value="avanzado" {{ old('english_level') == 'avanzado' ? 'selected' : '' }}>Avanzado</option>
+                                        <option value="nativo" {{ old('english_level') == 'nativo' ? 'selected' : '' }}>Nativo</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
