@@ -79,7 +79,7 @@
 
         <!-- Wizard Form -->
         <div class="col-lg-9">
-            <form action="{{ route('admin.participants.store') }}" method="POST" enctype="multipart/form-data" id="participant-wizard-form">
+            <form action="{{ route('admin.participants.store') }}" method="POST" enctype="multipart/form-data" id="participant-wizard-form" novalidate>
                 @csrf
 
                 <!-- STEP 1: Datos Personales -->
