@@ -67,7 +67,6 @@ return new class extends Migration
             $table->softDeletes();
             
             // Indexes
-            $table->index('scholarship_type');
             $table->index('is_active');
             $table->index('application_deadline');
         });
