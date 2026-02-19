@@ -34,7 +34,8 @@
     "react-native-web": "^0.21.0",
     "typescript": "~5.9.2",
     "expo-font": "~14.0.8",
-    "expo-image-picker": "~17.0.8"
+    "expo-image-picker": "~17.0.8",
+    "expo-dev-client": "~6.0.18"
   },
   "private": true
 }

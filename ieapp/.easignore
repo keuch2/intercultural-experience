@@ -1,0 +1,25 @@
+# Exclude everything outside the Expo project directory
+../*
+
+# Include required project files back
+!App.tsx
+!app.json
+!eas.json
+!index.ts
+!package.json
+!package-lock.json
+!tsconfig.json
+!BUILD_GUIDE.md
+!.gitignore
+
+# Include source/assets directories
+!assets/**
+!src/**
+
+# Keep Expo config/cache directories if present
+!.expo/**
+
+# Ignore generated folders that shouldn't be uploaded
+dist/
+web-build/
+node_modules/

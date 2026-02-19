@@ -468,88 +468,74 @@
 </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     let currentStep = 1;
     const totalSteps = 9;
 
     function showStep(step) {
-        $('.wizard-step').hide();
-        $(`.wizard-step[data-step="${step}"]`).show();
-        
+        document.querySelectorAll('.wizard-step').forEach(el => el.style.display = 'none');
+        const active = document.querySelector(`.wizard-step[data-step="${step}"]`);
+        if (active) active.style.display = '';
+
         // Update sidebar
-        $('.list-group-item').removeClass('active');
-        $(`.list-group-item[data-step="${step}"]`).addClass('active');
-        
+        document.querySelectorAll('.list-group-item[data-step]').forEach(el => el.classList.remove('active'));
+        const sideItem = document.querySelector(`.list-group-item[data-step="${step}"]`);
+        if (sideItem) sideItem.classList.add('active');
+
         // Update progress
-        const progress = (step / totalSteps) * 100;
-        $('#wizard-progress').css('width', progress + '%').text(Math.round(progress) + '%');
-        $('#current-step-number').text(step);
-        
+        const progress = Math.round((step / totalSteps) * 100);
+        const bar = document.getElementById('wizard-progress');
+        if (bar) { bar.style.width = progress + '%'; bar.textContent = progress + '%'; }
+        const stepNum = document.getElementById('current-step-number');
+        if (stepNum) stepNum.textContent = step;
+
         // Update buttons
-        if (step === 1) {
-            $('#prev-btn').hide();
-        } else {
-            $('#prev-btn').show();
-        }
-        
-        if (step === totalSteps) {
-            $('#next-btn').hide();
-            $('#submit-btn').show();
-            populateReview();
-        } else {
-            $('#next-btn').show();
-            $('#submit-btn').hide();
-        }
-        
-        // Scroll to top
+        document.getElementById('prev-btn').style.display = step === 1 ? 'none' : '';
+        document.getElementById('next-btn').style.display = step === totalSteps ? 'none' : '';
+        document.getElementById('submit-btn').style.display = step === totalSteps ? '' : 'none';
+
+        if (step === totalSteps) populateReview();
         window.scrollTo(0, 0);
     }
 
+    function val(id) { const el = document.getElementById(id); return el ? (el.value || 'N/A') : 'N/A'; }
+
     function populateReview() {
-        const formData = $('#participant-wizard-form').serializeArray();
         let html = '<div class="row">';
-        
         html += '<div class="col-md-6"><h6 class="text-primary">Datos Personales</h6><ul class="list-unstyled">';
-        html += `<li><strong>Nombre:</strong> ${$('#name').val() || 'N/A'}</li>`;
-        html += `<li><strong>Email:</strong> ${$('#email').val() || 'N/A'}</li>`;
-        html += `<li><strong>Teléfono:</strong> ${$('#phone').val() || 'N/A'}</li>`;
-        html += `<li><strong>Nacionalidad:</strong> ${$('#nationality').val() || 'N/A'}</li>`;
+        html += `<li><strong>Nombre:</strong> ${val('name')}</li>`;
+        html += `<li><strong>Email:</strong> ${val('email')}</li>`;
+        html += `<li><strong>Teléfono:</strong> ${val('phone')}</li>`;
+        html += `<li><strong>Nacionalidad:</strong> ${val('nationality')}</li>`;
         html += '</ul></div>';
-        
         html += '<div class="col-md-6"><h6 class="text-primary">Dirección</h6><ul class="list-unstyled">';
-        html += `<li><strong>Ciudad:</strong> ${$('#city').val() || 'N/A'}</li>`;
-        html += `<li><strong>País:</strong> ${$('#country').val() || 'N/A'}</li>`;
+        html += `<li><strong>Ciudad:</strong> ${val('city')}</li>`;
+        html += `<li><strong>País:</strong> ${val('country')}</li>`;
         html += '</ul></div>';
-        
         html += '</div>';
-        $('#review-summary').html(html);
+        document.getElementById('review-summary').innerHTML = html;
     }
 
-    $('#next-btn').click(function() {
-        if (currentStep < totalSteps) {
-            currentStep++;
-            showStep(currentStep);
-        }
+    document.getElementById('next-btn').addEventListener('click', function() {
+        if (currentStep < totalSteps) { currentStep++; showStep(currentStep); }
     });
 
-    $('#prev-btn').click(function() {
-        if (currentStep > 1) {
-            currentStep--;
-            showStep(currentStep);
-        }
+    document.getElementById('prev-btn').addEventListener('click', function() {
+        if (currentStep > 1) { currentStep--; showStep(currentStep); }
     });
 
-    $('.list-group-item').click(function(e) {
-        e.preventDefault();
-        const step = parseInt($(this).data('step'));
-        currentStep = step;
-        showStep(step);
+    document.querySelectorAll('.list-group-item[data-step]').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentStep = parseInt(this.dataset.step);
+            showStep(currentStep);
+        });
     });
 
     // Initialize
     showStep(1);
 });
 </script>
-@endsection
+@endpush

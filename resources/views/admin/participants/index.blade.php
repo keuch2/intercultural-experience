@@ -76,10 +76,10 @@
                         <td>{{ $participant->id }}</td>
                         <td>
                             <a href="{{ route('admin.participants.show', $participant->id) }}" class="text-decoration-none">
-                                {{ $participant->full_name }}
+                                {{ $participant->name }}
                             </a>
                         </td>
-                        <td>{{ $participant->user->email ?? 'N/A' }}</td>
+                        <td>{{ $participant->email ?? 'N/A' }}</td>
                         <td>
                             @if($participant->city && $participant->country)
                                 {{ $participant->city }}, {{ $participant->country }}
@@ -92,9 +92,10 @@
                             @endif
                         </td>
                         <td>
-                            @if($participant->program)
+                            @php $currentApp = $participant->applications->first(); @endphp
+                            @if($currentApp && $currentApp->program)
                                 <span class="badge bg-primary text-white">
-                                    {{ $participant->program->name }}
+                                    {{ $currentApp->program->name }}
                                 </span>
                             @else
                                 <span class="text-muted">Sin programa</span>
@@ -114,8 +115,9 @@
                                     'approved' => 'Aprobado',
                                     'rejected' => 'Rechazado',
                                 ];
-                                $color = $statusColors[$participant->status] ?? 'secondary';
-                                $label = $statusLabels[$participant->status] ?? ucfirst($participant->status);
+                                $appStatus = $currentApp->status ?? null;
+                                $color = $statusColors[$appStatus] ?? 'secondary';
+                                $label = $statusLabels[$appStatus] ?? ($appStatus ? ucfirst($appStatus) : 'Sin aplicación');
                                 $textColor = in_array($color, ['warning', 'info']) ? 'text-dark' : 'text-white';
                             @endphp
                             <span class="badge bg-{{ $color }} {{ $textColor }}">{{ $label }}</span>

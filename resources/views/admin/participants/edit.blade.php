@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
+@php $firstApp = $participant->applications->first(); @endphp
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
     <h1 class="h2">Editar Participante: {{ $participant->full_name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
@@ -40,17 +41,17 @@
                     <!-- Información Básica -->
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="full_name" class="form-label">Nombre Completo *</label>
-                            <input type="text" class="form-control @error('full_name') is-invalid @enderror" 
-                                   id="full_name" name="full_name" value="{{ old('full_name', $participant->full_name) }}" required>
-                            @error('full_name')
+                            <label for="name" class="form-label">Nombre Completo *</label>
+                            <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                   id="name" name="name" value="{{ old('name', $participant->name) }}" required>
+                            @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6">
                             <label for="email" class="form-label">Correo Electrónico</label>
                             <input type="email" class="form-control" 
-                                   id="email" value="{{ $participant->user->email ?? 'Sin email asignado' }}" disabled>
+                                   id="email" value="{{ $participant->email ?? 'Sin email asignado' }}" disabled>
                             <div class="form-text">
                                 <i class="fas fa-info-circle me-1"></i>
                                 El email pertenece al usuario asociado y no puede editarse aquí.
@@ -113,9 +114,9 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="cedula" class="form-label">Cédula</label>
-                            <input type="text" class="form-control @error('cedula') is-invalid @enderror" 
-                                   id="cedula" name="cedula" value="{{ old('cedula', $participant->cedula) }}">
-                            @error('cedula')
+                            <input type="text" class="form-control @error('ci_number') is-invalid @enderror" 
+                                   id="ci_number" name="ci_number" value="{{ old('ci_number', $participant->ci_number) }}">
+                            @error('ci_number')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -143,10 +144,10 @@
                             <label for="status" class="form-label">Estado</label>
                             <select class="form-select @error('status') is-invalid @enderror" 
                                     id="status" name="status">
-                                <option value="pending" {{ old('status', $participant->status) == 'pending' ? 'selected' : '' }}>Pendiente</option>
-                                <option value="in_review" {{ old('status', $participant->status) == 'in_review' ? 'selected' : '' }}>En Revisión</option>
-                                <option value="approved" {{ old('status', $participant->status) == 'approved' ? 'selected' : '' }}>Aprobado</option>
-                                <option value="rejected" {{ old('status', $participant->status) == 'rejected' ? 'selected' : '' }}>Rechazado</option>
+                                <option value="pending" {{ old('status', optional($firstApp)->status) == 'pending' ? 'selected' : '' }}>Pendiente</option>
+                                <option value="in_review" {{ old('status', optional($firstApp)->status) == 'in_review' ? 'selected' : '' }}>En Revisión</option>
+                                <option value="approved" {{ old('status', optional($firstApp)->status) == 'approved' ? 'selected' : '' }}>Aprobado</option>
+                                <option value="rejected" {{ old('status', optional($firstApp)->status) == 'rejected' ? 'selected' : '' }}>Rechazado</option>
                             </select>
                             @error('status')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -174,7 +175,7 @@
                                 @endphp
                                 @foreach($stages as $value => $label)
                                     <option value="{{ $value }}" 
-                                        {{ old('current_stage', $participant->current_stage) == $value ? 'selected' : '' }}>
+                                        {{ old('current_stage', optional($firstApp)->current_stage) == $value ? 'selected' : '' }}>
                                         {{ $label }}
                                     </option>
                                 @endforeach
@@ -187,7 +188,7 @@
                             <label for="progress_percentage" class="form-label">Progreso (%)</label>
                             <input type="number" class="form-control @error('progress_percentage') is-invalid @enderror" 
                                    id="progress_percentage" name="progress_percentage" 
-                                   value="{{ old('progress_percentage', $participant->progress_percentage) }}"
+                                   value="{{ old('progress_percentage', optional($firstApp)->progress_percentage ?? 0) }}"
                                    min="0" max="100">
                             @error('progress_percentage')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -201,12 +202,12 @@
                             <label for="program_id" class="form-label">Programa Asignado</label>
                             <select class="form-select @error('program_id') is-invalid @enderror" 
                                     id="program_id" name="program_id" 
-                                    data-subcategory="{{ optional($participant->program)->subcategory ?? '' }}">
+                                    data-subcategory="{{ optional(optional($firstApp)->program)->subcategory ?? '' }}">
                                 <option value="">Sin programa asignado</option>
                                 @foreach($programs as $program)
                                     <option value="{{ $program->id }}" 
                                         data-subcategory="{{ $program->subcategory }}"
-                                        {{ old('program_id', $participant->program_id) == $program->id ? 'selected' : '' }}>
+                                        {{ old('program_id', optional($firstApp)->program_id) == $program->id ? 'selected' : '' }}>
                                         [{{ $program->main_category }}] {{ $program->name }} - {{ $program->country }}
                                     </option>
                                 @endforeach
@@ -231,11 +232,11 @@
                     </div>
                     
                     {{-- Alert de programas simultáneos --}}
-                    @if($participant->user && $participant->user->applications()->where('status', '!=', 'completed')->count() > 1)
+                    @if($participant->applications()->where('status', '!=', 'completed')->count() > 1)
                         <div class="alert alert-info mb-3">
                             <i class="bi bi-info-circle-fill me-2"></i>
                             <strong>Programas simultáneos:</strong> Este participante tiene 
-                            {{ $participant->user->applications()->where('status', '!=', 'completed')->count() }} 
+                            {{ $participant->applications()->where('status', '!=', 'completed')->count() }} 
                             aplicaciones activas. 
                             <a href="{{ route('admin.participants.program-history', $participant->id) }}" class="alert-link">
                                 Ver historial completo
@@ -323,8 +324,8 @@
 
                 <form id="newApplicationForm" action="{{ route('admin.participants.store') }}" method="POST">
                     @csrf
-                    <input type="hidden" name="user_id" value="{{ $participant->user_id }}">
-                    <input type="hidden" name="copy_from_application" value="{{ $participant->id }}">
+                    <input type="hidden" name="user_id" value="{{ $participant->id }}">
+                    <input type="hidden" name="copy_from_application" value="{{ optional($firstApp)->id }}">
                     
                     <div class="mb-3">
                         <label for="new_program_id" class="form-label">
@@ -334,7 +335,7 @@
                             <option value="">-- Seleccionar programa --</option>
                             @foreach($programs as $program)
                                 {{-- Excluir el programa actual --}}
-                                @if($program->id != $participant->program_id)
+                                @if($program->id != optional($firstApp)->program_id)
                                     <option value="{{ $program->id }}" data-subcategory="{{ $program->subcategory }}">
                                         [{{ $program->main_category }}] {{ $program->name }} - {{ $program->country }}
                                     </option>

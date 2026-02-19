@@ -30,3 +30,13 @@ Archive.zip
 
 # Carpeta IE-FORMS
 /IE-FORMS/
+
+# OS files
+.DS_Store
+
+# Archives and dumps
+*.zip
+*.sql
+
+# Temp files
+Untitled*.txt

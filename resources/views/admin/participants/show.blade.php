@@ -5,7 +5,7 @@
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">
             Participante: {{ $participant->full_name }}
-            @if($participant->user && $participant->user->applications()->ieCue()->count() > 0)
+            @if($participant->applications && method_exists($participant->applications(), 'ieCue') && $participant->applications()->ieCue()->count() > 0)
                 <span class="badge bg-warning text-dark ms-2">
                     <i class="bi bi-star-fill me-1"></i>
                     IE Cue Alumni
@@ -31,10 +31,10 @@
             <div class="card shadow mb-4">
                 <div class="card-body text-center">
                     <img class="img-profile rounded-circle mb-3" 
-                         src="https://ui-avatars.com/api/?name={{ urlencode($participant->full_name) }}&background=4e73df&color=ffffff&size=200" 
-                         width="150" height="150">
+                         src="{{ $participant->profile_photo ? asset('storage/' . $participant->profile_photo) : 'https://ui-avatars.com/api/?name=' . urlencode($participant->full_name) . '&background=4e73df&color=ffffff&size=200' }}" 
+                         width="150" height="150" style="object-fit: cover;">
                     <h4>{{ $participant->full_name }}</h4>
-                    <p class="text-muted">{{ $participant->user->email ?? 'Sin email' }}</p>
+                    <p class="text-muted">{{ $participant->email ?? 'Sin email' }}</p>
                     @php
                         $statusColors = [
                             'pending' => 'warning',
@@ -48,8 +48,10 @@
                             'approved' => 'Aprobado',
                             'rejected' => 'Rechazado',
                         ];
-                        $color = $statusColors[$participant->status] ?? 'secondary';
-                        $label = $statusLabels[$participant->status] ?? ucfirst($participant->status);
+                        $firstApp = $participant->applications->first();
+                        $pStatus = $firstApp->status ?? null;
+                        $color = $statusColors[$pStatus] ?? 'secondary';
+                        $label = $statusLabels[$pStatus] ?? ($pStatus ? ucfirst($pStatus) : 'Sin aplicación');
                     @endphp
                     <span class="badge bg-{{ $color }} text-white">
                         {{ $label }}
@@ -65,26 +67,27 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <small class="text-muted">Programa</small>
-                        <h6>{{ $participant->program->name ?? 'Sin programa' }}</h6>
+                        @php $firstApp = $firstApp ?? $participant->applications->first(); @endphp
+                        <h6>{{ optional($firstApp)->program->name ?? 'Sin programa' }}</h6>
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Progreso</small>
                         <div class="progress" style="height: 20px;">
                             <div class="progress-bar" role="progressbar" 
-                                 style="width: {{ $participant->progress_percentage }}%" 
-                                 aria-valuenow="{{ $participant->progress_percentage }}" 
+                                 style="width: {{ optional($firstApp)->progress_percentage ?? 0 }}%" 
+                                 aria-valuenow="{{ optional($firstApp)->progress_percentage ?? 0 }}" 
                                  aria-valuemin="0" aria-valuemax="100">
-                                {{ $participant->progress_percentage }}%
+                                {{ optional($firstApp)->progress_percentage ?? 0 }}%
                             </div>
                         </div>
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Etapa Actual</small>
-                        <p class="mb-0"><strong>{{ $participant->current_stage ?? 'Sin definir' }}</strong></p>
+                        <p class="mb-0"><strong>{{ optional($firstApp)->current_stage ?? 'Sin definir' }}</strong></p>
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Fecha de Aplicación</small>
-                        <small class="d-block">{{ $participant->applied_at ? $participant->applied_at->format('d/m/Y') : 'N/A' }}</small>
+                        <small class="d-block">{{ optional($firstApp)->applied_at ? optional($firstApp)->applied_at->format('d/m/Y') : 'N/A' }}</small>
                     </div>
                 </div>
             </div>
@@ -162,7 +165,7 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Email:</strong><br>
-                                    {{ $participant->user->email ?? 'No especificado' }}
+                                    {{ $participant->email ?? 'No especificado' }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Teléfono:</strong><br>
@@ -203,7 +206,7 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <strong>Programa:</strong><br>
-                                    {{ $participant->program->name ?? 'No asignado' }}
+                                    {{ optional($firstApp)->program->name ?? 'No asignado' }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Estado:</strong><br>
@@ -211,27 +214,27 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Etapa Actual:</strong><br>
-                                    {{ $participant->current_stage ?? 'Sin definir' }}
+                                    {{ optional($firstApp)->current_stage ?? 'Sin definir' }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Progreso:</strong><br>
-                                    {{ $participant->progress_percentage }}%
+                                    {{ optional($firstApp)->progress_percentage ?? 0 }}%
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Costo Total:</strong><br>
-                                    ${{ number_format($participant->total_cost ?? 0, 2) }}
+                                    ${{ number_format(optional($firstApp)->total_cost ?? 0, 2) }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Monto Pagado:</strong><br>
-                                    ${{ number_format($participant->amount_paid ?? 0, 2) }}
+                                    ${{ number_format(optional($firstApp)->amount_paid ?? 0, 2) }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Fecha de Aplicación:</strong><br>
-                                    {{ $participant->applied_at ? $participant->applied_at->format('d/m/Y H:i') : 'No especificada' }}
+                                    {{ optional($firstApp)->applied_at ? optional($firstApp)->applied_at->format('d/m/Y H:i') : 'No especificada' }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Fecha de Inicio:</strong><br>
-                                    {{ $participant->started_at ? $participant->started_at->format('d/m/Y') : 'No iniciado' }}
+                                    {{ optional($firstApp)->started_at ? optional($firstApp)->started_at->format('d/m/Y') : 'No iniciado' }}
                                 </div>
                                 @if($participant->bio)
                                 <div class="col-md-12 mb-3">
@@ -572,7 +575,7 @@
                                             <h3 class="mb-0">
                                                 @php
                                                     $totalPaid = $participant->payments()->verified()->sum('amount');
-                                                    $totalCost = $participant->total_cost ?? 0;
+                                                    $totalCost = optional($firstApp)->total_cost ?? 0;
                                                     $balance = $totalCost - $totalPaid;
                                                 @endphp
                                                 ${{ number_format($balance, 2) }}
@@ -1015,7 +1018,7 @@
 
 {{-- Modal: Nuevo Pago --}}
 <div class="modal fade" id="newPaymentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title">
@@ -1025,33 +1028,48 @@
             </div>
             <form id="paymentForm" action="{{ route('admin.payments.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="application_id" value="{{ $participant->id }}">
-                <input type="hidden" name="user_id" value="{{ $participant->user_id }}">
-                <input type="hidden" name="program_id" value="{{ $participant->program_id }}">
+                <input type="hidden" name="application_id" value="{{ optional($firstApp)->id }}">
+                <input type="hidden" name="user_id" value="{{ $participant->id }}">
+                <input type="hidden" name="program_id" value="{{ optional($firstApp)->program_id }}">
                 <input type="hidden" name="created_by" value="{{ auth()->id() }}">
                 
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="concept" class="form-label">
-                            Concepto del Pago <span class="text-danger">*</span>
-                        </label>
-                        <select class="form-select" id="concept" name="concept" onchange="toggleOtherConcept()" required>
-                            <option value="">Seleccionar concepto</option>
-                            <option value="Inscripción">Inscripción</option>
-                            <option value="Primera Cuota">Primera Cuota</option>
-                            <option value="Segunda Cuota">Segunda Cuota</option>
-                            <option value="Tercera Cuota">Tercera Cuota</option>
-                            <option value="Cuota Mensual">Cuota Mensual</option>
-                            <option value="Pago Final">Pago Final</option>
-                            <option value="Depósito de Garantía">Depósito de Garantía</option>
-                            <option value="Visa J1">Visa J1</option>
-                            <option value="SEVIS">SEVIS</option>
-                            <option value="Seguro Médico">Seguro Médico</option>
-                            <option value="Vuelos">Vuelos</option>
-                            <option value="Documentación">Documentación</option>
-                            <option value="Otros Servicios">Otros Servicios</option>
-                            <option value="Otro">Otro</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="concept" class="form-label">
+                                Concepto de Pago <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="concept" name="concept" onchange="toggleOtherConcept()" required>
+                                <option value="">Seleccionar concepto</option>
+                                <option value="Inscripción">Inscripción</option>
+                                <option value="Primera Cuota">Primera Cuota</option>
+                                <option value="Segunda Cuota">Segunda Cuota</option>
+                                <option value="Tercera Cuota">Tercera Cuota</option>
+                                <option value="Cuota Mensual">Cuota Mensual</option>
+                                <option value="Pago Final">Pago Final</option>
+                                <option value="Depósito de Garantía">Depósito de Garantía</option>
+                                <option value="Visa J1">Visa J1</option>
+                                <option value="SEVIS">SEVIS</option>
+                                <option value="Seguro Médico">Seguro Médico</option>
+                                <option value="Vuelos">Vuelos</option>
+                                <option value="Documentación">Documentación</option>
+                                <option value="Otros Servicios">Otros Servicios</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="amount" class="form-label">
+                                Monto <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="amount" 
+                                   name="amount" 
+                                   step="0.01" 
+                                   min="0" 
+                                   placeholder="0.00"
+                                   required>
+                        </div>
                     </div>
 
                     <div class="mb-3" id="otherConceptField" style="display: none;">
@@ -1066,46 +1084,65 @@
                         <small class="text-muted">Este concepto se usará en lugar de "Otro"</small>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="amount" class="form-label">
-                            Monto del Pago <span class="text-danger">*</span>
-                        </label>
-                        <input type="number" 
-                               class="form-control" 
-                               id="amount" 
-                               name="amount" 
-                               step="0.01" 
-                               min="0" 
-                               placeholder="0.00"
-                               required>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="payment_method" class="form-label">
+                                Método de Pago <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="payment_method" name="payment_method" required>
+                                <option value="">Seleccionar método</option>
+                                <option value="Transferencia bancaria">Transferencia bancaria</option>
+                                <option value="Tarjeta de crédito">Tarjeta de crédito</option>
+                                <option value="PayPal">PayPal</option>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="reference_number" class="form-label">
+                                Referencia <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="reference_number" 
+                                   name="reference_number" 
+                                   placeholder="Número de transferencia, recibo, etc."
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="currency_id" class="form-label">
+                                Moneda <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="currency_id" name="currency_id" required>
+                                <option value="">Seleccionar moneda</option>
+                                @foreach($currencies as $currency)
+                                    <option value="{{ $currency->id }}" {{ $currency->code === 'USD' ? 'selected' : '' }}>
+                                        {{ $currency->code }} - {{ $currency->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="payment_status" class="form-label">
+                                Estado del Pago <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="payment_status" name="status" required>
+                                <option value="verified">Realizado</option>
+                                <option value="pending" selected>Pendiente</option>
+                            </select>
+                            <small class="text-muted">
+                                <strong>Realizado:</strong> Confirmado, se suma al total.<br>
+                                <strong>Pendiente:</strong> En proceso de verificación.
+                            </small>
+                        </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="currency_id" class="form-label">
-                            Moneda del Pago <span class="text-danger">*</span>
-                        </label>
-                        <select class="form-select" id="currency_id" name="currency_id" required>
-                            <option value="">Seleccionar moneda</option>
-                            @foreach($currencies as $currency)
-                                <option value="{{ $currency->id }}" {{ $currency->code === 'USD' ? 'selected' : '' }}>
-                                    {{ $currency->code }} - {{ $currency->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="status" class="form-label">
-                            Estado del Pago <span class="text-danger">*</span>
-                        </label>
-                        <select class="form-select" id="status" name="status" required>
-                            <option value="verified">Realizado</option>
-                            <option value="pending" selected>Pendiente</option>
-                        </select>
-                        <small class="text-muted">
-                            <strong>Realizado:</strong> El pago fue confirmado y se suma al total pagado.<br>
-                            <strong>Pendiente:</strong> El pago está en proceso de verificación.
-                        </small>
+                        <label for="notes" class="form-label">Notas</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Observaciones adicionales..."></textarea>
                     </div>
                 </div>
                 
@@ -1134,8 +1171,8 @@
             </div>
             <form action="{{ route('admin.participants.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="user_id" value="{{ $participant->user_id }}">
-                <input type="hidden" name="copy_from_application" value="{{ $participant->id }}">
+                <input type="hidden" name="user_id" value="{{ $participant->id }}">
+                <input type="hidden" name="copy_from_application" value="{{ optional($firstApp)->id }}">
                 
                 <div class="modal-body">
                     <div class="alert alert-info">

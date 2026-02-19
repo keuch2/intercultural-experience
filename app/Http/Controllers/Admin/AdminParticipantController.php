@@ -136,18 +136,51 @@ class AdminParticipantController extends Controller
             'phone' => ['nullable', 'string', 'max:50'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'birth_date' => ['nullable', 'date'],
+            'gender' => ['nullable', 'in:male,female,other'],
             'address' => ['nullable', 'string'],
             'city' => ['nullable', 'string', 'max:255'],
             'country' => ['nullable', 'string', 'max:255'],
-            'academic_level' => ['nullable', 'in:bachiller,licenciatura,maestria,posgrado,doctorado'],
-            'english_level' => ['nullable', 'in:basico,intermedio,avanzado,nativo'],
+            'academic_level' => ['nullable', 'in:high_school,bachelor,master,doctorate,bachiller,licenciatura,maestria,posgrado,doctorado'],
+            'english_level' => ['nullable', 'in:beginner,intermediate,advanced,native,basico,intermedio,avanzado,nativo'],
             'profile_photo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif', 'max:2048'],
             'program_id' => ['nullable', 'exists:programs,id'],
+            'institution' => ['nullable', 'string', 'max:255'],
+            'field_of_study' => ['nullable', 'string', 'max:255'],
+            'graduation_year' => ['nullable', 'integer', 'min:1950', 'max:2030'],
+            'current_occupation' => ['nullable', 'string', 'max:255'],
+            'blood_type' => ['nullable', 'string', 'max:10'],
+            'health_insurance' => ['nullable', 'string', 'max:255'],
+            'allergies' => ['nullable', 'string'],
+            'medical_conditions' => ['nullable', 'string'],
+            'emergency_contact_name' => ['nullable', 'string', 'max:255'],
+            'emergency_contact_phone' => ['nullable', 'string', 'max:50'],
         ]);
         
-        $data = $request->except(['password', 'password_confirmation', 'profile_photo', 'program_id']);
-        $data['password'] = Hash::make($request->password);
-        $data['role'] = 'user'; // Always set role as 'user' for participants
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'user',
+            'phone' => $request->phone,
+            'nationality' => $request->nationality,
+            'birth_date' => $request->birth_date,
+            'gender' => $request->gender,
+            'address' => $request->address,
+            'city' => $request->city,
+            'country' => $request->country,
+            'academic_level' => $request->academic_level,
+            'english_level' => $request->english_level,
+            'university' => $request->institution,
+            'career' => $request->field_of_study,
+            'academic_year' => $request->graduation_year,
+            'current_job' => $request->current_occupation,
+            'blood_type' => $request->blood_type,
+            'health_insurance' => $request->health_insurance,
+            'allergies' => $request->allergies,
+            'medical_conditions' => $request->medical_conditions,
+            'emergency_medical_contact' => $request->emergency_contact_name,
+            'emergency_medical_phone' => $request->emergency_contact_phone,
+        ];
         
         // Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
@@ -201,7 +234,16 @@ class AdminParticipantController extends Controller
         // Calcular total de puntos
         $totalPoints = $participant->points->sum('points');
         
-        return view('admin.participants.show', compact('participant', 'applicationStats', 'totalPoints'));
+        // All applications for the applications tab
+        $allApplications = $participant->applications;
+        
+        // Currencies for payment modal
+        $currencies = \App\Models\Currency::all();
+        
+        // Programs for new application modal
+        $programs = \App\Models\Program::where('is_active', true)->orderBy('name')->get();
+        
+        return view('admin.participants.show', compact('participant', 'applicationStats', 'totalPoints', 'allApplications', 'currencies', 'programs'));
     }
 
     /**
@@ -242,17 +284,23 @@ class AdminParticipantController extends Controller
         
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $participant->id],
             'phone' => ['nullable', 'string', 'max:50'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'birth_date' => ['nullable', 'date'],
+            'gender' => ['nullable', 'in:male,female,other'],
             'address' => ['nullable', 'string'],
             'city' => ['nullable', 'string', 'max:255'],
             'country' => ['nullable', 'string', 'max:255'],
-            'academic_level' => ['nullable', 'in:bachiller,licenciatura,maestria,posgrado,doctorado,high_school,bachelor,master,phd'],
-            'english_level' => ['nullable', 'in:basico,intermedio,avanzado,nativo,A1,A2,B1,B1+,B2,C1,C2'],
+            'ci_number' => ['nullable', 'string', 'max:255'],
+            'passport_number' => ['nullable', 'string', 'max:255'],
+            'passport_expiry' => ['nullable', 'date'],
+            'academic_level' => ['nullable', 'string', 'max:50'],
+            'english_level' => ['nullable', 'string', 'max:50'],
             'bio' => ['nullable', 'string'],
             'program_id' => ['nullable', 'exists:programs,id'],
+            'status' => ['nullable', 'in:pending,in_review,approved,rejected'],
+            'current_stage' => ['nullable', 'string', 'max:50'],
+            'progress_percentage' => ['nullable', 'integer', 'min:0', 'max:100'],
             // Campos de salud
             'blood_type' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
             'health_insurance' => ['nullable', 'string', 'max:100'],
@@ -271,31 +319,53 @@ class AdminParticipantController extends Controller
         
         $request->validate($rules);
         
-        $data = $request->except(['password', 'password_confirmation', 'program_id']);
+        // Build User data explicitly (only fields that exist on users table)
+        $userData = $request->only([
+            'name', 'phone', 'nationality', 'birth_date', 'gender',
+            'address', 'city', 'country', 'ci_number', 'passport_number', 'passport_expiry',
+            'academic_level', 'english_level', 'bio',
+            'blood_type', 'health_insurance', 'health_insurance_number',
+            'medical_conditions', 'allergies', 'medications',
+            'emergency_medical_contact', 'emergency_medical_phone',
+        ]);
         
         // Actualizar contraseña solo si se proporciona
         if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
+            $userData['password'] = Hash::make($request->password);
         }
         
-        // Actualizar participante con todos los campos incluyendo salud
-        $participant->update($data);
+        // Actualizar datos del usuario
+        $participant->update($userData);
         
-        // Crear aplicación si se asigna un programa
+        // Handle Application-specific fields
+        $firstApp = $participant->applications()->first();
+        
         if ($request->filled('program_id')) {
-            // Verificar si ya existe una aplicación para este programa
-            $existingApplication = Application::where('user_id', $participant->id)
-                ->where('program_id', $request->program_id)
-                ->first();
-            
-            if (!$existingApplication) {
-                Application::create([
-                    'user_id' => $participant->id,
-                    'program_id' => $request->program_id,
-                    'status' => 'pending',
-                    'submission_date' => now(),
-                ]);
+            if ($firstApp && $firstApp->program_id == $request->program_id) {
+                // Same program — update Application fields
+                $firstApp->update($request->only(['status', 'current_stage', 'progress_percentage']));
+            } else {
+                // Different or new program — create new application
+                $existingApp = Application::where('user_id', $participant->id)
+                    ->where('program_id', $request->program_id)
+                    ->first();
+                
+                if ($existingApp) {
+                    $existingApp->update($request->only(['status', 'current_stage', 'progress_percentage']));
+                } else {
+                    Application::create([
+                        'user_id' => $participant->id,
+                        'program_id' => $request->program_id,
+                        'status' => $request->status ?? 'pending',
+                        'current_stage' => $request->current_stage ?? 'registration',
+                        'progress_percentage' => $request->progress_percentage ?? 0,
+                        'applied_at' => now(),
+                    ]);
+                }
             }
+        } elseif ($firstApp) {
+            // No program selected but app exists — still update status/stage
+            $firstApp->update($request->only(['status', 'current_stage', 'progress_percentage']));
         }
         
         return redirect()->route('admin.participants.show', $participant->id)

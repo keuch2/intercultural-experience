@@ -14,11 +14,8 @@
                             <i class="fas fa-cogs"></i> Configuraciones del Sistema
                         </h3>
                         <div class="btn-group">
-                            <a href="{{ route('admin.settings.general') }}" class="btn btn-primary">
+                            <a href="{{ route('admin.settings.index') }}" class="btn btn-primary">
                                 <i class="fas fa-edit"></i> Configuración General
-                            </a>
-                            <a href="{{ route('admin.settings.whatsapp') }}" class="btn btn-success">
-                                <i class="fab fa-whatsapp"></i> WhatsApp
                             </a>
                             <form action="{{ route('admin.settings.clearCache') }}" method="POST" class="d-inline">
                                 @csrf
@@ -97,15 +94,9 @@
                         
                         <!-- Botón de edición específico por grupo -->
                         <div class="mt-3">
-                            @if($group === 'general' || $group === 'contact')
-                                <a href="{{ route('admin.settings.general') }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-edit"></i> Editar
-                                </a>
-                            @elseif($group === 'whatsapp')
-                                <a href="{{ route('admin.settings.whatsapp') }}" class="btn btn-sm btn-outline-success">
-                                    <i class="fab fa-whatsapp"></i> Configurar WhatsApp
-                                </a>
-                            @endif
+                            <a href="{{ route('admin.settings.index') }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
                         </div>
                     </div>
                 </div>

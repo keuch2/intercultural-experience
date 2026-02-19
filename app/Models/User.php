@@ -66,6 +66,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * Accessor: full_name (alias for name, for views that expect Application model)
+     */
+    public function getFullNameAttribute()
+    {
+        return $this->name;
+    }
+
+    /**
      * Encrypt bank_info when storing
      */
     public function setBankInfoAttribute($value)
@@ -145,6 +153,11 @@ class User extends Authenticatable
     public function applications()
     {
         return $this->hasMany(Application::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(\App\Models\Payment::class);
     }
 
     public function points()
@@ -434,6 +447,14 @@ class User extends Authenticatable
     public function auPairProfile()
     {
         return $this->hasOne(AuPairProfile::class);
+    }
+
+    /**
+     * Get Au Pair process for the user
+     */
+    public function auPairProcess()
+    {
+        return $this->hasOne(AuPairProcess::class);
     }
 
     /**

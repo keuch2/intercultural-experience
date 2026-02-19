@@ -100,6 +100,14 @@ class Application extends Model
     }
 
     /**
+     * Relación con Au Pair Process (prototype)
+     */
+    public function auPairProcess()
+    {
+        return $this->hasOne(AuPairProcess::class);
+    }
+
+    /**
      * Relación con Teacher Data
      */
     public function teacherData()

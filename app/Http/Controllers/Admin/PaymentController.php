@@ -16,13 +16,16 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'application_id' => 'required|exists:applications,id',
+            'application_id' => 'nullable|exists:applications,id',
             'user_id' => 'required|exists:users,id',
             'program_id' => 'nullable|exists:programs,id',
             'currency_id' => 'required|exists:currencies,id',
             'amount' => 'required|numeric|min:0',
             'concept' => 'required|string',
             'other_concept' => 'nullable|string|required_if:concept,Otro',
+            'payment_method' => 'required|string',
+            'reference_number' => 'required|string',
+            'notes' => 'nullable|string',
             'status' => 'required|in:pending,verified',
             'created_by' => 'nullable|exists:users,id',
         ]);
@@ -36,7 +39,7 @@ class PaymentController extends Controller
         unset($validated['other_concept']);
 
         // Establecer valores por defecto
-        $validated['payment_date'] = now()->toDateString(); // Fecha actual
+        $validated['payment_date'] = now()->toDateString();
         $validated['created_by'] = $validated['created_by'] ?? auth()->id();
         
         // Si el pago es "Realizado" (verified), establecer verificación automática
@@ -52,7 +55,7 @@ class PaymentController extends Controller
             : 'Pago registrado como PENDIENTE de verificación.';
 
         return redirect()
-            ->route('admin.participants.show', $validated['application_id'])
+            ->route('admin.participants.show', $validated['user_id'])
             ->with('success', $message);
     }
 

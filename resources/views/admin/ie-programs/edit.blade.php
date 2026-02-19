@@ -222,50 +222,6 @@
                             </div>
                         </div>
 
-                        <!-- Información Financiera -->
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Información Financiera</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="cost" class="form-label">Costo</label>
-                                            <input type="number" 
-                                                   class="form-control @error('cost') is-invalid @enderror" 
-                                                   id="cost" 
-                                                   name="cost" 
-                                                   value="{{ old('cost', $program->cost) }}" 
-                                                   min="0" 
-                                                   step="0.01">
-                                            @error('cost')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="currency_id" class="form-label">Moneda</label>
-                                            <select class="form-select @error('currency_id') is-invalid @enderror" 
-                                                    id="currency_id" 
-                                                    name="currency_id">
-                                                <option value="">Selecciona una moneda</option>
-                                                @foreach($currencies as $currency)
-                                                    <option value="{{ $currency->id }}" {{ old('currency_id', $program->currency_id) == $currency->id ? 'selected' : '' }}>
-                                                        {{ $currency->name }} ({{ $currency->symbol }})
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('currency_id')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Configuración -->
                         <div class="card mb-4">
                             <div class="card-header">

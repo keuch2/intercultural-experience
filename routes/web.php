@@ -153,8 +153,8 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::put('/applications/requisites/{requisite}/reject', [AdminUserProgramRequisiteController::class, 'reject'])->name('admin.applications.requisites.reject');
         Route::put('/applications/requisites/{requisite}/reset', [AdminUserProgramRequisiteController::class, 'reset'])->name('admin.applications.requisites.reset');
         
-        // Participants Management (MVP)
-        Route::resource('participants', \App\Http\Controllers\Admin\ParticipantController::class)->names('admin.participants');
+        // Participants Management (MVP) - only custom actions, CRUD handled by AdminParticipantController
+        Route::resource('participants', \App\Http\Controllers\Admin\ParticipantController::class)->names('admin.participants')->only([]);
         Route::put('/participants/{participant}/status', [\App\Http\Controllers\Admin\ParticipantController::class, 'updateStatus'])->name('admin.participants.update-status');
         Route::get('/participants/{participant}/program-history', [\App\Http\Controllers\Admin\ParticipantController::class, 'programHistory'])->name('admin.participants.program-history');
         Route::get('/participants/{participant}/program-form/{formType}', [\App\Http\Controllers\Admin\ParticipantController::class, 'getProgramForm'])->name('admin.participants.program-form');
@@ -239,6 +239,7 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::post('/finance/payments/{payment}/verify', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'verifyPayment'])->name('admin.finance.payments.verify');
         Route::post('/finance/payments/{payment}/reject', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'rejectPayment'])->name('admin.finance.payments.reject');
         Route::post('/finance/payments/{payment}/pending', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'pendingPayment'])->name('admin.finance.payments.pending');
+        Route::get('/finance/search-participants', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'searchParticipants'])->name('admin.finance.search-participants');
         Route::get('/finance/payment-requisites', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'getPaymentRequisites'])->name('admin.finance.payment-requisites');
         Route::get('/finance/report', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'report'])->name('admin.finance.report');
         Route::get('/finance/report/export', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'exportReport'])->name('admin.finance.report.export');
@@ -403,7 +404,48 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             Route::get('/get-recipients', [\App\Http\Controllers\Admin\CommunicationController::class, 'getRecipients'])->name('get-recipients');
         });
         
-        // Au Pair Management
+        // ========================================
+        // AU PAIR PROTOTYPE (New Hub-based approach)
+        // ========================================
+        Route::prefix('au-pair')->name('admin.aupair.')->group(function () {
+            // Profiles (hub central)
+            Route::get('/perfiles', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'index'])->name('profiles.index');
+            Route::get('/perfiles/{id}', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'show'])->name('profiles.show');
+            // Actions: Personal Data
+            Route::put('/perfiles/{id}/personal-data', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updatePersonalData'])->name('profiles.update-personal');
+            // Actions: Documents
+            Route::post('/perfiles/{id}/documents', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'uploadDocument'])->name('profiles.upload-doc');
+            Route::get('/perfiles/{id}/documents/{docId}/download', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'downloadDocument'])->name('profiles.download-doc');
+            Route::put('/perfiles/{id}/documents/{docId}/review', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'reviewDocument'])->name('profiles.review-doc');
+            Route::delete('/perfiles/{id}/documents/{docId}', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'deleteDocument'])->name('profiles.delete-doc');
+            // Actions: English Tests
+            Route::post('/perfiles/{id}/english-tests', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeEnglishTest'])->name('profiles.store-english-test');
+            Route::get('/perfiles/{id}/english-tests/{testId}/pdf', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'downloadEnglishTestPdf'])->name('profiles.download-english-pdf');
+            Route::delete('/perfiles/{id}/english-tests/{testId}', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'deleteEnglishTest'])->name('profiles.delete-english-test');
+            // Actions: Checklist & Stage
+            Route::put('/perfiles/{id}/checklist', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updateChecklist'])->name('profiles.update-checklist');
+            Route::post('/perfiles/{id}/advance-stage', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'advanceStage'])->name('profiles.advance-stage');
+            // Actions: Visa Process
+            Route::put('/perfiles/{id}/visa-process', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updateVisaProcess'])->name('profiles.update-visa');
+            Route::put('/perfiles/{id}/finalization', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updateFinalization'])->name('profiles.update-finalization');
+            // Actions: Matches
+            Route::post('/perfiles/{id}/matches', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeMatch'])->name('profiles.store-match');
+            Route::delete('/perfiles/{id}/matches/{matchId}', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'deleteMatch'])->name('profiles.delete-match');
+            // Actions: Support Logs
+            Route::post('/perfiles/{id}/support-logs', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeSupportLog'])->name('profiles.store-support-log');
+            Route::delete('/perfiles/{id}/support-logs/{logId}', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'deleteSupportLog'])->name('profiles.delete-support-log');
+            // Resources
+            Route::get('/recursos', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'resources'])->name('resources.index');
+            Route::post('/recursos', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeResource'])->name('resources.store');
+            Route::put('/recursos/{resourceId}', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updateResource'])->name('resources.update');
+            Route::post('/recursos/{resourceId}/upload', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'uploadResourceFile'])->name('resources.upload');
+            Route::get('/recursos/{resourceId}/download', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'downloadResource'])->name('resources.download');
+            Route::delete('/recursos/{resourceId}', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'deleteResource'])->name('resources.delete');
+            // Reports
+            Route::get('/reportes', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'reports'])->name('reports.index');
+        });
+
+        // Au Pair Management (Legacy - kept for backward compatibility)
         Route::prefix('au-pair')->name('admin.au-pair.')->group(function () {
             Route::get('/dashboard', [\App\Http\Controllers\Admin\AuPairController::class, 'dashboard'])->name('dashboard');
             Route::get('/profiles', [\App\Http\Controllers\Admin\AuPairController::class, 'profiles'])->name('profiles');

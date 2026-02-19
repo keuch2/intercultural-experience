@@ -196,11 +196,33 @@ class AdminFinanceController extends Controller
      */
     public function createPayment()
     {
-        $users = User::where('role', 'user')->orderBy('name')->get();
         $programs = Program::with('currency')->orderBy('name')->get();
         $requisites = [];
         
-        return view('admin.finance.create_payment', compact('users', 'programs', 'requisites'));
+        return view('admin.finance.create_payment', compact('programs', 'requisites'));
+    }
+
+    /**
+     * Búsqueda de participantes (solo role=user) para autocompletado
+     */
+    public function searchParticipants(Request $request)
+    {
+        $query = $request->get('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $users = User::where('role', 'user')
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('email', 'like', "%{$query}%");
+            })
+            ->orderBy('name')
+            ->limit(15)
+            ->get(['id', 'name', 'email']);
+
+        return response()->json($users);
     }
     
     /**
@@ -227,55 +249,91 @@ class AdminFinanceController extends Controller
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'program_requisite_id' => 'required|exists:program_requisites,id',
+            'program_id' => 'required|exists:programs,id',
+            'program_requisite_id' => 'nullable|exists:program_requisites,id',
+            'concept' => 'nullable|string',
             'amount' => 'required|numeric|min:0',
+            'currency_id' => 'nullable|exists:currencies,id',
             'payment_method' => 'required|string',
-            'reference' => 'required|string',
+            'reference_number' => 'required|string',
+            'notes' => 'nullable|string',
+            'status' => 'nullable|in:pending,verified',
         ]);
         
-        // Verificar si el usuario tiene una aplicación para el programa
-        $programRequisite = ProgramRequisite::findOrFail($request->program_requisite_id);
+        // Determine concept name from requisite or free text
+        $concept = $request->concept;
+        if ($request->program_requisite_id) {
+            $requisite = ProgramRequisite::find($request->program_requisite_id);
+            if ($requisite && !$concept) {
+                $concept = $requisite->name;
+            }
+        }
+        
+        // Find or create application for this user+program
         $application = Application::where('user_id', $request->user_id)
-            ->where('program_id', $programRequisite->program_id)
+            ->where('program_id', $request->program_id)
             ->first();
             
         if (!$application) {
-            // Crear una nueva aplicación si no existe
-            $application = new Application();
-            $application->user_id = $request->user_id;
-            $application->program_id = $programRequisite->program_id;
-            $application->status = 'pending';
-            $application->save();
+            $application = Application::create([
+                'user_id' => $request->user_id,
+                'program_id' => $request->program_id,
+                'status' => 'pending',
+                'applied_at' => now(),
+            ]);
         }
         
-        // Verificar si ya existe un registro para este usuario y requisito
-        $existingPayment = UserProgramRequisite::where('application_id', $application->id)
-            ->where('program_requisite_id', $request->program_requisite_id)
-            ->first();
-            
-        if ($existingPayment) {
-            $existingPayment->observations = $request->amount; // Guardar monto en observations
-            $existingPayment->file_path = $request->reference; // Guardar referencia en file_path
-            $existingPayment->status = 'verified';
-            $existingPayment->verified_at = now();
-            $existingPayment->save();
-            
-            return redirect()->route('admin.finance.payments')
-                ->with('success', 'Pago actualizado correctamente.');
-        } else {
-            // Crear nuevo registro de pago
-            $payment = new UserProgramRequisite();
-            $payment->application_id = $application->id;
-            $payment->program_requisite_id = $request->program_requisite_id;
-            $payment->observations = $request->amount; // Guardar monto en observations
-            $payment->file_path = $request->reference; // Guardar referencia en file_path
-            $payment->status = 'verified';
-            $payment->verified_at = now();
-            $payment->save();
-            
-            return redirect()->route('admin.finance.payments')
-                ->with('success', 'Pago registrado correctamente.');
+        // Determine currency: from request, from program, or default USD
+        $currencyId = $request->currency_id;
+        if (!$currencyId) {
+            $program = Program::find($request->program_id);
+            $currencyId = $program->currency_id ?? Currency::where('code', 'USD')->value('id');
         }
+        
+        $status = $request->status ?? 'pending';
+        
+        // Create payment in the payments table
+        $payment = \App\Models\Payment::create([
+            'application_id' => $application->id,
+            'user_id' => $request->user_id,
+            'program_id' => $request->program_id,
+            'currency_id' => $currencyId,
+            'amount' => $request->amount,
+            'concept' => $concept,
+            'payment_method' => $request->payment_method,
+            'reference_number' => $request->reference_number,
+            'payment_date' => now()->toDateString(),
+            'status' => $status,
+            'notes' => $request->notes,
+            'created_by' => auth()->id(),
+            'verified_by' => $status === 'verified' ? auth()->id() : null,
+            'verified_at' => $status === 'verified' ? now() : null,
+        ]);
+        
+        // Also update the user_program_requisite if linked to a requisite
+        if ($request->program_requisite_id) {
+            $userRequisite = UserProgramRequisite::where('application_id', $application->id)
+                ->where('program_requisite_id', $request->program_requisite_id)
+                ->first();
+                
+            if (!$userRequisite) {
+                $userRequisite = new UserProgramRequisite();
+                $userRequisite->application_id = $application->id;
+                $userRequisite->program_requisite_id = $request->program_requisite_id;
+            }
+            
+            $userRequisite->status = $status;
+            $userRequisite->observations = 'Payment #' . $payment->id . ' - $' . number_format($request->amount, 2);
+            if ($status === 'verified') {
+                $userRequisite->verified_at = now();
+            }
+            $userRequisite->save();
+        }
+        
+        return redirect()->route('admin.finance.payments')
+            ->with('success', $status === 'verified' 
+                ? 'Pago registrado como REALIZADO exitosamente.' 
+                : 'Pago registrado como PENDIENTE de verificación.');
     }
     
     /**
