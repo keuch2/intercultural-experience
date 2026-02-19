@@ -74,7 +74,6 @@ return new class extends Migration
             $table->softDeletes();
             
             // Indexes
-            $table->index('status');
             $table->index('is_awarded');
             $table->index(['user_id', 'scholarship_id']);
         });
