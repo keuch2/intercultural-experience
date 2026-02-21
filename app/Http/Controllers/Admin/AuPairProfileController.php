@@ -217,34 +217,50 @@ class AuPairProfileController extends Controller
             return back()->with('error', 'No se encontró el proceso Au Pair para este participante.');
         }
 
+        $docType = $request->input('document_type');
+        $docDefs = AuPairDocument::documentTypes();
+        $docDef = $docDefs[$docType] ?? ['label' => $docType, 'required' => false, 'sort' => 99];
+        $allowsMultiple = ($docDef['min_count'] ?? 1) > 1;
+
+        // Validate: accept single file OR multiple files
         $request->validate([
             'document_type' => 'required|string|max:50',
             'stage' => 'required|in:admission,application_payment1,application_payment2,visa',
-            'file' => 'required|file|max:1048576', // 1GB
+            'file' => $allowsMultiple ? 'nullable|file|max:1048576' : 'required|file|max:1048576',
+            'files' => $allowsMultiple ? 'nullable|array' : 'nullable',
+            'files.*' => 'file|max:1048576',
             'notes' => 'nullable|string|max:500',
         ]);
 
-        $docType = $request->document_type;
-        $docDefs = AuPairDocument::documentTypes();
-        $docDef = $docDefs[$docType] ?? ['label' => $docType, 'required' => false, 'sort' => 99];
+        $filesToProcess = [];
+        if ($request->hasFile('files')) {
+            $filesToProcess = $request->file('files');
+        } elseif ($request->hasFile('file')) {
+            $filesToProcess = [$request->file('file')];
+        }
 
-        $file = $request->file('file');
-        $path = $file->store("au-pair-documents/{$user->id}", 'public');
+        if (empty($filesToProcess)) {
+            return back()->with('error', 'Debe seleccionar al menos un archivo.');
+        }
 
-        AuPairDocument::create([
-            'au_pair_process_id' => $process->id,
-            'document_type' => $docType,
-            'stage' => $request->stage,
-            'uploaded_by_type' => 'staff',
-            'file_path' => $path,
-            'original_filename' => $file->getClientOriginalName(),
-            'file_size' => $file->getSize(),
-            'status' => 'pending',
-            'is_required' => $docDef['required'] ?? true,
-            'min_count' => $docDef['min_count'] ?? 1,
-            'sort_order' => $docDef['sort'] ?? 99,
-            'notes' => $request->notes,
-        ]);
+        foreach ($filesToProcess as $file) {
+            $path = $file->store("au-pair-documents/{$user->id}", 'public');
+
+            AuPairDocument::create([
+                'au_pair_process_id' => $process->id,
+                'document_type' => $docType,
+                'stage' => $request->stage,
+                'uploaded_by_type' => 'staff',
+                'file_path' => $path,
+                'original_filename' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'status' => 'pending',
+                'is_required' => $docDef['required'] ?? true,
+                'min_count' => $docDef['min_count'] ?? 1,
+                'sort_order' => $docDef['sort'] ?? 99,
+                'notes' => $request->notes,
+            ]);
+        }
 
         $tab = match($request->stage) {
             'admission' => 'admission',

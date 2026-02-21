@@ -435,7 +435,7 @@
 
 {{-- Upload Modals - Payment 1 --}}
 @foreach($p1DocDefs as $docKey => $docDef)
-@if(!$p1Docs->where('document_type', $docKey)->first())
+@if(!$p1Docs->where('document_type', $docKey)->first() || ($docDef['min_count'] ?? 1) > 1)
 <div class="modal fade" id="uploadP1Modal{{ $docKey }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -445,7 +445,12 @@
                 <input type="hidden" name="stage" value="application_payment1">
                 <div class="modal-header"><h6 class="modal-title">Subir: {{ $docDef['label'] }}</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3"><label class="form-label small">Archivo <span class="text-danger">*</span></label><input type="file" name="file" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.mp4,.mov"><small class="text-muted">Máx. 1GB</small></div>
+                    @if(($docDef['min_count'] ?? 1) > 1)
+                        <div class="alert alert-info py-2 px-3 mb-3"><small><i class="fas fa-info-circle me-1"></i> Se requieren mínimo <strong>{{ $docDef['min_count'] }}</strong> archivos. Puede seleccionar varios a la vez.</small></div>
+                        <div class="mb-3"><label class="form-label small">Archivos <span class="text-danger">*</span></label><input type="file" name="files[]" class="form-control form-control-sm" required multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.mp4,.mov"><small class="text-muted">Máx. 1GB por archivo. Seleccione múltiples archivos.</small></div>
+                    @else
+                        <div class="mb-3"><label class="form-label small">Archivo <span class="text-danger">*</span></label><input type="file" name="file" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.mp4,.mov"><small class="text-muted">Máx. 1GB</small></div>
+                    @endif
                     <div class="mb-0"><label class="form-label small">Notas</label><input type="text" name="notes" class="form-control form-control-sm"></div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-upload me-1"></i>Subir</button></div>
@@ -458,7 +463,7 @@
 
 {{-- Upload Modals - Payment 2 --}}
 @foreach($p2DocDefs as $docKey => $docDef)
-@if(!$p2Docs->where('document_type', $docKey)->first())
+@if(!$p2Docs->where('document_type', $docKey)->first() || ($docDef['min_count'] ?? 1) > 1)
 <div class="modal fade" id="uploadP2Modal{{ $docKey }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -468,7 +473,12 @@
                 <input type="hidden" name="stage" value="application_payment2">
                 <div class="modal-header"><h6 class="modal-title">Subir: {{ $docDef['label'] }}</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3"><label class="form-label small">Archivo <span class="text-danger">*</span></label><input type="file" name="file" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.mp4,.mov"><small class="text-muted">Máx. 1GB</small></div>
+                    @if(($docDef['min_count'] ?? 1) > 1)
+                        <div class="alert alert-info py-2 px-3 mb-3"><small><i class="fas fa-info-circle me-1"></i> Se requieren mínimo <strong>{{ $docDef['min_count'] }}</strong> archivos. Puede seleccionar varios a la vez.</small></div>
+                        <div class="mb-3"><label class="form-label small">Archivos <span class="text-danger">*</span></label><input type="file" name="files[]" class="form-control form-control-sm" required multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.mp4,.mov"><small class="text-muted">Máx. 1GB por archivo. Seleccione múltiples archivos.</small></div>
+                    @else
+                        <div class="mb-3"><label class="form-label small">Archivo <span class="text-danger">*</span></label><input type="file" name="file" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.mp4,.mov"><small class="text-muted">Máx. 1GB</small></div>
+                    @endif
                     <div class="mb-0"><label class="form-label small">Notas</label><input type="text" name="notes" class="form-control form-control-sm"></div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-upload me-1"></i>Subir</button></div>
