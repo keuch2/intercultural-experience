@@ -390,7 +390,7 @@
         </h5>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{ route('admin.aupair.profiles.update-checklist', $user->id) }}">
+        <form method="POST" action="{{ route('admin.aupair.profiles.update-checklist', $user->id) }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <div class="list-group mb-3">
@@ -426,7 +426,27 @@
                     @endif
                 </label>
             </div>
-            <button type="submit" class="btn btn-sm btn-primary">
+
+            {{-- Contrato firmado como archivo físico --}}
+            <div class="mt-3 p-3 border rounded bg-light">
+                <h6 class="small fw-bold text-muted mb-2"><i class="fas fa-file-contract me-1"></i> Archivo del Contrato Firmado</h6>
+                @if($proc && $proc->contract_file_path)
+                    <div class="d-flex align-items-center">
+                        <a href="{{ Storage::url($proc->contract_file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                            <i class="fas fa-file-pdf me-1"></i> {{ $proc->contract_original_filename ?? 'Ver Contrato' }}
+                        </a>
+                        <small class="text-success"><i class="fas fa-check-circle"></i> Archivo cargado</small>
+                    </div>
+                @else
+                    <small class="text-muted d-block mb-2">No se ha cargado el archivo del contrato firmado.</small>
+                @endif
+                <div class="mt-2">
+                    <input type="file" name="contract_file" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png">
+                    <small class="text-muted">Suba el contrato firmado escaneado (PDF o imagen)</small>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-sm btn-primary mt-3">
                 <i class="fas fa-save me-1"></i> Guardar Checklist
             </button>
         </form>

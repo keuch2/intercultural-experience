@@ -30,6 +30,8 @@ class AuPairProcess extends Model
         'contract_signed',
         'contract_signed_at',
         'contract_confirmed_by',
+        'contract_file_path',
+        'contract_original_filename',
         'payment_1_verified',
         'payment_2_verified',
         'finalization_result',

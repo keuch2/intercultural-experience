@@ -470,6 +470,7 @@ class AuPairProfileController extends Controller
             'all_docs_and_payments_complete' => 'nullable|boolean',
             'itep_completed' => 'nullable|boolean',
             'contract_signed' => 'nullable|boolean',
+            'contract_file' => 'nullable|file|max:20480|mimes:pdf,jpg,jpeg,png',
         ]);
 
         // Convert checkbox values
@@ -481,6 +482,15 @@ class AuPairProfileController extends Controller
             $validated['contract_signed_at'] = now();
             $validated['contract_confirmed_by'] = Auth::id();
         }
+
+        // Handle contract file upload
+        if ($request->hasFile('contract_file')) {
+            $file = $request->file('contract_file');
+            $path = $file->store("au-pair-contracts/{$user->id}", 'public');
+            $validated['contract_file_path'] = $path;
+            $validated['contract_original_filename'] = $file->getClientOriginalName();
+        }
+        unset($validated['contract_file']);
 
         $process->update($validated);
 
