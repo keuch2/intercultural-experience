@@ -103,11 +103,6 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::post('/invoices/{id}/mark-paid', [App\Http\Controllers\Admin\AdminInvoiceController::class, 'markAsPaid'])->name('admin.invoices.mark-paid');
         Route::put('/invoices/{id}/cancel', [App\Http\Controllers\Admin\AdminInvoiceController::class, 'cancel'])->name('admin.invoices.cancel');
         
-        // Activity Logs Management
-        Route::get('/activity-logs', [App\Http\Controllers\Admin\AdminActivityLogController::class, 'index'])->name('admin.activity-logs.index');
-        Route::get('/activity-logs/{activityLog}', [App\Http\Controllers\Admin\AdminActivityLogController::class, 'show'])->name('admin.activity-logs.show');
-        Route::get('/activity-logs/stats/data', [App\Http\Controllers\Admin\AdminActivityLogController::class, 'stats'])->name('admin.activity-logs.stats');
-        
         // IE Programs Management
         Route::get('/ie-programs', [IeProgramController::class, 'index'])->name('admin.ie-programs.index');
         Route::get('/ie-programs/create', [IeProgramController::class, 'create'])->name('admin.ie-programs.create');
