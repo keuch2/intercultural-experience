@@ -299,6 +299,10 @@ class ParticipantController extends Controller
             'country' => 'required|string|max:255',
             'status' => 'sometimes|string|in:pending,in_review,approved,rejected,completed',
             'current_stage' => 'sometimes|string|in:registration,documentation,evaluation,in_review,approved,in_program,completed,withdrawn',
+            'cost_currency' => 'nullable|in:USD,PYG',
+            'total_cost' => 'nullable|numeric|min:0',
+            'payment_deadline' => 'nullable|date',
+            'exchange_rate' => 'nullable|numeric|min:0',
         ]);
         
         \DB::transaction(function () use ($request, $participant, $validated) {

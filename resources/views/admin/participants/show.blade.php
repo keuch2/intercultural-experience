@@ -244,12 +244,29 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Costo Total:</strong><br>
-                                    ${{ number_format(optional($firstApp)->total_cost ?? 0, 2) }}
+                                    @php $cur = optional($firstApp)->cost_currency ?? 'USD'; @endphp
+                                    {{ $cur }} {{ number_format(optional($firstApp)->total_cost ?? 0, 2) }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Monto Pagado:</strong><br>
-                                    ${{ number_format(optional($firstApp)->amount_paid ?? 0, 2) }}
+                                    {{ $cur }} {{ number_format(optional($firstApp)->amount_paid ?? 0, 2) }}
                                 </div>
+                                @if(optional($firstApp)->exchange_rate)
+                                <div class="col-md-6 mb-3">
+                                    <strong>Tipo de Cambio:</strong><br>
+                                    1 USD = {{ number_format(optional($firstApp)->exchange_rate, 0) }} PYG
+                                </div>
+                                @endif
+                                @if(optional($firstApp)->payment_deadline)
+                                <div class="col-md-6 mb-3">
+                                    <strong>Fecha Límite de Pago:</strong><br>
+                                    @php $deadline = optional($firstApp)->payment_deadline; @endphp
+                                    <span class="{{ $deadline->isPast() ? 'text-danger fw-bold' : '' }}">
+                                        {{ $deadline->format('d/m/Y') }}
+                                        @if($deadline->isPast()) (Vencido) @endif
+                                    </span>
+                                </div>
+                                @endif
                                 <div class="col-md-6 mb-3">
                                     <strong>Fecha de Aplicación:</strong><br>
                                     {{ optional($firstApp)->applied_at ? optional($firstApp)->applied_at->format('d/m/Y H:i') : 'No especificada' }}

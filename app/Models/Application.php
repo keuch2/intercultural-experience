@@ -22,7 +22,10 @@ class Application extends Model
         'current_stage',
         'progress_percentage',
         'total_cost',
+        'cost_currency',
         'amount_paid',
+        'payment_deadline',
+        'exchange_rate',
         'applied_at',
         'started_at',
         'completed_at',
@@ -36,6 +39,8 @@ class Application extends Model
         'completed_at' => 'datetime',
         'total_cost' => 'decimal:2',
         'amount_paid' => 'decimal:2',
+        'payment_deadline' => 'date',
+        'exchange_rate' => 'decimal:2',
         'progress_percentage' => 'integer',
     ];
 

@@ -196,6 +196,37 @@
                         </div>
                     </div>
 
+                    <!-- Costo del Programa -->
+                    <hr>
+                    <h6 class="text-primary mb-3"><i class="fas fa-dollar-sign me-1"></i> Costo del Programa</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="cost_currency" class="form-label">Moneda</label>
+                            <select class="form-select" id="cost_currency" name="cost_currency">
+                                <option value="USD" {{ old('cost_currency', optional($firstApp)->cost_currency) == 'USD' ? 'selected' : '' }}>USD (Dólar)</option>
+                                <option value="PYG" {{ old('cost_currency', optional($firstApp)->cost_currency) == 'PYG' ? 'selected' : '' }}>PYG (Guaraní)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="total_cost" class="form-label">Costo Total</label>
+                            <input type="number" class="form-control" id="total_cost" name="total_cost" 
+                                   value="{{ old('total_cost', optional($firstApp)->total_cost ?? 0) }}" step="0.01" min="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="payment_deadline" class="form-label">Fecha Límite de Pago</label>
+                            <input type="date" class="form-control" id="payment_deadline" name="payment_deadline" 
+                                   value="{{ old('payment_deadline', optional(optional($firstApp)->payment_deadline)->format('Y-m-d')) }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="exchange_rate" class="form-label">Tipo de Cambio (PYG/USD)</label>
+                            <input type="number" class="form-control" id="exchange_rate" name="exchange_rate" 
+                                   value="{{ old('exchange_rate', optional($firstApp)->exchange_rate) }}" step="0.01" min="0"
+                                   placeholder="Ej: 7300">
+                            <small class="form-text text-muted">Solo si el pago es en PYG y el costo en USD</small>
+                        </div>
+                    </div>
+                    <hr>
+
                     <!-- Asignación de Programa -->
                     <div class="row mb-3">
                         <div class="col-md-10">
