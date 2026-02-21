@@ -10,6 +10,7 @@ use App\Models\AuPairDocument;
 use App\Models\Application;
 use App\Models\Payment;
 use App\Models\EnglishEvaluation;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -269,6 +270,14 @@ class AuPairProfileController extends Controller
             default => 'admission',
         };
 
+        // Audit log
+        ActivityLog::log('au_pair')
+            ->performedOn($user)
+            ->causedBy(auth()->user())
+            ->withAction('document_upload')
+            ->withProperties(['document_type' => $docType, 'stage' => $request->stage, 'files_count' => count($filesToProcess)])
+            ->log("Documento(s) '{$docType}' subido(s) para participante {$user->name}");
+
         return redirect()
             ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => $tab])
             ->with('success', 'Documento subido correctamente.');
@@ -312,6 +321,14 @@ class AuPairProfileController extends Controller
             $process->update(['admission_status' => 'approved']);
         }
 
+        // Audit log
+        ActivityLog::log('au_pair')
+            ->performedOn(User::find($id))
+            ->causedBy(auth()->user())
+            ->withAction('document_' . $request->action)
+            ->withProperties(['document_type' => $doc->document_type, 'document_id' => $doc->id])
+            ->log("Documento '{$doc->document_type}' " . ($request->action === 'approve' ? 'aprobado' : 'rechazado'));
+
         return redirect()
             ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => $this->stageToTab($doc->stage)])
             ->with('success', $request->action === 'approve' ? 'Documento aprobado.' : 'Documento rechazado.');
@@ -342,6 +359,18 @@ class AuPairProfileController extends Controller
                 'deleted_by' => auth()->id(),
             ]);
         }
+
+        // Audit log
+        ActivityLog::log('au_pair')
+            ->performedOn(User::find($id))
+            ->causedBy(auth()->user())
+            ->withAction('document_delete')
+            ->withProperties([
+                'document_type' => $doc->document_type,
+                'was_approved' => $doc->isApproved(),
+                'deletion_reason' => $request->deletion_reason ?? null,
+            ])
+            ->log("Documento '{$doc->document_type}' eliminado");
 
         Storage::disk('public')->delete($doc->file_path);
         $doc->forceDelete();
@@ -560,6 +589,14 @@ class AuPairProfileController extends Controller
                     }
                 }
             }
+
+            // Audit log
+            ActivityLog::log('au_pair')
+                ->performedOn($user)
+                ->causedBy(auth()->user())
+                ->withAction('stage_advance')
+                ->withProperties(['from' => $previousStage, 'to' => $process->fresh()->current_stage])
+                ->log("Proceso avanzó de '{$previousStage}' a '{$process->fresh()->current_stage}'");
 
             return redirect()
                 ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => $process->fresh()->current_stage === 'application' ? 'application' : 'match_visa'])
