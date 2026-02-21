@@ -39,8 +39,13 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Solicitudes Pendientes</div>
+                            Pendientes de Aprobación</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $pendingApplications ?? 0 }}</div>
+                        <small class="text-muted">
+                            {{ $pendingApps ?? 0 }} solicitudes &middot;
+                            {{ $pendingDocs ?? 0 }} documentos &middot;
+                            {{ $pendingPayments ?? 0 }} pagos
+                        </small>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-file-alt fa-2x text-gray-300"></i>

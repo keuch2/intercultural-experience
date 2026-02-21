@@ -10,6 +10,8 @@ use App\Models\Application;
 use App\Models\Reward;
 use App\Models\Redemption;
 use App\Models\SupportTicket;
+use App\Models\AuPairDocument;
+use App\Models\Payment;
 
 class AdminDashboardController extends Controller
 {
@@ -22,7 +24,13 @@ class AdminDashboardController extends Controller
     {
         // Estadísticas para el dashboard
         $userCount = User::count();
-        $pendingApplications = Application::where('status', 'pending')->count();
+        
+        // Centralizar todas las solicitudes pendientes de aprobación
+        $pendingApps = Application::where('status', 'pending')->count();
+        $pendingDocs = AuPairDocument::where('status', 'pending')->count();
+        $pendingPayments = Payment::where('status', 'pending')->count();
+        $pendingApplications = $pendingApps + $pendingDocs + $pendingPayments;
+        
         $openTickets = SupportTicket::whereIn('status', ['open', 'in_progress'])->count();
         $pendingRedemptions = Redemption::where('status', 'pending')->count();
         
@@ -46,7 +54,10 @@ class AdminDashboardController extends Controller
         
         return view('admin.dashboard', compact(
             'userCount', 
-            'pendingApplications', 
+            'pendingApplications',
+            'pendingApps',
+            'pendingDocs',
+            'pendingPayments',
             'openTickets', 
             'pendingRedemptions',
             'recentApplications',

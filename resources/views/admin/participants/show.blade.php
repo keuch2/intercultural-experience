@@ -214,7 +214,17 @@
                             
                             <hr>
                             
-                            <h5 class="mb-3">Información del Programa</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">Información del Programa</h5>
+                                @php
+                                    $programSubcategory = optional(optional($firstApp)->program)->subcategory;
+                                @endphp
+                                @if($programSubcategory === 'Au Pair' && $participant->user_id)
+                                    <a href="{{ route('admin.aupair.profiles.show', $participant->user_id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-external-link-alt"></i> Ver Perfil Au Pair
+                                    </a>
+                                @endif
+                            </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <strong>Programa:</strong><br>

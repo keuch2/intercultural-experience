@@ -264,12 +264,18 @@
                                             <i class="fas fa-times"></i>
                                         </button>
                                     @endif
-                                    <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar este documento?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Eliminar">
+                                    @if($doc->isApproved())
+                                        <button class="btn btn-sm btn-outline-danger" title="Eliminar (requiere motivo)" data-bs-toggle="modal" data-bs-target="#deleteApprovedDocModal{{ $doc->id }}">
                                             <i class="fas fa-trash"></i>
                                         </button>
-                                    </form>
+                                    @else
+                                        <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar este documento?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             @else
                                 <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#uploadModal{{ $docKey }}">
@@ -414,6 +420,37 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times me-1"></i> Rechazar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
+{{-- Delete Approved Document Modals --}}
+@foreach($docs->where('status', 'approved') as $doc)
+<div class="modal fade" id="deleteApprovedDocModal{{ $doc->id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}">
+                @csrf @method('DELETE')
+                <div class="modal-header bg-danger text-white">
+                    <h6 class="modal-title"><i class="fas fa-exclamation-triangle me-1"></i> Eliminar Documento Aprobado</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning py-2 px-3 mb-3">
+                        <small><i class="fas fa-shield-alt me-1"></i> Este documento está <strong>aprobado</strong>. Solo un administrador puede eliminarlo y debe indicar un motivo.</small>
+                    </div>
+                    <p class="small text-muted">Documento: <strong>{{ $admissionDocDefs[$doc->document_type]['label'] ?? $doc->document_type }}</strong></p>
+                    <div class="mb-0">
+                        <label class="form-label small">Motivo de eliminación <span class="text-danger">*</span></label>
+                        <textarea name="deletion_reason" class="form-control form-control-sm" rows="3" required placeholder="Indique el motivo por el cual se elimina este documento aprobado..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash me-1"></i> Eliminar</button>
                 </div>
             </form>
         </div>

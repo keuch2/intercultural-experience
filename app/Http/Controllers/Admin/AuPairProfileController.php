@@ -303,14 +303,29 @@ class AuPairProfileController extends Controller
 
     /**
      * Delete a document
+     * Approved documents require a deletion_reason (admin only).
      */
-    public function deleteDocument($id, $docId)
+    public function deleteDocument(Request $request, $id, $docId)
     {
         $doc = AuPairDocument::where('id', $docId)
             ->whereHas('process', fn($q) => $q->where('user_id', $id))
             ->firstOrFail();
 
         $tab = $this->stageToTab($doc->stage);
+
+        // Block deletion of approved documents without a reason
+        if ($doc->isApproved()) {
+            $request->validate([
+                'deletion_reason' => 'required|string|max:500',
+            ], [
+                'deletion_reason.required' => 'Debe indicar un motivo para eliminar un documento aprobado.',
+            ]);
+
+            $doc->update([
+                'deletion_reason' => $request->deletion_reason,
+                'deleted_by' => auth()->id(),
+            ]);
+        }
 
         Storage::disk('public')->delete($doc->file_path);
         $doc->forceDelete();
