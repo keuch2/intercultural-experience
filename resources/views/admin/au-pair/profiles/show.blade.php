@@ -64,6 +64,14 @@
                     {{ $globalStatus }}
                 </span>
                 <div class="mt-2">
+                    @php
+                        $userApp = \App\Models\Application::where('user_id', $user->id)->latest()->first();
+                    @endphp
+                    @if($userApp)
+                    <a href="{{ route('admin.participants.show', $userApp->id) }}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="fas fa-user"></i> Perfil General
+                    </a>
+                    @endif
                     <a href="{{ route('admin.aupair.profiles.index') }}" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> Volver al listado
                     </a>

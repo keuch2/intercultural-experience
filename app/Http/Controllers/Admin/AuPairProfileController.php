@@ -220,7 +220,7 @@ class AuPairProfileController extends Controller
         $request->validate([
             'document_type' => 'required|string|max:50',
             'stage' => 'required|in:admission,application_payment1,application_payment2,visa',
-            'file' => 'required|file|max:20480', // 20MB
+            'file' => 'required|file|max:1048576', // 1GB
             'notes' => 'nullable|string|max:500',
         ]);
 

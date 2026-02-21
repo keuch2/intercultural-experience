@@ -368,7 +368,7 @@
                 <input type="hidden" name="stage" value="visa">
                 <div class="modal-header"><h6 class="modal-title">Subir: {{ $docDef['label'] }}</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3"><label class="form-label small">Archivo <span class="text-danger">*</span></label><input type="file" name="file" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"><small class="text-muted">Máx. 20MB</small></div>
+                    <div class="mb-3"><label class="form-label small">Archivo <span class="text-danger">*</span></label><input type="file" name="file" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.mp4,.mov"><small class="text-muted">Máx. 1GB</small></div>
                     <div class="mb-0"><label class="form-label small">Notas</label><input type="text" name="notes" class="form-control form-control-sm"></div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-upload me-1"></i>Subir</button></div>
@@ -392,7 +392,7 @@
                 <input type="hidden" name="stage" value="visa">
                 <div class="modal-header"><h6 class="modal-title">Subir: {{ $docDef['label'] }}</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3"><label class="form-label small">Archivo <span class="text-danger">*</span></label><input type="file" name="file" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"><small class="text-muted">Máx. 20MB</small></div>
+                    <div class="mb-3"><label class="form-label small">Archivo <span class="text-danger">*</span></label><input type="file" name="file" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.mp4,.mov"><small class="text-muted">Máx. 1GB</small></div>
                     <div class="mb-0"><label class="form-label small">Notas</label><input type="text" name="notes" class="form-control form-control-sm"></div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-upload me-1"></i>Subir</button></div>

@@ -159,6 +159,14 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::get('/participants/{participant}/program-history', [\App\Http\Controllers\Admin\ParticipantController::class, 'programHistory'])->name('admin.participants.program-history');
         Route::get('/participants/{participant}/program-form/{formType}', [\App\Http\Controllers\Admin\ParticipantController::class, 'getProgramForm'])->name('admin.participants.program-form');
         
+        // Emergency Contacts
+        Route::post('/participants/{participant}/emergency-contacts', [\App\Http\Controllers\Admin\ParticipantController::class, 'storeEmergencyContact'])->name('admin.participants.emergency-contacts.store');
+        Route::delete('/emergency-contacts/{contact}', [\App\Http\Controllers\Admin\ParticipantController::class, 'destroyEmergencyContact'])->name('admin.participants.emergency-contacts.destroy');
+        
+        // Work Experiences
+        Route::post('/participants/{participant}/work-experiences', [\App\Http\Controllers\Admin\ParticipantController::class, 'storeWorkExperience'])->name('admin.participants.work-experiences.store');
+        Route::delete('/work-experiences/{experience}', [\App\Http\Controllers\Admin\ParticipantController::class, 'destroyWorkExperience'])->name('admin.participants.work-experiences.destroy');
+        
         // Payments Management
         Route::post('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'store'])->name('admin.payments.store');
         Route::post('/payments/{payment}/verify', [\App\Http\Controllers\Admin\PaymentController::class, 'verify'])->name('admin.payments.verify');

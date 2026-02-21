@@ -440,4 +440,98 @@ class ParticipantController extends Controller
             return response('<div class="alert alert-danger"><strong>Error:</strong> ' . $e->getMessage() . '</div>', 500);
         }
     }
+
+    /**
+     * Store a new emergency contact for a participant.
+     */
+    public function storeEmergencyContact(Request $request, $participantId)
+    {
+        $participant = Application::findOrFail($participantId);
+        $user = User::findOrFail($participant->user_id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'relationship' => 'required|string|max:255',
+            'phone' => 'required|string|max:50',
+            'alternative_phone' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255',
+            'address' => 'nullable|string|max:500',
+            'is_primary' => 'nullable|boolean',
+        ]);
+
+        $validated['user_id'] = $user->id;
+        $validated['is_primary'] = $request->boolean('is_primary');
+
+        if ($validated['is_primary']) {
+            \App\Models\EmergencyContact::where('user_id', $user->id)->update(['is_primary' => false]);
+        }
+
+        \App\Models\EmergencyContact::create($validated);
+
+        return redirect()->route('admin.participants.show', $participantId)
+            ->with('success', 'Contacto de emergencia agregado correctamente.');
+    }
+
+    /**
+     * Delete an emergency contact.
+     */
+    public function destroyEmergencyContact($contactId)
+    {
+        $contact = \App\Models\EmergencyContact::findOrFail($contactId);
+        $user = $contact->user;
+        $contact->delete();
+
+        $participant = Application::where('user_id', $user->id)->latest()->first();
+
+        return redirect()->route('admin.participants.show', $participant->id ?? 0)
+            ->with('success', 'Contacto de emergencia eliminado correctamente.');
+    }
+
+    /**
+     * Store a new work experience for a participant.
+     */
+    public function storeWorkExperience(Request $request, $participantId)
+    {
+        $participant = Application::findOrFail($participantId);
+        $user = User::findOrFail($participant->user_id);
+
+        $validated = $request->validate([
+            'company' => 'required|string|max:255',
+            'position' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'is_current' => 'nullable|boolean',
+            'description' => 'nullable|string|max:1000',
+            'reference_name' => 'nullable|string|max:255',
+            'reference_phone' => 'nullable|string|max:50',
+            'reference_email' => 'nullable|email|max:255',
+        ]);
+
+        $validated['user_id'] = $user->id;
+        $validated['is_current'] = $request->boolean('is_current');
+
+        if ($validated['is_current']) {
+            $validated['end_date'] = null;
+        }
+
+        \App\Models\WorkExperience::create($validated);
+
+        return redirect()->route('admin.participants.show', $participantId)
+            ->with('success', 'Experiencia laboral agregada correctamente.');
+    }
+
+    /**
+     * Delete a work experience.
+     */
+    public function destroyWorkExperience($experienceId)
+    {
+        $experience = \App\Models\WorkExperience::findOrFail($experienceId);
+        $user = $experience->user;
+        $experience->delete();
+
+        $participant = Application::where('user_id', $user->id)->latest()->first();
+
+        return redirect()->route('admin.participants.show', $participant->id ?? 0)
+            ->with('success', 'Experiencia laboral eliminada correctamente.');
+    }
 }

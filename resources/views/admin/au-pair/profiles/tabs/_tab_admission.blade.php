@@ -340,7 +340,7 @@
                     <div class="mb-3">
                         <label class="form-label small">Archivo <span class="text-danger">*</span></label>
                         <input type="file" name="file" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                        <small class="text-muted">Máx. 20MB. Formatos: PDF, JPG, PNG, DOC</small>
+                        <small class="text-muted">Máx. 1GB. Formatos: PDF, JPG, PNG, DOC, MP4, MOV</small>
                     </div>
                     <div class="mb-0">
                         <label class="form-label small">Notas (opcional)</label>

@@ -86,8 +86,20 @@
                         <p class="mb-0"><strong>{{ optional($firstApp)->current_stage ?? 'Sin definir' }}</strong></p>
                     </div>
                     <div class="mb-3">
-                        <small class="text-muted">Fecha de Aplicación</small>
-                        <small class="d-block">{{ optional($firstApp)->applied_at ? optional($firstApp)->applied_at->format('d/m/Y') : 'N/A' }}</small>
+                        <small class="text-muted">Fecha de Inscripción</small>
+                        <small class="d-block">{{ optional($firstApp)->created_at ? optional($firstApp)->created_at->format('d/m/Y') : 'N/A' }}</small>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Última Actualización</small>
+                        <small class="d-block">
+                            @php
+                                $lastUpdate = collect([
+                                    optional($participant)->updated_at,
+                                    optional($firstApp)->updated_at,
+                                ])->filter()->max();
+                            @endphp
+                            {{ $lastUpdate ? $lastUpdate->format('d/m/Y H:i') : 'N/A' }}
+                        </small>
                     </div>
                 </div>
             </div>
@@ -291,7 +303,7 @@
                         <div class="tab-pane fade" id="emergency" role="tabpanel">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0">Contactos de Emergencia</h5>
-                                <button class="btn btn-sm btn-primary" onclick="alert('Función por implementar')">
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addEmergencyContactModal">
                                     <i class="fas fa-plus"></i> Agregar Contacto
                                 </button>
                             </div>
@@ -335,7 +347,7 @@
                         <div class="tab-pane fade" id="work" role="tabpanel">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0">Experiencia Laboral</h5>
-                                <button class="btn btn-sm btn-primary" onclick="alert('Función por implementar')">
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addWorkExperienceModal">
                                     <i class="fas fa-plus"></i> Agregar Experiencia
                                 </button>
                             </div>
@@ -1419,5 +1431,124 @@ function toggleOtherConcept() {
 }
 </script>
 @endpush
+
+{{-- Modal: Agregar Contacto de Emergencia --}}
+<div class="modal fade" id="addEmergencyContactModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('admin.participants.emergency-contacts.store', $participant->id) }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-phone-alt"></i> Agregar Contacto de Emergencia</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre Completo *</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Relación *</label>
+                        <input type="text" class="form-control" name="relationship" required placeholder="Ej: Madre, Padre, Hermano...">
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono *</label>
+                            <input type="text" class="form-control" name="phone" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tel. Alternativo</label>
+                            <input type="text" class="form-control" name="alternative_phone">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" class="form-control" name="address">
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_primary" value="1" id="is_primary_contact">
+                        <label class="form-check-label" for="is_primary_contact">Contacto principal</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: Agregar Experiencia Laboral --}}
+<div class="modal fade" id="addWorkExperienceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ route('admin.participants.work-experiences.store', $participant->id) }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-briefcase"></i> Agregar Experiencia Laboral</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Empresa *</label>
+                            <input type="text" class="form-control" name="company" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cargo/Posición *</label>
+                            <input type="text" class="form-control" name="position" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha Inicio *</label>
+                            <input type="date" class="form-control" name="start_date" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha Fin</label>
+                            <input type="date" class="form-control" name="end_date" id="work_end_date">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_current" value="1" id="is_current_job"
+                                       onchange="document.getElementById('work_end_date').disabled = this.checked;">
+                                <label class="form-check-label" for="is_current_job">Trabajo actual</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" name="description" rows="3" placeholder="Describe las responsabilidades y logros..."></textarea>
+                    </div>
+                    <hr>
+                    <h6 class="text-muted">Referencia Laboral (opcional)</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" name="reference_name">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" name="reference_phone">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="reference_email">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @endsection

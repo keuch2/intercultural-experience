@@ -152,12 +152,22 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="password" class="form-label">Contraseña *</label>
-                                    <input type="password" class="form-control" id="password" name="password" required>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
                                     <div class="form-text">Mínimo 8 caracteres</div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="password_confirmation" class="form-label">Confirmar Contraseña *</label>
-                                    <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password_confirmation">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -200,10 +210,71 @@
                                     <label for="country" class="form-label">País *</label>
                                     <select class="form-control" id="country" name="country">
                                         <option value="">Seleccionar...</option>
-                                        <option value="Paraguay" {{ old('country') == 'Paraguay' ? 'selected' : '' }}>Paraguay</option>
-                                        <option value="Argentina" {{ old('country') == 'Argentina' ? 'selected' : '' }}>Argentina</option>
-                                        <option value="Brasil" {{ old('country') == 'Brasil' ? 'selected' : '' }}>Brasil</option>
-                                        <option value="Estados Unidos" {{ old('country') == 'Estados Unidos' ? 'selected' : '' }}>Estados Unidos</option>
+                                        <optgroup label="── América del Sur ──">
+                                            <option value="Paraguay" {{ old('country') == 'Paraguay' ? 'selected' : '' }}>Paraguay</option>
+                                            <option value="Argentina" {{ old('country') == 'Argentina' ? 'selected' : '' }}>Argentina</option>
+                                            <option value="Bolivia" {{ old('country') == 'Bolivia' ? 'selected' : '' }}>Bolivia</option>
+                                            <option value="Brasil" {{ old('country') == 'Brasil' ? 'selected' : '' }}>Brasil</option>
+                                            <option value="Chile" {{ old('country') == 'Chile' ? 'selected' : '' }}>Chile</option>
+                                            <option value="Colombia" {{ old('country') == 'Colombia' ? 'selected' : '' }}>Colombia</option>
+                                            <option value="Ecuador" {{ old('country') == 'Ecuador' ? 'selected' : '' }}>Ecuador</option>
+                                            <option value="Guyana" {{ old('country') == 'Guyana' ? 'selected' : '' }}>Guyana</option>
+                                            <option value="Perú" {{ old('country') == 'Perú' ? 'selected' : '' }}>Perú</option>
+                                            <option value="Surinam" {{ old('country') == 'Surinam' ? 'selected' : '' }}>Surinam</option>
+                                            <option value="Uruguay" {{ old('country') == 'Uruguay' ? 'selected' : '' }}>Uruguay</option>
+                                            <option value="Venezuela" {{ old('country') == 'Venezuela' ? 'selected' : '' }}>Venezuela</option>
+                                        </optgroup>
+                                        <optgroup label="── América Central y Caribe ──">
+                                            <option value="Belice" {{ old('country') == 'Belice' ? 'selected' : '' }}>Belice</option>
+                                            <option value="Costa Rica" {{ old('country') == 'Costa Rica' ? 'selected' : '' }}>Costa Rica</option>
+                                            <option value="Cuba" {{ old('country') == 'Cuba' ? 'selected' : '' }}>Cuba</option>
+                                            <option value="El Salvador" {{ old('country') == 'El Salvador' ? 'selected' : '' }}>El Salvador</option>
+                                            <option value="Guatemala" {{ old('country') == 'Guatemala' ? 'selected' : '' }}>Guatemala</option>
+                                            <option value="Haití" {{ old('country') == 'Haití' ? 'selected' : '' }}>Haití</option>
+                                            <option value="Honduras" {{ old('country') == 'Honduras' ? 'selected' : '' }}>Honduras</option>
+                                            <option value="Jamaica" {{ old('country') == 'Jamaica' ? 'selected' : '' }}>Jamaica</option>
+                                            <option value="Nicaragua" {{ old('country') == 'Nicaragua' ? 'selected' : '' }}>Nicaragua</option>
+                                            <option value="Panamá" {{ old('country') == 'Panamá' ? 'selected' : '' }}>Panamá</option>
+                                            <option value="Puerto Rico" {{ old('country') == 'Puerto Rico' ? 'selected' : '' }}>Puerto Rico</option>
+                                            <option value="República Dominicana" {{ old('country') == 'República Dominicana' ? 'selected' : '' }}>República Dominicana</option>
+                                            <option value="Trinidad y Tobago" {{ old('country') == 'Trinidad y Tobago' ? 'selected' : '' }}>Trinidad y Tobago</option>
+                                        </optgroup>
+                                        <optgroup label="── América del Norte ──">
+                                            <option value="Canadá" {{ old('country') == 'Canadá' ? 'selected' : '' }}>Canadá</option>
+                                            <option value="Estados Unidos" {{ old('country') == 'Estados Unidos' ? 'selected' : '' }}>Estados Unidos</option>
+                                            <option value="México" {{ old('country') == 'México' ? 'selected' : '' }}>México</option>
+                                        </optgroup>
+                                        <optgroup label="── Europa ──">
+                                            <option value="Alemania" {{ old('country') == 'Alemania' ? 'selected' : '' }}>Alemania</option>
+                                            <option value="Austria" {{ old('country') == 'Austria' ? 'selected' : '' }}>Austria</option>
+                                            <option value="Bélgica" {{ old('country') == 'Bélgica' ? 'selected' : '' }}>Bélgica</option>
+                                            <option value="Bulgaria" {{ old('country') == 'Bulgaria' ? 'selected' : '' }}>Bulgaria</option>
+                                            <option value="Croacia" {{ old('country') == 'Croacia' ? 'selected' : '' }}>Croacia</option>
+                                            <option value="Dinamarca" {{ old('country') == 'Dinamarca' ? 'selected' : '' }}>Dinamarca</option>
+                                            <option value="Eslovaquia" {{ old('country') == 'Eslovaquia' ? 'selected' : '' }}>Eslovaquia</option>
+                                            <option value="Eslovenia" {{ old('country') == 'Eslovenia' ? 'selected' : '' }}>Eslovenia</option>
+                                            <option value="España" {{ old('country') == 'España' ? 'selected' : '' }}>España</option>
+                                            <option value="Estonia" {{ old('country') == 'Estonia' ? 'selected' : '' }}>Estonia</option>
+                                            <option value="Finlandia" {{ old('country') == 'Finlandia' ? 'selected' : '' }}>Finlandia</option>
+                                            <option value="Francia" {{ old('country') == 'Francia' ? 'selected' : '' }}>Francia</option>
+                                            <option value="Grecia" {{ old('country') == 'Grecia' ? 'selected' : '' }}>Grecia</option>
+                                            <option value="Hungría" {{ old('country') == 'Hungría' ? 'selected' : '' }}>Hungría</option>
+                                            <option value="Irlanda" {{ old('country') == 'Irlanda' ? 'selected' : '' }}>Irlanda</option>
+                                            <option value="Islandia" {{ old('country') == 'Islandia' ? 'selected' : '' }}>Islandia</option>
+                                            <option value="Italia" {{ old('country') == 'Italia' ? 'selected' : '' }}>Italia</option>
+                                            <option value="Letonia" {{ old('country') == 'Letonia' ? 'selected' : '' }}>Letonia</option>
+                                            <option value="Lituania" {{ old('country') == 'Lituania' ? 'selected' : '' }}>Lituania</option>
+                                            <option value="Luxemburgo" {{ old('country') == 'Luxemburgo' ? 'selected' : '' }}>Luxemburgo</option>
+                                            <option value="Noruega" {{ old('country') == 'Noruega' ? 'selected' : '' }}>Noruega</option>
+                                            <option value="Países Bajos" {{ old('country') == 'Países Bajos' ? 'selected' : '' }}>Países Bajos</option>
+                                            <option value="Polonia" {{ old('country') == 'Polonia' ? 'selected' : '' }}>Polonia</option>
+                                            <option value="Portugal" {{ old('country') == 'Portugal' ? 'selected' : '' }}>Portugal</option>
+                                            <option value="Reino Unido" {{ old('country') == 'Reino Unido' ? 'selected' : '' }}>Reino Unido</option>
+                                            <option value="República Checa" {{ old('country') == 'República Checa' ? 'selected' : '' }}>República Checa</option>
+                                            <option value="Rumania" {{ old('country') == 'Rumania' ? 'selected' : '' }}>Rumania</option>
+                                            <option value="Suecia" {{ old('country') == 'Suecia' ? 'selected' : '' }}>Suecia</option>
+                                            <option value="Suiza" {{ old('country') == 'Suiza' ? 'selected' : '' }}>Suiza</option>
+                                        </optgroup>
                                     </select>
                                 </div>
                             </div>
@@ -537,6 +608,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize
     showStep(1);
+
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const target = document.getElementById(this.dataset.target);
+            const icon = this.querySelector('i');
+            if (target.type === 'password') {
+                target.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                target.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // Checkbox obligatorio para habilitar botón Crear
+    const termsCheckbox = document.getElementById('terms_accepted');
+    const submitBtn = document.getElementById('submit-btn');
+    if (termsCheckbox && submitBtn) {
+        submitBtn.disabled = true;
+        termsCheckbox.addEventListener('change', function() {
+            submitBtn.disabled = !this.checked;
+        });
+    }
 });
 </script>
 @endpush
