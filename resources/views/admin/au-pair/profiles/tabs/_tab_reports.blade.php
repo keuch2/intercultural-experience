@@ -15,21 +15,40 @@
             @php
                 $events = collect();
                 if ($application) {
-                    $events->push(['date' => $application->created_at, 'label' => 'Solicitud creada', 'icon' => 'fa-file-alt', 'color' => 'primary']);
+                    $events->push(['date' => $application->created_at, 'label' => 'Solicitud creada', 'icon' => 'fa-file-alt', 'color' => 'primary', 'author' => null]);
                 }
                 if ($profile) {
-                    $events->push(['date' => $profile->created_at, 'label' => 'Perfil Au Pair creado', 'icon' => 'fa-user-circle', 'color' => 'info']);
+                    $events->push(['date' => $profile->created_at, 'label' => 'Perfil Au Pair creado', 'icon' => 'fa-user-circle', 'color' => 'info', 'author' => null]);
                 }
                 if ($application) {
                     foreach ($application->payments->where('status', 'verified') as $payment) {
-                        $events->push(['date' => $payment->verified_at ?? $payment->created_at, 'label' => 'Pago verificado: ' . ($payment->concept ?? 'N/A'), 'icon' => 'fa-check-circle', 'color' => 'success']);
+                        $events->push(['date' => $payment->verified_at ?? $payment->created_at, 'label' => 'Pago verificado: ' . ($payment->concept ?? 'N/A'), 'icon' => 'fa-check-circle', 'color' => 'success', 'author' => optional($payment->verifiedBy)->name]);
                     }
                     foreach ($application->documents->where('status', 'verified') as $doc) {
-                        $events->push(['date' => $doc->verified_at ?? $doc->created_at, 'label' => 'Documento aprobado: ' . ($doc->name ?? $doc->document_type), 'icon' => 'fa-file-check', 'color' => 'success']);
+                        $events->push(['date' => $doc->verified_at ?? $doc->created_at, 'label' => 'Documento aprobado: ' . ($doc->name ?? $doc->document_type), 'icon' => 'fa-file-check', 'color' => 'success', 'author' => null]);
                     }
                 }
                 foreach ($user->englishEvaluations as $eval) {
-                    $events->push(['date' => $eval->evaluated_at ?? $eval->created_at, 'label' => "Test inglés #$eval->attempt_number: $eval->cefr_level ($eval->score pts)", 'icon' => 'fa-language', 'color' => 'warning']);
+                    $events->push(['date' => $eval->evaluated_at ?? $eval->created_at, 'label' => "Test inglés #$eval->attempt_number: $eval->cefr_level ($eval->score pts)", 'icon' => 'fa-language', 'color' => 'warning', 'author' => null]);
+                }
+                // Pull audit log entries for this user
+                $auditLogs = \App\Models\ActivityLog::where('subject_type', 'App\\Models\\User')
+                    ->where('subject_id', $user->id)
+                    ->where('log_name', 'au_pair')
+                    ->orderByDesc('created_at')
+                    ->limit(50)
+                    ->get();
+                foreach ($auditLogs as $log) {
+                    $iconMap = [
+                        'document_upload' => ['fa-upload', 'info'],
+                        'document_approve' => ['fa-check', 'success'],
+                        'document_reject' => ['fa-times', 'danger'],
+                        'document_delete' => ['fa-trash', 'danger'],
+                        'stage_advance' => ['fa-arrow-right', 'primary'],
+                    ];
+                    $iconData = $iconMap[$log->action] ?? ['fa-history', 'secondary'];
+                    $authorName = $log->causer ? optional($log->causer)->name : null;
+                    $events->push(['date' => $log->created_at, 'label' => $log->description, 'icon' => $iconData[0], 'color' => $iconData[1], 'author' => $authorName]);
                 }
                 $events = $events->sortByDesc('date');
             @endphp
@@ -40,10 +59,13 @@
                     <span class="bg-{{ $event['color'] }} rounded-circle d-inline-block" style="width: 14px; height: 14px;"></span>
                 </div>
                 <div class="ms-3">
-                    <div class="small fw-semibold">{{ $event['label'] }}</div>
+                    <div class="small fw-semibold"><i class="fas {{ $event['icon'] }} text-{{ $event['color'] }} me-1"></i> {{ $event['label'] }}</div>
                     <div class="text-muted" style="font-size: 0.75rem;">
                         {{ $event['date'] ? \Carbon\Carbon::parse($event['date'])->format('d/m/Y H:i') : '-' }}
                         &middot; {{ $event['date'] ? \Carbon\Carbon::parse($event['date'])->diffForHumans() : '' }}
+                        @if(!empty($event['author']))
+                            &middot; por <strong>{{ $event['author'] }}</strong>
+                        @endif
                     </div>
                 </div>
             </div>
