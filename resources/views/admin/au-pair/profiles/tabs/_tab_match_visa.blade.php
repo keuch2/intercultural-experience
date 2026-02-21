@@ -75,7 +75,11 @@
                                 <form method="POST" action="{{ route('admin.aupair.profiles.review-doc', [$user->id, $doc->id]) }}" class="d-inline">@csrf @method('PUT')<input type="hidden" name="action" value="approve"><button type="submit" class="btn btn-sm btn-outline-success py-0"><i class="fas fa-check"></i></button></form>
                                 <button class="btn btn-sm btn-outline-danger py-0" data-bs-toggle="modal" data-bs-target="#rejectVisaParticipantDoc{{ $doc->id }}"><i class="fas fa-times"></i></button>
                             @endif
-                            <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-trash"></i></button></form>
+                            @if($doc->isApproved())
+                                <button class="btn btn-sm btn-outline-danger py-0" data-bs-toggle="modal" data-bs-target="#deleteApprovedVisaDoc{{ $doc->id }}"><i class="fas fa-trash"></i></button>
+                            @else
+                                <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-trash"></i></button></form>
+                            @endif
                         </div>
                         @else
                         <button class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#uploadVisaParticipant{{ $docKey }}"><i class="fas fa-upload me-1"></i>Subir</button>
@@ -89,30 +93,9 @@
     </div>
 </div>
 
-{{-- C2: Cita de Visa --}}
+{{-- C2: Documentos IE --}}
 <div class="card shadow-sm mb-4">
-    <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-calendar-alt text-primary me-1"></i> C2. Cita de Visa</h6></div>
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label small">Fecha</label>
-                <input type="date" name="appointment_date" class="form-control form-control-sm" value="{{ $visa && $visa->appointment_date ? $visa->appointment_date->format('Y-m-d') : '' }}">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label small">Hora</label>
-                <input type="time" name="appointment_time" class="form-control form-control-sm" value="{{ $visa->appointment_time ?? '' }}">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label small">Embajada</label>
-                <input type="text" name="embassy" class="form-control form-control-sm" value="{{ $visa->embassy ?? '' }}" placeholder="Ej: Embajada USA Asunción">
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- C3: Documentos IE --}}
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-file-upload text-primary me-1"></i> C3. Documentos IE (descargables)</h6></div>
+    <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-file-upload text-primary me-1"></i> C2. Documentos IE (descargables)</h6></div>
     <div class="card-body">
         <div class="list-group mb-3">
             <label class="list-group-item d-flex align-items-center bg-warning bg-opacity-10">
@@ -131,7 +114,15 @@
             <div class="d-flex gap-1 align-items-center">
                 @if($doc)
                     <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $doc->id]) }}" class="btn btn-sm btn-outline-primary py-0"><i class="fas fa-download"></i></a>
+                    @if($doc->status !== 'approved')
+                        <form method="POST" action="{{ route('admin.aupair.profiles.review-doc', [$user->id, $doc->id]) }}" class="d-inline">@csrf @method('PUT')<input type="hidden" name="action" value="approve"><button type="submit" class="btn btn-sm btn-outline-success py-0" title="Aprobar"><i class="fas fa-check"></i></button></form>
+                    @endif
                     <span class="badge bg-{{ $doc->status_color }}">{{ $doc->status_label }}</span>
+                    @if($doc->isApproved())
+                        <button class="btn btn-sm btn-outline-danger py-0" data-bs-toggle="modal" data-bs-target="#deleteApprovedVisaDoc{{ $doc->id }}" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    @else
+                        <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-outline-secondary py-0" title="Eliminar"><i class="fas fa-trash"></i></button></form>
+                    @endif
                 @else
                     <span class="badge bg-light text-dark me-1">Sin cargar</span>
                     <button type="button" class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#uploadVisaDoc{{ $docKey }}"><i class="fas fa-upload"></i></button>
@@ -139,6 +130,27 @@
             </div>
         </div>
         @endforeach
+    </div>
+</div>
+
+{{-- C3: Cita de Visa --}}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-calendar-alt text-primary me-1"></i> C3. Cita de Visa</h6></div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label small">Fecha</label>
+                <input type="date" name="appointment_date" class="form-control form-control-sm" value="{{ $visa && $visa->appointment_date ? $visa->appointment_date->format('Y-m-d') : '' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small">Hora</label>
+                <input type="time" name="appointment_time" class="form-control form-control-sm" value="{{ $visa->appointment_time ?? '' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small">Embajada</label>
+                <input type="text" name="embassy" class="form-control form-control-sm" value="{{ $visa->embassy ?? '' }}" placeholder="Ej: Embajada USA Asunción">
+            </div>
+        </div>
     </div>
 </div>
 
@@ -167,8 +179,15 @@
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-plane-departure text-primary me-1"></i> C5. Información de Viaje</h6></div>
     <div class="card-body">
-        @php $flightInfo = $visa->flight_info ?? []; @endphp
-        <div class="row g-3">
+        @php
+            $flightInfo = $visa->flight_info ?? [];
+            $outboundLegs = $flightInfo['outbound_legs'] ?? [];
+            $returnLegs = $flightInfo['return_legs'] ?? [];
+        @endphp
+
+        {{-- Viaje de Ida --}}
+        <h6 class="small fw-bold text-muted mb-2"><i class="fas fa-plane-departure me-1"></i> Viaje de Ida</h6>
+        <div class="row g-3 mb-3">
             <div class="col-md-4">
                 <label class="form-label small">Fecha/hora salida</label>
                 <input type="datetime-local" name="departure_datetime" class="form-control form-control-sm" value="{{ $visa && $visa->departure_datetime ? $visa->departure_datetime->format('Y-m-d\TH:i') : '' }}">
@@ -177,21 +196,89 @@
                 <label class="form-label small">Fecha/hora llegada USA</label>
                 <input type="datetime-local" name="arrival_usa_datetime" class="form-control form-control-sm" value="{{ $visa && $visa->arrival_usa_datetime ? $visa->arrival_usa_datetime->format('Y-m-d\TH:i') : '' }}">
             </div>
-            <div class="col-md-4">
-                <label class="form-label small">Aerolínea</label>
-                <input type="text" name="flight_airline" class="form-control form-control-sm" value="{{ $flightInfo['airline'] ?? '' }}" placeholder="Ej: American Airlines">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label small">Número de Vuelo</label>
-                <input type="text" name="flight_number" class="form-control form-control-sm" value="{{ $flightInfo['flight_number'] ?? '' }}" placeholder="Ej: AA 1234">
-            </div>
-            <div class="col-md-8">
-                <label class="form-label small">Escalas y Horarios</label>
-                <input type="text" name="flight_layovers" class="form-control form-control-sm" value="{{ $flightInfo['layovers'] ?? '' }}" placeholder="Ej: Miami (2h escala) → Dallas (1h30 escala)">
-            </div>
         </div>
+
+        <div id="outbound-legs-container">
+            @forelse($outboundLegs as $i => $leg)
+            <div class="border rounded p-2 mb-2 outbound-leg">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2"><label class="form-label small">Tramo {{ $i + 1 }}</label><input type="text" name="outbound_legs[{{ $i }}][origin]" class="form-control form-control-sm" value="{{ $leg['origin'] ?? '' }}" placeholder="Origen"></div>
+                    <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="outbound_legs[{{ $i }}][destination]" class="form-control form-control-sm" value="{{ $leg['destination'] ?? '' }}" placeholder="Destino"></div>
+                    <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="outbound_legs[{{ $i }}][airline]" class="form-control form-control-sm" value="{{ $leg['airline'] ?? '' }}" placeholder="Aerolínea"></div>
+                    <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="outbound_legs[{{ $i }}][flight_number]" class="form-control form-control-sm" value="{{ $leg['flight_number'] ?? '' }}" placeholder="AA 1234"></div>
+                    <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="outbound_legs[{{ $i }}][departure]" class="form-control form-control-sm" value="{{ $leg['departure'] ?? '' }}"></div>
+                    <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger remove-leg" title="Quitar"><i class="fas fa-times"></i></button></div>
+                </div>
+            </div>
+            @empty
+            <div class="border rounded p-2 mb-2 outbound-leg">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2"><label class="form-label small">Tramo 1</label><input type="text" name="outbound_legs[0][origin]" class="form-control form-control-sm" placeholder="Origen"></div>
+                    <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="outbound_legs[0][destination]" class="form-control form-control-sm" placeholder="Destino"></div>
+                    <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="outbound_legs[0][airline]" class="form-control form-control-sm" placeholder="Aerolínea"></div>
+                    <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="outbound_legs[0][flight_number]" class="form-control form-control-sm" placeholder="AA 1234"></div>
+                    <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="outbound_legs[0][departure]" class="form-control form-control-sm"></div>
+                    <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger remove-leg" title="Quitar"><i class="fas fa-times"></i></button></div>
+                </div>
+            </div>
+            @endforelse
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-outbound-leg"><i class="fas fa-plus me-1"></i> Agregar Escala (Ida)</button>
+
+        <hr>
+
+        {{-- Viaje de Regreso --}}
+        <h6 class="small fw-bold text-muted mb-2"><i class="fas fa-plane-arrival me-1"></i> Viaje de Regreso</h6>
+        <div id="return-legs-container">
+            @forelse($returnLegs as $i => $leg)
+            <div class="border rounded p-2 mb-2 return-leg">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2"><label class="form-label small">Tramo {{ $i + 1 }}</label><input type="text" name="return_legs[{{ $i }}][origin]" class="form-control form-control-sm" value="{{ $leg['origin'] ?? '' }}" placeholder="Origen"></div>
+                    <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="return_legs[{{ $i }}][destination]" class="form-control form-control-sm" value="{{ $leg['destination'] ?? '' }}" placeholder="Destino"></div>
+                    <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="return_legs[{{ $i }}][airline]" class="form-control form-control-sm" value="{{ $leg['airline'] ?? '' }}" placeholder="Aerolínea"></div>
+                    <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="return_legs[{{ $i }}][flight_number]" class="form-control form-control-sm" value="{{ $leg['flight_number'] ?? '' }}" placeholder="AA 1234"></div>
+                    <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="return_legs[{{ $i }}][departure]" class="form-control form-control-sm" value="{{ $leg['departure'] ?? '' }}"></div>
+                    <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger remove-leg" title="Quitar"><i class="fas fa-times"></i></button></div>
+                </div>
+            </div>
+            @empty
+            <p class="text-muted small mb-2">No se han registrado tramos de regreso.</p>
+            @endforelse
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary mb-0" id="add-return-leg"><i class="fas fa-plus me-1"></i> Agregar Tramo (Regreso)</button>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function addLeg(containerId, prefix) {
+        const container = document.getElementById(containerId);
+        const legs = container.querySelectorAll('.' + prefix + '-leg');
+        const idx = legs.length;
+        const emptyMsg = container.querySelector('p.text-muted');
+        if (emptyMsg) emptyMsg.remove();
+        const div = document.createElement('div');
+        div.className = 'border rounded p-2 mb-2 ' + prefix + '-leg';
+        div.innerHTML = `<div class="row g-2 align-items-end">
+            <div class="col-md-2"><label class="form-label small">Tramo ${idx + 1}</label><input type="text" name="${prefix}_legs[${idx}][origin]" class="form-control form-control-sm" placeholder="Origen"></div>
+            <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="${prefix}_legs[${idx}][destination]" class="form-control form-control-sm" placeholder="Destino"></div>
+            <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="${prefix}_legs[${idx}][airline]" class="form-control form-control-sm" placeholder="Aerolínea"></div>
+            <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="${prefix}_legs[${idx}][flight_number]" class="form-control form-control-sm" placeholder="AA 1234"></div>
+            <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="${prefix}_legs[${idx}][departure]" class="form-control form-control-sm"></div>
+            <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger remove-leg" title="Quitar"><i class="fas fa-times"></i></button></div>
+        </div>`;
+        container.appendChild(div);
+    }
+    document.getElementById('add-outbound-leg').addEventListener('click', () => addLeg('outbound-legs-container', 'outbound'));
+    document.getElementById('add-return-leg').addEventListener('click', () => addLeg('return-legs-container', 'return'));
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-leg')) {
+            const leg = e.target.closest('.outbound-leg, .return-leg');
+            if (leg) leg.remove();
+        }
+    });
+});
+</script>
 
 {{-- C6: Orientación Pre-partida --}}
 <div class="card shadow-sm mb-4">
@@ -414,6 +501,37 @@
                 <div class="modal-header"><h6 class="modal-title">Rechazar Documento</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body"><div class="mb-0"><label class="form-label small">Motivo del rechazo <span class="text-danger">*</span></label><textarea name="rejection_reason" class="form-control form-control-sm" rows="3" required></textarea></div></div>
                 <div class="modal-footer"><button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times me-1"></i>Rechazar</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
+{{-- Delete Approved Visa Document Modals --}}
+@foreach($visaDocs->where('status', 'approved') as $doc)
+<div class="modal fade" id="deleteApprovedVisaDoc{{ $doc->id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}">
+                @csrf @method('DELETE')
+                <div class="modal-header bg-danger text-white">
+                    <h6 class="modal-title"><i class="fas fa-exclamation-triangle me-1"></i> Eliminar Documento Aprobado</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning py-2 px-3 mb-3">
+                        <small><i class="fas fa-shield-alt me-1"></i> Este documento está <strong>aprobado</strong>. Debe indicar un motivo para eliminarlo.</small>
+                    </div>
+                    <p class="small text-muted">Documento: <strong>{{ $visaDocDefs[$doc->document_type]['label'] ?? $doc->document_type }}</strong></p>
+                    <div class="mb-0">
+                        <label class="form-label small">Motivo de eliminación <span class="text-danger">*</span></label>
+                        <textarea name="deletion_reason" class="form-control form-control-sm" rows="3" required placeholder="Indique el motivo..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash me-1"></i> Eliminar</button>
+                </div>
             </form>
         </div>
     </div>

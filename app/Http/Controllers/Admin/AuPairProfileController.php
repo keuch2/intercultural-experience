@@ -635,9 +635,18 @@ class AuPairProfileController extends Controller
             'interview_result_notes' => 'nullable|string|max:1000',
             'departure_datetime' => 'nullable|date',
             'arrival_usa_datetime' => 'nullable|date',
-            'flight_airline' => 'nullable|string|max:255',
-            'flight_number' => 'nullable|string|max:50',
-            'flight_layovers' => 'nullable|string|max:1000',
+            'outbound_legs' => 'nullable|array',
+            'outbound_legs.*.origin' => 'nullable|string|max:255',
+            'outbound_legs.*.destination' => 'nullable|string|max:255',
+            'outbound_legs.*.airline' => 'nullable|string|max:255',
+            'outbound_legs.*.flight_number' => 'nullable|string|max:50',
+            'outbound_legs.*.departure' => 'nullable|string|max:50',
+            'return_legs' => 'nullable|array',
+            'return_legs.*.origin' => 'nullable|string|max:255',
+            'return_legs.*.destination' => 'nullable|string|max:255',
+            'return_legs.*.airline' => 'nullable|string|max:255',
+            'return_legs.*.flight_number' => 'nullable|string|max:50',
+            'return_legs.*.departure' => 'nullable|string|max:50',
             'pre_departure_orientation_date' => 'nullable|date',
         ]);
 
@@ -649,13 +658,14 @@ class AuPairProfileController extends Controller
             $data['document_check_completed_at'] = now();
         }
 
-        // Build flight_info JSON
+        // Build flight_info JSON with multiple legs
+        $outboundLegs = collect($data['outbound_legs'] ?? [])->filter(fn($l) => !empty($l['origin']) || !empty($l['destination']))->values()->toArray();
+        $returnLegs = collect($data['return_legs'] ?? [])->filter(fn($l) => !empty($l['origin']) || !empty($l['destination']))->values()->toArray();
         $data['flight_info'] = [
-            'airline' => $data['flight_airline'] ?? null,
-            'flight_number' => $data['flight_number'] ?? null,
-            'layovers' => $data['flight_layovers'] ?? null,
+            'outbound_legs' => $outboundLegs,
+            'return_legs' => $returnLegs,
         ];
-        unset($data['flight_airline'], $data['flight_number'], $data['flight_layovers']);
+        unset($data['outbound_legs'], $data['return_legs']);
 
         $visa->update($data);
 
