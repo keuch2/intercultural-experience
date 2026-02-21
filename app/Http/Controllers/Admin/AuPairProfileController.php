@@ -511,9 +511,56 @@ class AuPairProfileController extends Controller
             return back()->with('error', 'Proceso Au Pair no encontrado.');
         }
 
+        $previousStage = $process->current_stage;
         $result = $process->advanceStage();
 
         if ($result) {
+            // File inheritance: admission → application
+            if ($previousStage === 'admission') {
+                $inheritMap = [
+                    'passport' => 'passport_doc',
+                    'drivers_license' => 'drivers_license_app',
+                ];
+
+                foreach ($inheritMap as $sourceType => $targetType) {
+                    $sourceDoc = AuPairDocument::where('au_pair_process_id', $process->id)
+                        ->where('document_type', $sourceType)
+                        ->where('status', 'approved')
+                        ->first();
+
+                    if ($sourceDoc) {
+                        $existingTarget = AuPairDocument::where('au_pair_process_id', $process->id)
+                            ->where('document_type', $targetType)
+                            ->first();
+
+                        if (!$existingTarget) {
+                            // Copy file to new path
+                            $newPath = str_replace("/{$sourceType}", "/{$targetType}", $sourceDoc->file_path);
+                            if ($newPath === $sourceDoc->file_path) {
+                                $newPath = "au-pair-documents/{$user->id}/{$targetType}_" . basename($sourceDoc->file_path);
+                            }
+                            Storage::disk('public')->copy($sourceDoc->file_path, $newPath);
+
+                            AuPairDocument::create([
+                                'au_pair_process_id' => $process->id,
+                                'document_type' => $targetType,
+                                'stage' => 'application_payment1',
+                                'uploaded_by_type' => 'staff',
+                                'file_path' => $newPath,
+                                'original_filename' => $sourceDoc->original_filename,
+                                'file_size' => $sourceDoc->file_size,
+                                'status' => 'approved',
+                                'reviewed_by' => auth()->id(),
+                                'reviewed_at' => now(),
+                                'is_required' => true,
+                                'sort_order' => $sourceDoc->sort_order,
+                                'notes' => 'Heredado de Admisión (' . $sourceDoc->document_type . ')',
+                            ]);
+                        }
+                    }
+                }
+            }
+
             return redirect()
                 ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => $process->fresh()->current_stage === 'application' ? 'application' : 'match_visa'])
                 ->with('success', 'El proceso avanzó a la siguiente etapa.');
