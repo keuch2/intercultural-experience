@@ -68,7 +68,8 @@
                         $userApp = \App\Models\Application::where('user_id', $user->id)->latest()->first();
                     @endphp
                     @if($userApp)
-                    <a href="{{ route('admin.participants.show', $userApp->id) }}" class="btn btn-sm btn-outline-primary me-1">
+                    {{-- Módulo 7 fix: Use $user->id instead of $userApp->id — route expects User ID, not Application ID --}}
+                    <a href="{{ route('admin.participants.show', $user->id) }}" class="btn btn-sm btn-outline-primary me-1">
                         <i class="fas fa-user"></i> Perfil General
                     </a>
                     @endif

@@ -30,9 +30,17 @@
         <div class="col-md-3">
             <div class="card shadow mb-4">
                 <div class="card-body text-center">
-                    <img class="img-profile rounded-circle mb-3" 
-                         src="{{ $participant->profile_photo ? asset('storage/' . $participant->profile_photo) : 'https://ui-avatars.com/api/?name=' . urlencode($participant->full_name) . '&background=4e73df&color=ffffff&size=200' }}" 
-                         width="150" height="150" style="object-fit: cover;">
+                    {{-- Módulo 6 fix: Profile photo with edit capability --}}
+                    <div class="position-relative d-inline-block mb-3">
+                        <img class="img-profile rounded-circle"
+                             src="{{ $participant->profile_photo ? asset('storage/' . $participant->profile_photo) : 'https://ui-avatars.com/api/?name=' . urlencode($participant->full_name) . '&background=4e73df&color=ffffff&size=200' }}"
+                             width="150" height="150" style="object-fit: cover;">
+                        <button type="button" class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle"
+                                data-bs-toggle="modal" data-bs-target="#editPhotoModal"
+                                title="Cambiar foto de perfil">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
                     <h4>{{ $participant->full_name }}</h4>
                     <p class="text-muted">{{ $participant->email ?? 'Sin email' }}</p>
                     @php
@@ -146,11 +154,8 @@
                                 <i class="fas fa-language"></i> Inglés
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="jobs-tab" data-bs-toggle="tab" href="#jobs" role="tab">
-                                <i class="fas fa-building"></i> Job Offers
-                            </a>
-                        </li>
+                        {{-- Módulo 4: Job Offers tab removed from general profile.
+                             Job Offers are accessible within each program's profile (Work & Travel, Internship, etc.) --}}
                         <li class="nav-item">
                             <a class="nav-link" id="visa-tab" data-bs-toggle="tab" href="#visa" role="tab">
                                 <i class="fas fa-passport"></i> Visa
@@ -286,12 +291,19 @@
 
                         <!-- Tab 2: Información de Salud -->
                         <div class="tab-pane fade" id="health" role="tabpanel">
-                            <h5 class="mb-3">Información de Salud</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">Información de Salud</h5>
+                                {{-- Módulo 2 fix: Enable health section editing --}}
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editHealthModal">
+                                    <i class="fas fa-edit"></i> Editar Salud
+                                </button>
+                            </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <strong>Tipo de Sangre:</strong><br>
                                     @if($participant->blood_type)
-                                        <span class="badge badge-danger">{{ $participant->blood_type }}</span>
+                                        {{-- Módulo 2 fix: Use Bootstrap 5 class --}}
+                                        <span class="badge bg-danger">{{ $participant->blood_type }}</span>
                                     @else
                                         <span class="text-muted">No especificado</span>
                                     @endif
@@ -742,6 +754,7 @@
                         </div>
 
                         <!-- Tab 7: Evaluación de Inglés -->
+                        {{-- Módulo 3 fix: Group evaluations by program/year --}}
                         <div class="tab-pane fade" id="english" role="tabpanel">
                             <h5 class="mb-3">Evaluación de Inglés</h5>
                             @if($participant->englishEvaluations && $participant->englishEvaluations->count() > 0)
@@ -763,7 +776,7 @@
                                                         <small class="text-muted">Nivel CEFR</small>
                                                     </div>
                                                     <div class="col-md-3 text-center">
-                                                        <span class="badge badge-lg badge-{{ $bestEvaluation->classification == 'EXCELLENT' ? 'success' : ($bestEvaluation->classification == 'GREAT' ? 'primary' : ($bestEvaluation->classification == 'GOOD' ? 'info' : 'warning')) }}">
+                                                        <span class="badge bg-{{ $bestEvaluation->classification == 'EXCELLENT' ? 'success' : ($bestEvaluation->classification == 'GREAT' ? 'primary' : ($bestEvaluation->classification == 'GOOD' ? 'info' : 'warning')) }}">
                                                             {{ $bestEvaluation->classification }}
                                                         </span>
                                                         <br><small class="text-muted">Clasificación</small>
@@ -778,47 +791,62 @@
                                     </div>
                                 </div>
 
-                                <h6 class="mb-3">Historial de Evaluaciones ({{ $participant->englishEvaluations->count() }}/3 intentos)</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Intento</th>
-                                                <th>Fecha</th>
-                                                <th>Puntaje</th>
-                                                <th>Nivel CEFR</th>
-                                                <th>Clasificación</th>
-                                                <th>Evaluador</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($participant->englishEvaluations->sortBy('attempt_number') as $eval)
+                                {{-- Módulo 3: Group evaluations by program and year --}}
+                                @php
+                                    $groupedEvals = $participant->englishEvaluations->sortByDesc('evaluated_at')->groupBy(function($eval) {
+                                        $programName = optional(optional($eval->application)->program)->name ?? 'General';
+                                        $year = $eval->evaluated_at ? $eval->evaluated_at->format('Y') : 'N/A';
+                                        return $programName . ' — ' . $year;
+                                    });
+                                @endphp
+
+                                @foreach($groupedEvals as $groupLabel => $evals)
+                                    <h6 class="mb-3 mt-4">
+                                        <i class="fas fa-language"></i> Evaluación de Inglés — {{ $groupLabel }}
+                                        <span class="badge bg-secondary">{{ $evals->count() }} intento(s)</span>
+                                    </h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
                                                 <tr>
-                                                    <td>{{ $eval->attempt_number }}</td>
-                                                    <td>{{ $eval->evaluated_at->format('d/m/Y') }}</td>
-                                                    <td><strong>{{ $eval->score }}/100</strong></td>
-                                                    <td><span class="badge badge-info">{{ $eval->cefr_level }}</span></td>
-                                                    <td>
-                                                        <span class="badge badge-{{ $eval->classification == 'EXCELLENT' ? 'success' : ($eval->classification == 'GREAT' ? 'primary' : ($eval->classification == 'GOOD' ? 'info' : 'warning')) }}">
-                                                            {{ $eval->classification }}
-                                                        </span>
-                                                    </td>
-                                                    <td>{{ $eval->evaluated_by ?? 'Sistema' }}</td>
+                                                    <th>Intento</th>
+                                                    <th>Fecha</th>
+                                                    <th>Puntaje</th>
+                                                    <th>Nivel CEFR</th>
+                                                    <th>Clasificación</th>
+                                                    @if($evals->first()->oral_score)
+                                                        <th>Oral</th>
+                                                    @endif
+                                                    <th>Evaluador</th>
                                                 </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($evals->sortBy('attempt_number') as $eval)
+                                                    <tr>
+                                                        <td>{{ $eval->attempt_number }}</td>
+                                                        <td>{{ $eval->evaluated_at->format('d/m/Y') }}</td>
+                                                        <td><strong>{{ $eval->score }}/100</strong></td>
+                                                        <td><span class="badge bg-info">{{ $eval->cefr_level }}</span></td>
+                                                        <td>
+                                                            <span class="badge bg-{{ $eval->classification == 'EXCELLENT' ? 'success' : ($eval->classification == 'GREAT' ? 'primary' : ($eval->classification == 'GOOD' ? 'info' : 'warning')) }}">
+                                                                {{ $eval->classification }}
+                                                            </span>
+                                                        </td>
+                                                        @if($evals->first()->oral_score)
+                                                            <td>{{ $eval->oral_score ?? '-' }}</td>
+                                                        @endif
+                                                        <td>{{ $eval->evaluated_by ?? 'Sistema' }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @endforeach
 
                                 @if($participant->englishEvaluations->count() < 3)
-                                    <div class="alert alert-warning">
-                                        <i class="fas fa-exclamation-triangle"></i> 
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="fas fa-exclamation-triangle"></i>
                                         El participante puede realizar {{ 3 - $participant->englishEvaluations->count() }} evaluación(es) más.
-                                    </div>
-                                @else
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle"></i> 
-                                        El participante ha completado los 3 intentos permitidos.
                                     </div>
                                 @endif
                             @else
@@ -829,67 +857,34 @@
                             @endif
                         </div>
 
-                        <!-- Tab 7: Job Offers -->
-                        <div class="tab-pane fade" id="jobs" role="tabpanel">
-                            <h5 class="mb-3">Job Offers y Reservas</h5>
-                            @if($participant->jobOfferReservations && $participant->jobOfferReservations->count() > 0)
-                                <div class="table-responsive">
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Oferta</th>
-                                                <th>Empresa</th>
-                                                <th>Ubicación</th>
-                                                <th>Posición</th>
-                                                <th>Estado</th>
-                                                <th>Fecha Reserva</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($participant->jobOfferReservations as $reservation)
-                                                <tr>
-                                                    <td>#{{ $reservation->job_offer_id }}</td>
-                                                    <td>{{ $reservation->jobOffer->host_company->name ?? 'N/A' }}</td>
-                                                    <td>{{ $reservation->jobOffer->location ?? 'N/A' }}</td>
-                                                    <td>{{ $reservation->jobOffer->position ?? 'N/A' }}</td>
-                                                    <td>
-                                                        @if($reservation->status == 'confirmed')
-                                                            <span class="badge badge-success">Confirmada</span>
-                                                        @elseif($reservation->status == 'pending')
-                                                            <span class="badge badge-warning">Pendiente</span>
-                                                        @else
-                                                            <span class="badge badge-danger">Cancelada</span>
-                                                        @endif
-                                                    </td>
-                                                    <td>{{ $reservation->created_at->format('d/m/Y') }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @else
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i> No hay reservas de job offers registradas.
-                                </div>
-                            @endif
-                        </div>
+                        {{-- Módulo 4: Job Offers tab content removed from general profile.
+                             Job Offers are shown within each program's specific profile view. --}}
 
                         <!-- Tab 8: Proceso de Visa -->
+                        {{-- Módulo 4 fix: Show visa steps based on participant's active program --}}
                         <div class="tab-pane fade" id="visa" role="tabpanel">
                             <h5 class="mb-3">Proceso de Visa</h5>
+                            @php
+                                $activeProgram = optional($firstApp)->program;
+                                $programSubcat = optional($activeProgram)->subcategory;
+                            @endphp
                             @if($participant->visaProcess)
                                 <div class="row mb-4">
                                     <div class="col-md-12">
                                         <div class="card bg-light">
                                             <div class="card-body">
                                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                                    <h6 class="text-primary mb-0">Estado del Proceso</h6>
-                                                    <a href="{{ route('admin.visa.timeline', $participant->id) }}" class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-timeline"></i> Ver Timeline Completo
-                                                    </a>
+                                                    <h6 class="text-primary mb-0">
+                                                        Estado del Proceso
+                                                        @if($activeProgram)
+                                                            <span class="badge bg-secondary">{{ $activeProgram->name }}</span>
+                                                        @endif
+                                                    </h6>
+                                                    {{-- Módulo 4 fix: Hide "Ver Timeline Completo" button until
+                                                         a clear destination is defined per program --}}
                                                 </div>
                                                 <div class="progress mb-3" style="height: 25px;">
-                                                    <div class="progress-bar bg-success" role="progressbar" 
+                                                    <div class="progress-bar bg-success" role="progressbar"
                                                          style="width: {{ $participant->visaProcess->progress_percentage }}%">
                                                         {{ $participant->visaProcess->progress_percentage }}%
                                                     </div>
@@ -897,18 +892,18 @@
                                                 <div class="row text-center">
                                                     <div class="col-md-4">
                                                         <h6 class="text-muted">Etapa Actual</h6>
-                                                        <span class="badge badge-info badge-lg">
+                                                        <span class="badge bg-info badge-lg">
                                                             {{ ucfirst(str_replace('_', ' ', $participant->visaProcess->current_step)) }}
                                                         </span>
                                                     </div>
                                                     <div class="col-md-4">
                                                         <h6 class="text-muted">Resultado</h6>
                                                         @if($participant->visaProcess->visa_result && $participant->visaProcess->visa_result != 'pending')
-                                                            <span class="badge badge-{{ $participant->visaProcess->visa_result == 'approved' ? 'success' : ($participant->visaProcess->visa_result == 'rejected' ? 'danger' : 'warning') }} badge-lg">
+                                                            <span class="badge bg-{{ $participant->visaProcess->visa_result == 'approved' ? 'success' : ($participant->visaProcess->visa_result == 'rejected' ? 'danger' : 'warning') }} badge-lg">
                                                                 {{ strtoupper($participant->visaProcess->visa_result) }}
                                                             </span>
                                                         @else
-                                                            <span class="badge badge-secondary badge-lg">EN PROCESO</span>
+                                                            <span class="badge bg-secondary badge-lg">EN PROCESO</span>
                                                         @endif
                                                     </div>
                                                     <div class="col-md-4">
@@ -928,62 +923,77 @@
 
                                 <h6 class="mb-3">Pasos Completados</h6>
                                 <ul class="list-group">
+                                    {{-- Common visa steps for all programs --}}
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         Documentación Completa
                                         @if($participant->visaProcess->documentation_complete)
-                                            <span class="badge badge-success"><i class="fas fa-check"></i> Completado</span>
+                                            <span class="badge bg-success"><i class="fas fa-check"></i> Completado</span>
                                         @else
-                                            <span class="badge badge-secondary">Pendiente</span>
+                                            <span class="badge bg-secondary">Pendiente</span>
                                         @endif
                                     </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Sponsor Interview
-                                        @if($participant->visaProcess->sponsor_interview_status == 'approved')
-                                            <span class="badge badge-success"><i class="fas fa-check"></i> Aprobado</span>
-                                        @else
-                                            <span class="badge badge-warning">{{ ucfirst($participant->visaProcess->sponsor_interview_status) }}</span>
-                                        @endif
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Job Interview
-                                        @if($participant->visaProcess->job_interview_status == 'approved')
-                                            <span class="badge badge-success"><i class="fas fa-check"></i> Aprobado</span>
-                                        @else
-                                            <span class="badge badge-warning">{{ ucfirst($participant->visaProcess->job_interview_status) }}</span>
-                                        @endif
-                                    </li>
+
+                                    {{-- Módulo 4 fix: Show Sponsor/Job Interview steps only for Work & Travel and Internship --}}
+                                    @if(in_array($programSubcat, ['Work and Travel', 'Intern/Trainee', null]))
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Sponsor Interview
+                                            @if($participant->visaProcess->sponsor_interview_status == 'approved')
+                                                <span class="badge bg-success"><i class="fas fa-check"></i> Aprobado</span>
+                                            @else
+                                                <span class="badge bg-warning">{{ ucfirst($participant->visaProcess->sponsor_interview_status ?? 'pending') }}</span>
+                                            @endif
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Job Interview
+                                            @if($participant->visaProcess->job_interview_status == 'approved')
+                                                <span class="badge bg-success"><i class="fas fa-check"></i> Aprobado</span>
+                                            @else
+                                                <span class="badge bg-warning">{{ ucfirst($participant->visaProcess->job_interview_status ?? 'pending') }}</span>
+                                            @endif
+                                        </li>
+                                    @endif
+
+                                    {{-- Au Pair specific steps --}}
+                                    @if($programSubcat === 'Au Pair')
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Match con Familia
+                                            @if($participant->visaProcess->match_completed ?? false)
+                                                <span class="badge bg-success"><i class="fas fa-check"></i> Completado</span>
+                                            @else
+                                                <span class="badge bg-secondary">Pendiente</span>
+                                            @endif
+                                        </li>
+                                    @endif
+
+                                    {{-- Common steps for all J1 visa programs --}}
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         DS-160 Completado
                                         @if($participant->visaProcess->ds160_completed)
-                                            <span class="badge badge-success"><i class="fas fa-check"></i> Completado</span>
+                                            <span class="badge bg-success"><i class="fas fa-check"></i> Completado</span>
                                         @else
-                                            <span class="badge badge-secondary">Pendiente</span>
+                                            <span class="badge bg-secondary">Pendiente</span>
                                         @endif
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         DS-2019 Recibido
                                         @if($participant->visaProcess->ds2019_received)
-                                            <span class="badge badge-success"><i class="fas fa-check"></i> Recibido</span>
+                                            <span class="badge bg-success"><i class="fas fa-check"></i> Recibido</span>
                                         @else
-                                            <span class="badge badge-secondary">Pendiente</span>
+                                            <span class="badge bg-secondary">Pendiente</span>
                                         @endif
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         SEVIS Pagado
                                         @if($participant->visaProcess->sevis_paid)
-                                            <span class="badge badge-success"><i class="fas fa-check"></i> Pagado</span>
+                                            <span class="badge bg-success"><i class="fas fa-check"></i> Pagado</span>
                                         @else
-                                            <span class="badge badge-secondary">Pendiente</span>
+                                            <span class="badge bg-secondary">Pendiente</span>
                                         @endif
                                     </li>
                                 </ul>
                             @else
                                 <div class="alert alert-info">
                                     <i class="fas fa-info-circle"></i> No se ha iniciado el proceso de visa para este participante.
-                                    <br><br>
-                                    <a href="{{ route('admin.visa.timeline', $participant->id) }}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-plus"></i> Iniciar Proceso
-                                    </a>
                                 </div>
                             @endif
                         </div>
@@ -1566,6 +1576,97 @@ function toggleOtherConcept() {
                         <div class="col-md-4">
                             <label class="form-label">Email</label>
                             <input type="email" class="form-control" name="reference_email">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Módulo 6: Modal para cambiar foto de perfil --}}
+<div class="modal fade" id="editPhotoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('admin.participants.update-photo', $participant->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-camera"></i> Cambiar Foto de Perfil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nueva Foto *</label>
+                        <input type="file" class="form-control" name="profile_photo" accept="image/*" required>
+                        <div class="form-text">Formatos: JPG, PNG, GIF. Máximo 2MB</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Módulo 2 fix: Modal para editar información de Salud --}}
+<div class="modal fade" id="editHealthModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ route('admin.participants.update-health', $participant->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-heartbeat"></i> Editar Información de Salud</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de Sangre</label>
+                            <select class="form-control" name="blood_type">
+                                <option value="">Seleccionar...</option>
+                                @foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $bt)
+                                    <option value="{{ $bt }}" {{ $participant->blood_type == $bt ? 'selected' : '' }}>{{ $bt }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Seguro Médico</label>
+                            <input type="text" class="form-control" name="health_insurance" value="{{ $participant->health_insurance }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nº de Seguro</label>
+                            <input type="text" class="form-control" name="health_insurance_number" value="{{ $participant->health_insurance_number }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Condiciones Médicas</label>
+                        <textarea class="form-control" name="medical_conditions" rows="2">{{ $participant->medical_conditions }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alergias</label>
+                        <textarea class="form-control" name="allergies" rows="2">{{ $participant->allergies }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Medicamentos Actuales</label>
+                        <textarea class="form-control" name="medications" rows="2">{{ $participant->medications }}</textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Contacto Médico de Emergencia</label>
+                            <input type="text" class="form-control" name="emergency_medical_contact" value="{{ $participant->emergency_medical_contact }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono Médico</label>
+                            <input type="text" class="form-control" name="emergency_medical_phone" value="{{ $participant->emergency_medical_phone }}">
                         </div>
                     </div>
                 </div>

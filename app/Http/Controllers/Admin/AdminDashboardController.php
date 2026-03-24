@@ -22,8 +22,18 @@ class AdminDashboardController extends Controller
      */
     public function index()
     {
-        // Estadísticas para el dashboard
+        // Módulo 13: Differentiated user metrics
         $userCount = User::count();
+        $participantCount = User::where('role', 'user')->count();
+        $adminCount = User::where('role', 'admin')->count();
+        $agentCount = User::where('role', 'agent')->count();
+
+        // Au Pair specific metrics
+        $auPairCount = User::where('role', 'user')
+            ->whereHas('applications', fn($q) => $q->whereHas('program', fn($pq) => $pq->where('subcategory', 'Au Pair')))
+            ->count();
+        $auPairActiveCount = \App\Models\AuPairProcess::whereIn('current_stage', ['application', 'match_visa'])->count();
+        $auPairAdmissionCount = \App\Models\AuPairProcess::where('current_stage', 'admission')->count();
         
         // Centralizar todas las solicitudes pendientes de aprobación
         $pendingApps = Application::where('status', 'pending')->count();
@@ -53,12 +63,18 @@ class AdminDashboardController extends Controller
             ->get();
         
         return view('admin.dashboard', compact(
-            'userCount', 
+            'userCount',
+            'participantCount',
+            'adminCount',
+            'agentCount',
+            'auPairCount',
+            'auPairActiveCount',
+            'auPairAdmissionCount',
             'pendingApplications',
             'pendingApps',
             'pendingDocs',
             'pendingPayments',
-            'openTickets', 
+            'openTickets',
             'pendingRedemptions',
             'recentApplications',
             'recentTickets',

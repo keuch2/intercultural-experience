@@ -145,7 +145,7 @@ class AuPairDocument extends Model
             'child_photos' => ['label' => '12 Fotos con Niños', 'stage' => 'application_payment1', 'required' => true, 'sort' => 11, 'min_count' => 12],
             'presentation_video' => ['label' => 'Video de Presentación', 'stage' => 'application_payment1', 'required' => true, 'sort' => 12],
             'cover_letter' => ['label' => 'Carta de Presentación', 'stage' => 'application_payment1', 'required' => true, 'sort' => 13],
-            'vaccination_card' => ['label' => 'Libreta de Vacunas', 'stage' => 'application_payment1', 'required' => true, 'sort' => 14],
+            'vaccination_card' => ['label' => 'Libreta de Vacunas', 'stage' => 'application_payment1', 'required' => false, 'sort' => 14], // Módulo 9 fix: Changed to optional
             'certifications' => ['label' => 'Certificaciones/Especializaciones/Talleres', 'stage' => 'application_payment1', 'required' => false, 'sort' => 15],
             'police_record' => ['label' => 'Antecedentes Policiales', 'stage' => 'application_payment1', 'required' => true, 'sort' => 16],
             'bachelor_degree' => ['label' => 'Título de Bachiller', 'stage' => 'application_payment1', 'required' => true, 'sort' => 17],
@@ -153,6 +153,7 @@ class AuPairDocument extends Model
             'drivers_license_app' => ['label' => 'Licencia de Conducir', 'stage' => 'application_payment1', 'required' => true, 'sort' => 19],
             'previous_visas' => ['label' => 'Visas Anteriores', 'stage' => 'application_payment1', 'required' => false, 'sort' => 20],
             'english_test_pdf' => ['label' => 'Resultado Test de Inglés (PDF)', 'stage' => 'application_payment1', 'required' => true, 'sort' => 21],
+            'color_test' => ['label' => 'Color Test', 'stage' => 'application_payment1', 'required' => true, 'sort' => 22], // Módulo 9: Added Color Test
 
             // Application - Payment 2
             'character_ref' => ['label' => 'Character Reference Form', 'stage' => 'application_payment2', 'required' => true, 'sort' => 30, 'min_count' => 2],
@@ -168,6 +169,8 @@ class AuPairDocument extends Model
             'ds2019' => ['label' => 'DS-2019', 'stage' => 'visa', 'required' => true, 'sort' => 43, 'uploaded_by' => 'staff'],
             'participation_letter' => ['label' => 'Carta de Participación del Programa', 'stage' => 'visa', 'required' => true, 'sort' => 44, 'uploaded_by' => 'staff'],
             'appointment_instructions' => ['label' => 'Instrucciones de Cita', 'stage' => 'visa', 'required' => true, 'sort' => 45, 'uploaded_by' => 'staff'],
+            'sevis_payment_receipt' => ['label' => 'Comprobante de Pago SEVIS', 'stage' => 'visa', 'required' => true, 'sort' => 46], // Módulo 11: Added SEVIS payment receipt
+            'pre_departure_orientation' => ['label' => 'Orientación Pre-Partida', 'stage' => 'visa', 'required' => true, 'sort' => 47, 'uploaded_by' => 'staff'], // Módulo 11: Added Pre-departure orientation
         ];
     }
 

@@ -159,7 +159,8 @@
                         </div>
                     </td>
                     <td>
-                        <small>{{ $app ? $app->created_at->format('d/m/Y') : '-' }}</small>
+                        {{-- Módulo 7 fix: Use enrollment_date from process instead of application created_at --}}
+                        <small>{{ $proc && $proc->enrollment_date ? $proc->enrollment_date->format('d/m/Y') : ($app ? $app->created_at->format('d/m/Y') : '-') }}</small>
                     </td>
                     <td>
                         @if($proc)
@@ -215,7 +216,15 @@
                         @endif
                     </td>
                     <td>
-                        <small class="text-muted">{{ $user->updated_at->diffForHumans() }}</small>
+                        {{-- Módulo 7 fix: Show most recent update across user, process, and documents --}}
+                        @php
+                            $lastUpdate = collect([
+                                $user->updated_at,
+                                $proc ? $proc->updated_at : null,
+                                $procDocs->max('updated_at'),
+                            ])->filter()->max();
+                        @endphp
+                        <small class="text-muted">{{ $lastUpdate ? $lastUpdate->diffForHumans() : $user->updated_at->diffForHumans() }}</small>
                     </td>
                     <td>
                         <a href="{{ route('admin.aupair.profiles.show', $user->id) }}" 

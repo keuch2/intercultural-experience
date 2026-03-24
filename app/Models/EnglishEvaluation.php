@@ -9,10 +9,12 @@ class EnglishEvaluation extends Model
 {
     protected $fillable = [
         'user_id',
+        'application_id', // Módulo 3: Link evaluation to specific program application
         'ef_set_id',
         'cefr_level',
         'classification',
         'score',
+        'oral_score', // Módulo 8: Oral evaluation (Good/Great/Excellent)
         'attempt_number',
         'evaluated_at',
         'evaluated_by',
@@ -31,6 +33,14 @@ class EnglishEvaluation extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Módulo 3: Relación con Application (para agrupar por programa/año)
+     */
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
     }
 
     /**

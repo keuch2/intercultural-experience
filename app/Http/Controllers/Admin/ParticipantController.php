@@ -450,8 +450,14 @@ class ParticipantController extends Controller
      */
     public function storeEmergencyContact(Request $request, $participantId)
     {
-        $participant = Application::findOrFail($participantId);
-        $user = User::findOrFail($participant->user_id);
+        // Módulo 2 fix: Support both User ID and Application ID.
+        // The show view from AdminParticipantController passes a User ID,
+        // while other views may pass an Application ID.
+        $user = User::find($participantId);
+        if (!$user) {
+            $participant = Application::findOrFail($participantId);
+            $user = User::findOrFail($participant->user_id);
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -496,8 +502,12 @@ class ParticipantController extends Controller
      */
     public function storeWorkExperience(Request $request, $participantId)
     {
-        $participant = Application::findOrFail($participantId);
-        $user = User::findOrFail($participant->user_id);
+        // Módulo 2 fix: Support both User ID and Application ID (same as storeEmergencyContact)
+        $user = User::find($participantId);
+        if (!$user) {
+            $participant = Application::findOrFail($participantId);
+            $user = User::findOrFail($participant->user_id);
+        }
 
         $validated = $request->validate([
             'company' => 'required|string|max:255',

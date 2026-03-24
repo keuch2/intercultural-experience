@@ -404,7 +404,7 @@ class AuPairProfileController extends Controller
         $validated = $request->validate([
             'evaluator_name' => 'required|string|max:255',
             'exam_name' => 'required|string|max:255',
-            'oral_score' => 'nullable|integer|min:0|max:100',
+            'oral_score' => 'nullable|string|in:Good,Great,Excellent', // Módulo 8: Changed to Good/Great/Excellent selector
             'listening_score' => 'nullable|integer|min:0|max:100',
             'reading_score' => 'nullable|integer|min:0|max:100',
             'final_score' => 'required|integer|min:0|max:100',
@@ -502,14 +502,10 @@ class AuPairProfileController extends Controller
             'contract_file' => 'nullable|file|max:20480|mimes:pdf,jpg,jpeg,png',
         ]);
 
-        // Convert checkbox values
-        foreach (['welcome_email_sent', 'interview_process_email_sent', 'all_docs_and_payments_complete', 'itep_completed', 'contract_signed'] as $field) {
+        // Convert checkbox values (exclude contract_signed — handled by file upload logic)
+        // Módulo 7 fix: contract_signed is auto-set when contract file is uploaded, not manually
+        foreach (['welcome_email_sent', 'interview_process_email_sent', 'all_docs_and_payments_complete', 'itep_completed'] as $field) {
             $validated[$field] = $request->has($field);
-        }
-
-        if ($validated['contract_signed'] && !$process->contract_signed) {
-            $validated['contract_signed_at'] = now();
-            $validated['contract_confirmed_by'] = Auth::id();
         }
 
         // Handle contract file upload
@@ -518,6 +514,19 @@ class AuPairProfileController extends Controller
             $path = $file->store("au-pair-contracts/{$user->id}", 'public');
             $validated['contract_file_path'] = $path;
             $validated['contract_original_filename'] = $file->getClientOriginalName();
+            // Módulo 7 fix: Auto-set contract_signed when contract document is uploaded
+            if (!$process->contract_signed) {
+                $validated['contract_signed'] = true;
+                $validated['contract_signed_at'] = now();
+                $validated['contract_confirmed_by'] = Auth::id();
+            }
+        } else {
+            // Módulo 7 fix: Don't allow manual contract_signed without an existing contract file
+            $validated['contract_signed'] = $process->contract_file_path ? $request->has('contract_signed') : false;
+            if ($validated['contract_signed'] && !$process->contract_signed) {
+                $validated['contract_signed_at'] = now();
+                $validated['contract_confirmed_by'] = Auth::id();
+            }
         }
         unset($validated['contract_file']);
 
@@ -802,6 +811,82 @@ class AuPairProfileController extends Controller
         return redirect()
             ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'support'])
             ->with('success', 'Registro eliminado.');
+    }
+
+    // =========================================================================
+    // ACTIONS: Payments (Módulo 12)
+    // =========================================================================
+
+    /**
+     * Módulo 12: Quick toggle payment verification flags on AuPairProcess
+     */
+    public function updatePaymentFlag(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $process = $user->auPairProcess;
+
+        if (!$process) {
+            return back()->with('error', 'Proceso Au Pair no encontrado.');
+        }
+
+        $request->validate([
+            'flag' => 'required|in:payment_1_verified,payment_2_verified',
+            'value' => 'required|boolean',
+        ]);
+
+        $process->update([$request->flag => (bool) $request->value]);
+
+        return redirect()
+            ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'payments'])
+            ->with('success', 'Estado de pago actualizado.');
+    }
+
+    /**
+     * Módulo 12: Save payment notes on AuPairProcess
+     */
+    public function updatePaymentNotes(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $process = $user->auPairProcess;
+
+        if (!$process) {
+            return back()->with('error', 'Proceso Au Pair no encontrado.');
+        }
+
+        $request->validate(['payment_notes' => 'nullable|string|max:2000']);
+        $process->update(['notes' => $request->payment_notes]);
+
+        return redirect()
+            ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'payments'])
+            ->with('success', 'Notas de pago guardadas.');
+    }
+
+    /**
+     * Módulo 12: Update program cost on Application
+     */
+    public function updateProgramCost(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $application = $user->applications()
+            ->whereHas('program', fn($q) => $q->where('subcategory', 'Au Pair'))
+            ->latest()->first();
+
+        if (!$application) {
+            return back()->with('error', 'Aplicación Au Pair no encontrada.');
+        }
+
+        $validated = $request->validate([
+            'total_cost' => 'required|numeric|min:0',
+            'cost_currency' => 'nullable|in:USD,PYG',
+            'exchange_rate' => 'nullable|numeric|min:0',
+            'payment_deadline' => 'nullable|date',
+        ]);
+
+        $application->update($validated);
+
+        return redirect()
+            ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'payments'])
+            ->with('success', 'Costo del programa actualizado.');
     }
 
     // =========================================================================
@@ -1117,8 +1202,18 @@ class AuPairProfileController extends Controller
                 return [];
 
             case 'payments':
+                // Módulo 12: Enhanced payments data — include currencies, installments, and cost info
+                $payments = $application
+                    ? $application->payments()->with(['currency', 'verifiedBy', 'createdBy'])->orderBy('created_at', 'desc')->get()
+                    : \App\Models\Payment::where('user_id', $user->id)->with(['currency', 'verifiedBy', 'createdBy'])->orderBy('created_at', 'desc')->get();
+                $installmentPlan = $application
+                    ? \App\Models\PaymentInstallment::where('application_id', $application->id)->with('installmentDetails')->first()
+                    : null;
                 return [
-                    'payments' => $application ? $application->payments()->orderBy('created_at', 'desc')->get() : collect(),
+                    'payments' => $payments,
+                    'currencies' => \App\Models\Currency::active()->get(),
+                    'installmentPlan' => $installmentPlan,
+                    'process' => $process,
                 ];
 
             default:

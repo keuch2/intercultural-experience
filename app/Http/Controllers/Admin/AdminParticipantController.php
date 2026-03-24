@@ -189,7 +189,31 @@ class AdminParticipantController extends Controller
         }
         
         $user = User::create($data);
-        
+
+        // Módulo 2 fix: Persist emergency contact to emergency_contacts table during creation
+        if ($request->filled('emergency_contact_name')) {
+            \App\Models\EmergencyContact::create([
+                'user_id' => $user->id,
+                'name' => $request->emergency_contact_name,
+                'relationship' => $request->emergency_contact_relationship,
+                'phone' => $request->emergency_contact_phone,
+                'email' => $request->emergency_contact_email,
+                'is_primary' => true,
+            ]);
+        }
+
+        // Módulo 2 fix: Persist work experience to work_experiences table during creation
+        if ($request->filled('current_occupation') || $request->filled('work_experience')) {
+            \App\Models\WorkExperience::create([
+                'user_id' => $user->id,
+                'company' => $request->current_occupation ?? 'No especificada',
+                'position' => $request->current_occupation ?? 'No especificado',
+                'start_date' => now(),
+                'is_current' => true,
+                'description' => $request->work_experience,
+            ]);
+        }
+
         // Create application if program is assigned
         if ($request->filled('program_id')) {
             Application::create([
@@ -215,12 +239,14 @@ class AdminParticipantController extends Controller
         }
         
         // Cargar todas las relaciones necesarias incluyendo las nuevas
+        // Módulo 3 fix: Added englishEvaluations loading
         $participant->load([
             'applications.program',
             'points',
             'supportTickets',
             'emergencyContacts',
-            'workExperiences'
+            'workExperiences',
+            'englishEvaluations',
         ]);
         
         // Calcular estadísticas de aplicaciones
@@ -299,8 +325,7 @@ class AdminParticipantController extends Controller
             'bio' => ['nullable', 'string'],
             'program_id' => ['nullable', 'exists:programs,id'],
             'status' => ['nullable', 'in:pending,in_review,approved,rejected'],
-            'current_stage' => ['nullable', 'string', 'max:50'],
-            'progress_percentage' => ['nullable', 'integer', 'min:0', 'max:100'],
+            // Módulo 5: current_stage and progress_percentage removed — auto-calculated
             // Campos de salud
             'blood_type' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
             'health_insurance' => ['nullable', 'string', 'max:100'],
@@ -386,6 +411,61 @@ class AdminParticipantController extends Controller
         
         return redirect()->route('admin.participants.index')
             ->with('success', 'Participante eliminado correctamente.');
+    }
+
+    /**
+     * Módulo 2: Update health information for a participant.
+     */
+    public function updateHealth(Request $request, User $participant)
+    {
+        if ($participant->role !== 'user') {
+            abort(404);
+        }
+
+        $request->validate([
+            'blood_type' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
+            'health_insurance' => ['nullable', 'string', 'max:255'],
+            'health_insurance_number' => ['nullable', 'string', 'max:100'],
+            'medical_conditions' => ['nullable', 'string'],
+            'allergies' => ['nullable', 'string'],
+            'medications' => ['nullable', 'string'],
+            'emergency_medical_contact' => ['nullable', 'string', 'max:100'],
+            'emergency_medical_phone' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        $participant->update($request->only([
+            'blood_type', 'health_insurance', 'health_insurance_number',
+            'medical_conditions', 'allergies', 'medications',
+            'emergency_medical_contact', 'emergency_medical_phone',
+        ]));
+
+        return redirect()->route('admin.participants.show', $participant->id)
+            ->with('success', 'Información de salud actualizada correctamente.');
+    }
+
+    /**
+     * Módulo 6: Update profile photo for a participant.
+     */
+    public function updatePhoto(Request $request, User $participant)
+    {
+        if ($participant->role !== 'user') {
+            abort(404);
+        }
+
+        $request->validate([
+            'profile_photo' => ['required', 'image', 'mimes:jpeg,jpg,png,gif', 'max:2048'],
+        ]);
+
+        // Delete old photo if exists
+        if ($participant->profile_photo && Storage::disk('public')->exists($participant->profile_photo)) {
+            Storage::disk('public')->delete($participant->profile_photo);
+        }
+
+        $path = $request->file('profile_photo')->store('profile_photos', 'public');
+        $participant->update(['profile_photo' => $path]);
+
+        return redirect()->route('admin.participants.show', $participant->id)
+            ->with('success', 'Foto de perfil actualizada correctamente.');
     }
 
     /**

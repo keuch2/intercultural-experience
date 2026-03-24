@@ -38,14 +38,25 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="password" class="form-label">Contraseña <span class="text-danger">*</span></label>
-                    <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" required>
+                    <!-- Módulo 1 fix: Added password visibility toggle (replicated from participants/create) -->
+                    <div class="input-group">
+                        <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" required>
+                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                     @error('password')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
                 <div class="col-md-6">
                     <label for="password_confirmation" class="form-label">Confirmar Contraseña <span class="text-danger">*</span></label>
-                    <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password_confirmation">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -95,3 +106,24 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+{{-- Módulo 1: Password visibility toggle --}}
+<script>
+document.querySelectorAll('.toggle-password').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        const target = document.getElementById(this.dataset.target);
+        const icon = this.querySelector('i');
+        if (target.type === 'password') {
+            target.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            target.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+});
+</script>
+@endpush

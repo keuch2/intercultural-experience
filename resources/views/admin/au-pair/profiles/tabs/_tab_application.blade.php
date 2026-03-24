@@ -69,7 +69,14 @@
                         <td>{{ $test->attempt_number }}</td>
                         <td>{{ $test->evaluator_name ?? '-' }}</td>
                         <td>{{ $test->exam_name ?? '-' }}</td>
-                        <td class="text-center">{{ $test->oral_score ?? '-' }}</td>
+                        {{-- Módulo 8 fix: Display oral score as colored badge --}}
+                        <td class="text-center">
+                            @if($test->oral_score)
+                                <span class="badge bg-{{ $test->oral_score === 'Excellent' ? 'success' : ($test->oral_score === 'Great' ? 'info' : 'warning text-dark') }}">{{ $test->oral_score }}</span>
+                            @else
+                                -
+                            @endif
+                        </td>
                         <td class="text-center">{{ $test->listening_score ?? '-' }}</td>
                         <td class="text-center">{{ $test->reading_score ?? '-' }}</td>
                         <td class="text-center fw-bold">{{ $test->final_score }}</td>
@@ -134,9 +141,15 @@
                             <label class="form-label small">Nombre del Examen <span class="text-danger">*</span></label>
                             <input type="text" name="exam_name" class="form-control form-control-sm" required placeholder="Ej: EF SET, iTEP, TOEFL...">
                         </div>
+                        {{-- Módulo 8 fix: Changed from numeric input to Good/Great/Excellent selector --}}
                         <div class="col-md-3">
                             <label class="form-label small">Oral</label>
-                            <input type="number" name="oral_score" class="form-control form-control-sm" min="0" max="100" placeholder="0-100">
+                            <select name="oral_score" class="form-select form-select-sm">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="Good">Good</option>
+                                <option value="Great">Great</option>
+                                <option value="Excellent">Excellent</option>
+                            </select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small">Listening</label>
@@ -208,14 +221,22 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {{-- Módulo 9 fix: Support multi-file document types --}}
                         @foreach($p1DocDefs as $docKey => $docDef)
-                        @php $doc = $p1Docs->where('document_type', $docKey)->first(); @endphp
+                        @php
+                            $isMulti = isset($docDef['min_count']) && $docDef['min_count'] > 1;
+                            $allDocs = $p1Docs->where('document_type', $docKey);
+                            $doc = $allDocs->first();
+                        @endphp
                         <tr>
                             <td>
                                 <i class="fas fa-file text-muted me-1"></i>
                                 {{ $docDef['label'] }}
-                                @if(isset($docDef['min_count']) && $docDef['min_count'] > 1)
+                                @if($isMulti)
                                     <small class="text-muted">(mín. {{ $docDef['min_count'] }})</small>
+                                    @if($allDocs->count() > 0)
+                                        <span class="badge bg-info ms-1">{{ $allDocs->count() }} subidos</span>
+                                    @endif
                                 @endif
                                 @if($doc && $doc->rejection_reason)
                                     <br><small class="text-danger"><i class="fas fa-comment-alt"></i> {{ $doc->rejection_reason }}</small>
@@ -226,20 +247,50 @@
                             </td>
                             <td class="text-center">
                                 @if($doc)
-                                    <span class="badge bg-{{ $doc->status_color }}">{{ $doc->status_label }}</span>
+                                    @if($isMulti)
+                                        <span class="badge bg-{{ $allDocs->where('status', 'rejected')->count() > 0 ? 'danger' : ($allDocs->where('status', 'pending')->count() > 0 ? 'warning' : 'success') }}">
+                                            {{ $allDocs->where('status', 'approved')->count() }}/{{ $allDocs->count() }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-{{ $doc->status_color }}">{{ $doc->status_label }}</span>
+                                    @endif
                                 @else
                                     <span class="badge bg-light text-dark">Sin subir</span>
                                 @endif
                             </td>
                             <td>
-                                @if($doc)
+                                @if($isMulti && $allDocs->count() > 0)
+                                    <div class="d-flex flex-column gap-1">
+                                        @foreach($allDocs as $multiDoc)
+                                        <div class="d-flex gap-1 align-items-center">
+                                            <small class="text-muted text-truncate" style="max-width:100px;" title="{{ $multiDoc->original_filename }}">{{ $multiDoc->original_filename }}</small>
+                                            <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $multiDoc->id]) }}" class="btn btn-sm btn-outline-primary py-0" title="Descargar"><i class="fas fa-download"></i></a>
+                                            @if($multiDoc->status !== 'approved')
+                                                <form method="POST" action="{{ route('admin.aupair.profiles.review-doc', [$user->id, $multiDoc->id]) }}" class="d-inline">@csrf @method('PUT')<input type="hidden" name="action" value="approve"><button type="submit" class="btn btn-sm btn-outline-success py-0"><i class="fas fa-check"></i></button></form>
+                                            @endif
+                                            {{-- Módulo 10 fix: Require reason for approved doc deletion --}}
+                                            @if($multiDoc->isApproved())
+                                                <button class="btn btn-sm btn-outline-danger py-0" data-bs-toggle="modal" data-bs-target="#deleteApprovedAppModal{{ $multiDoc->id }}"><i class="fas fa-trash"></i></button>
+                                            @else
+                                                <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $multiDoc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-trash"></i></button></form>
+                                            @endif
+                                        </div>
+                                        @endforeach
+                                        <button class="btn btn-sm btn-outline-primary py-0 mt-1" data-bs-toggle="modal" data-bs-target="#uploadP1Modal{{ $docKey }}"><i class="fas fa-plus me-1"></i>Agregar más</button>
+                                    </div>
+                                @elseif($doc)
                                     <div class="d-flex gap-1 flex-wrap">
                                         <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $doc->id]) }}" class="btn btn-sm btn-outline-primary py-0" title="Descargar"><i class="fas fa-download"></i></a>
                                         @if($doc->status !== 'approved')
                                             <form method="POST" action="{{ route('admin.aupair.profiles.review-doc', [$user->id, $doc->id]) }}" class="d-inline">@csrf @method('PUT')<input type="hidden" name="action" value="approve"><button type="submit" class="btn btn-sm btn-outline-success py-0"><i class="fas fa-check"></i></button></form>
                                             <button class="btn btn-sm btn-outline-danger py-0" data-bs-toggle="modal" data-bs-target="#rejectP1Modal{{ $doc->id }}"><i class="fas fa-times"></i></button>
                                         @endif
-                                        <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-trash"></i></button></form>
+                                        {{-- Módulo 10 fix: Require reason for approved doc deletion --}}
+                                        @if($doc->isApproved())
+                                            <button class="btn btn-sm btn-outline-danger py-0" data-bs-toggle="modal" data-bs-target="#deleteApprovedAppModal{{ $doc->id }}"><i class="fas fa-trash"></i></button>
+                                        @else
+                                            <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-trash"></i></button></form>
+                                        @endif
                                     </div>
                                 @else
                                     <button class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#uploadP1Modal{{ $docKey }}"><i class="fas fa-upload me-1"></i>Subir</button>
@@ -291,14 +342,22 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {{-- Módulo 9 fix: Support multi-file document types for P2 --}}
                         @foreach($p2DocDefs as $docKey => $docDef)
-                        @php $doc = $p2Docs->where('document_type', $docKey)->first(); @endphp
+                        @php
+                            $isMulti = isset($docDef['min_count']) && $docDef['min_count'] > 1;
+                            $allDocs = $p2Docs->where('document_type', $docKey);
+                            $doc = $allDocs->first();
+                        @endphp
                         <tr>
                             <td>
                                 <i class="fas fa-file text-muted me-1"></i>
                                 {{ $docDef['label'] }}
-                                @if(isset($docDef['min_count']) && $docDef['min_count'] > 1)
+                                @if($isMulti)
                                     <small class="text-muted">(mín. {{ $docDef['min_count'] }})</small>
+                                    @if($allDocs->count() > 0)
+                                        <span class="badge bg-info ms-1">{{ $allDocs->count() }} subidos</span>
+                                    @endif
                                 @endif
                                 @if($doc && $doc->rejection_reason)
                                     <br><small class="text-danger"><i class="fas fa-comment-alt"></i> {{ $doc->rejection_reason }}</small>
@@ -309,20 +368,50 @@
                             </td>
                             <td class="text-center">
                                 @if($doc)
-                                    <span class="badge bg-{{ $doc->status_color }}">{{ $doc->status_label }}</span>
+                                    @if($isMulti)
+                                        <span class="badge bg-{{ $allDocs->where('status', 'rejected')->count() > 0 ? 'danger' : ($allDocs->where('status', 'pending')->count() > 0 ? 'warning' : 'success') }}">
+                                            {{ $allDocs->where('status', 'approved')->count() }}/{{ $allDocs->count() }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-{{ $doc->status_color }}">{{ $doc->status_label }}</span>
+                                    @endif
                                 @else
                                     <span class="badge bg-light text-dark">Sin subir</span>
                                 @endif
                             </td>
                             <td>
-                                @if($doc)
+                                @if($isMulti && $allDocs->count() > 0)
+                                    <div class="d-flex flex-column gap-1">
+                                        @foreach($allDocs as $multiDoc)
+                                        <div class="d-flex gap-1 align-items-center">
+                                            <small class="text-muted text-truncate" style="max-width:100px;" title="{{ $multiDoc->original_filename }}">{{ $multiDoc->original_filename }}</small>
+                                            <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $multiDoc->id]) }}" class="btn btn-sm btn-outline-primary py-0" title="Descargar"><i class="fas fa-download"></i></a>
+                                            @if($multiDoc->status !== 'approved')
+                                                <form method="POST" action="{{ route('admin.aupair.profiles.review-doc', [$user->id, $multiDoc->id]) }}" class="d-inline">@csrf @method('PUT')<input type="hidden" name="action" value="approve"><button type="submit" class="btn btn-sm btn-outline-success py-0"><i class="fas fa-check"></i></button></form>
+                                            @endif
+                                            {{-- Módulo 10 fix: Require reason for approved doc deletion --}}
+                                            @if($multiDoc->isApproved())
+                                                <button class="btn btn-sm btn-outline-danger py-0" data-bs-toggle="modal" data-bs-target="#deleteApprovedAppModal{{ $multiDoc->id }}"><i class="fas fa-trash"></i></button>
+                                            @else
+                                                <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $multiDoc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-trash"></i></button></form>
+                                            @endif
+                                        </div>
+                                        @endforeach
+                                        <button class="btn btn-sm btn-outline-primary py-0 mt-1" data-bs-toggle="modal" data-bs-target="#uploadP2Modal{{ $docKey }}"><i class="fas fa-plus me-1"></i>Agregar más</button>
+                                    </div>
+                                @elseif($doc)
                                     <div class="d-flex gap-1 flex-wrap">
                                         <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $doc->id]) }}" class="btn btn-sm btn-outline-primary py-0"><i class="fas fa-download"></i></a>
                                         @if($doc->status !== 'approved')
                                             <form method="POST" action="{{ route('admin.aupair.profiles.review-doc', [$user->id, $doc->id]) }}" class="d-inline">@csrf @method('PUT')<input type="hidden" name="action" value="approve"><button type="submit" class="btn btn-sm btn-outline-success py-0"><i class="fas fa-check"></i></button></form>
                                             <button class="btn btn-sm btn-outline-danger py-0" data-bs-toggle="modal" data-bs-target="#rejectP2Modal{{ $doc->id }}"><i class="fas fa-times"></i></button>
                                         @endif
-                                        <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-trash"></i></button></form>
+                                        {{-- Módulo 10 fix: Require reason for approved doc deletion --}}
+                                        @if($doc->isApproved())
+                                            <button class="btn btn-sm btn-outline-danger py-0" data-bs-toggle="modal" data-bs-target="#deleteApprovedAppModal{{ $doc->id }}"><i class="fas fa-trash"></i></button>
+                                        @else
+                                            <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-trash"></i></button></form>
+                                        @endif
                                     </div>
                                 @else
                                     <button class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#uploadP2Modal{{ $docKey }}"><i class="fas fa-upload me-1"></i>Subir</button>
@@ -417,12 +506,16 @@
                         {{ $proc && $proc->itep_completed ? 'checked' : '' }}>
                     <span>ITEP (examen obligatorio - perfil online y verificado)</span>
                 </label>
+                {{-- Módulo 7 fix: contract_signed auto-sets when contract file is uploaded; disabled if no file exists --}}
                 <label class="list-group-item d-flex align-items-center {{ ($proc && $proc->contract_signed) ? 'list-group-item-success' : 'list-group-item-warning' }}">
                     <input class="form-check-input me-3" type="checkbox" name="contract_signed" value="1"
-                        {{ $proc && $proc->contract_signed ? 'checked' : '' }}>
+                        {{ $proc && $proc->contract_signed ? 'checked' : '' }}
+                        {{ $proc && $proc->contract_file_path ? '' : 'disabled' }}>
                     <span>Contrato firmado con IE</span>
                     @if($proc && $proc->contract_signed)
                         <small class="ms-auto text-success"><i class="fas fa-check"></i> {{ $proc->contract_signed_at ? $proc->contract_signed_at->format('d/m/Y') : '' }}</small>
+                    @elseif(!$proc || !$proc->contract_file_path)
+                        <small class="ms-auto text-muted"><i class="fas fa-info-circle"></i> Suba el contrato para activar</small>
                     @endif
                 </label>
             </div>
@@ -432,7 +525,8 @@
                 <h6 class="small fw-bold text-muted mb-2"><i class="fas fa-file-contract me-1"></i> Archivo del Contrato Firmado</h6>
                 @if($proc && $proc->contract_file_path)
                     <div class="d-flex align-items-center">
-                        <a href="{{ Storage::url($proc->contract_file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                        {{-- Módulo 7 fix: Use public disk URL — file is stored on 'public' disk --}}
+                        <a href="{{ Storage::disk('public')->url($proc->contract_file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">
                             <i class="fas fa-file-pdf me-1"></i> {{ $proc->contract_original_filename ?? 'Ver Contrato' }}
                         </a>
                         <small class="text-success"><i class="fas fa-check-circle"></i> Archivo cargado</small>
@@ -454,8 +548,9 @@
 </div>
 
 {{-- Upload Modals - Payment 1 --}}
+{{-- Módulo 9 fix: Always show upload modal for multi-file types --}}
 @foreach($p1DocDefs as $docKey => $docDef)
-@if(!$p1Docs->where('document_type', $docKey)->first() || ($docDef['min_count'] ?? 1) > 1)
+@if(!$p1Docs->where('document_type', $docKey)->first() || (($docDef['min_count'] ?? 1) > 1))
 <div class="modal fade" id="uploadP1Modal{{ $docKey }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -507,6 +602,36 @@
     </div>
 </div>
 @endif
+@endforeach
+
+{{-- Módulo 10: Delete Approved Document Modals (P1 + P2) --}}
+@foreach($p1Docs->merge($p2Docs)->where('status', 'approved') as $doc)
+<div class="modal fade" id="deleteApprovedAppModal{{ $doc->id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}">
+                @csrf @method('DELETE')
+                <div class="modal-header bg-danger text-white">
+                    <h6 class="modal-title"><i class="fas fa-exclamation-triangle me-1"></i> Eliminar Documento Aprobado</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning py-2 px-3 mb-3">
+                        <small><i class="fas fa-shield-alt me-1"></i> Este documento está <strong>aprobado</strong>. Debe indicar un motivo para eliminarlo.</small>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label small">Motivo de eliminación <span class="text-danger">*</span></label>
+                        <textarea name="deletion_reason" class="form-control form-control-sm" rows="3" required placeholder="Indique el motivo..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash me-1"></i> Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endforeach
 
 {{-- Reject Modals (P1 + P2) --}}

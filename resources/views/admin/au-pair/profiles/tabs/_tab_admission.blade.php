@@ -185,6 +185,17 @@
                     <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $enrollmentDoc->id]) }}" class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-download"></i> Descargar Firmado
                     </a>
+                    {{-- Módulo 7 fix: Add approve/reject buttons for enrollment form --}}
+                    @if($enrollmentDoc->status !== 'approved')
+                        <form method="POST" action="{{ route('admin.aupair.profiles.review-doc', [$user->id, $enrollmentDoc->id]) }}" class="d-inline">
+                            @csrf @method('PUT')
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="btn btn-sm btn-outline-success" title="Aprobar"><i class="fas fa-check"></i></button>
+                        </form>
+                        <button class="btn btn-sm btn-outline-danger" title="Rechazar" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $enrollmentDoc->id }}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    @endif
                     <span class="badge bg-{{ $enrollmentDoc->status_color }} align-self-center">{{ $enrollmentDoc->status_label }}</span>
                 @endif
                 <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#uploadEnrollmentForm">

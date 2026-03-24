@@ -161,6 +161,12 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         // Work Experiences
         Route::post('/participants/{participant}/work-experiences', [\App\Http\Controllers\Admin\ParticipantController::class, 'storeWorkExperience'])->name('admin.participants.work-experiences.store');
         Route::delete('/work-experiences/{experience}', [\App\Http\Controllers\Admin\ParticipantController::class, 'destroyWorkExperience'])->name('admin.participants.work-experiences.destroy');
+
+        // Módulo 2: Health info update
+        Route::put('/participants/{participant}/health', [AdminParticipantController::class, 'updateHealth'])->name('admin.participants.update-health');
+
+        // Módulo 6: Profile photo update
+        Route::post('/participants/{participant}/photo', [AdminParticipantController::class, 'updatePhoto'])->name('admin.participants.update-photo');
         
         // Payments Management
         Route::post('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'store'])->name('admin.payments.store');
@@ -437,6 +443,10 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             // Actions: Support Logs
             Route::post('/perfiles/{id}/support-logs', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeSupportLog'])->name('profiles.store-support-log');
             Route::delete('/perfiles/{id}/support-logs/{logId}', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'deleteSupportLog'])->name('profiles.delete-support-log');
+            // Módulo 12: Payment management from Au Pair profile
+            Route::put('/perfiles/{id}/payment-flag', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updatePaymentFlag'])->name('profiles.update-payment-flag');
+            Route::put('/perfiles/{id}/payment-notes', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updatePaymentNotes'])->name('profiles.update-payment-notes');
+            Route::put('/perfiles/{id}/program-cost', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updateProgramCost'])->name('profiles.update-program-cost');
             // Resources
             Route::get('/recursos', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'resources'])->name('resources.index');
             Route::post('/recursos', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeResource'])->name('resources.store');

@@ -25,7 +25,7 @@ class AuPairEnglishTest extends Model
     ];
 
     protected $casts = [
-        'oral_score' => 'integer',
+        'oral_score' => 'string', // Módulo 8: Changed to string for Good/Great/Excellent selector
         'listening_score' => 'integer',
         'reading_score' => 'integer',
         'final_score' => 'integer',
