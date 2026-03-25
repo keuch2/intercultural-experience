@@ -572,16 +572,15 @@
 
                         <!-- Tab 6: Pagos -->
                         <div class="tab-pane fade" id="payments" role="tabpanel">
+                            {{-- Módulo 18: Read-only payment summary — actions moved to program profile --}}
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <div>
                                     <h5 class="mb-0">
-                                        <i class="bi bi-cash-coin"></i> Registro de Pagos
+                                        <i class="bi bi-cash-coin"></i> Resumen de Pagos
                                     </h5>
                                     <small class="text-muted">Total: {{ $participant->payments->count() }} pago(s)</small>
                                 </div>
-                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newPaymentModal">
-                                    <i class="bi bi-plus-circle"></i> Registrar Pago
-                                </button>
+                                <span class="badge bg-secondary"><i class="fas fa-eye me-1"></i> Solo lectura</span>
                             </div>
 
                             <!-- Resumen de Pagos -->
@@ -656,7 +655,7 @@
                                                 <th>Referencia</th>
                                                 <th>Estado</th>
                                                 <th>Verificado Por</th>
-                                                <th>Acciones</th>
+                                                <th>Comprobante</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -694,46 +693,15 @@
                                                             <span class="text-muted">-</span>
                                                         @endif
                                                     </td>
+                                                    {{-- Módulo 18: Read-only — only show receipt link --}}
                                                     <td>
-                                                        <div class="btn-group" role="group">
-                                                            @if($payment->receipt_path)
-                                                                <a href="{{ Storage::url($payment->receipt_path) }}" 
-                                                                   target="_blank"
-                                                                   class="btn btn-outline-info" 
-                                                                   title="Ver comprobante">
-                                                                    <i class="bi bi-file-earmark-pdf"></i>
-                                                                </a>
-                                                            @endif
-                                                            
-                                                            @if($payment->status === 'pending')
-                                                                <button type="button" 
-                                                                        class="btn btn-outline-success" 
-                                                                        onclick="verifyPayment({{ $payment->id }})"
-                                                                        title="Verificar">
-                                                                    <i class="bi bi-check-circle"></i>
-                                                                </button>
-                                                                <button type="button" 
-                                                                        class="btn btn-outline-danger" 
-                                                                        onclick="rejectPayment({{ $payment->id }})"
-                                                                        title="Rechazar">
-                                                                    <i class="bi bi-x-circle"></i>
-                                                                </button>
-                                                            @endif
-                                                            
-                                                            <button type="button" 
-                                                                    class="btn btn-outline-primary" 
-                                                                    onclick="editPayment({{ $payment->id }})"
-                                                                    title="Editar">
-                                                                <i class="bi bi-pencil"></i>
-                                                            </button>
-                                                            
-                                                            <button type="button" 
-                                                                    class="btn btn-outline-danger" 
-                                                                    onclick="deletePayment({{ $payment->id }})"
-                                                                    title="Eliminar">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </div>
+                                                        @if($payment->receipt_path)
+                                                            <a href="{{ asset('storage/' . $payment->receipt_path) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Ver comprobante">
+                                                                <i class="bi bi-file-earmark-pdf"></i>
+                                                            </a>
+                                                        @else
+                                                            <span class="text-muted">-</span>
+                                                        @endif
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -934,7 +902,8 @@
                                     </li>
 
                                     {{-- Módulo 4 fix: Show Sponsor/Job Interview steps only for Work & Travel and Internship --}}
-                                    @if(in_array($programSubcat, ['Work and Travel', 'Intern/Trainee', null]))
+                                    {{-- Módulo 6 fix: Removed null from condition — these steps should NOT show for Au Pair or unknown programs --}}
+                                    @if(in_array($programSubcat, ['Work and Travel', 'Intern/Trainee']))
                                         <li class="list-group-item d-flex justify-content-between align-items-center">
                                             Sponsor Interview
                                             @if($participant->visaProcess->sponsor_interview_status == 'approved')

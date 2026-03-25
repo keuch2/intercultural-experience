@@ -4,7 +4,10 @@
     $payments = $tabData['payments'] ?? collect();
     $currencies = $tabData['currencies'] ?? collect();
     $installmentPlan = $tabData['installmentPlan'] ?? null;
-    $totalPaid = $payments->where('status', 'verified')->sum('amount');
+    // Módulo 18: For multi-currency, use converted_amount when available
+    $totalPaid = $payments->where('status', 'verified')->sum(function($p) {
+        return $p->converted_amount ?? $p->amount;
+    });
     $totalCost = $application->total_cost ?? 0;
     $costCurrency = $application->cost_currency ?? 'USD';
     $progressPct = $totalCost > 0 ? min(100, round(($totalPaid / $totalCost) * 100)) : 0;
@@ -152,7 +155,13 @@
                     <tr>
                         <td><small>{{ $payment->payment_date ? $payment->payment_date->format('d/m/Y') : $payment->created_at->format('d/m/Y') }}</small></td>
                         <td>{{ $payment->concept ?? '-' }}</td>
-                        <td class="text-end fw-semibold">{{ number_format($payment->amount, 2) }}</td>
+                        <td class="text-end fw-semibold">
+                            {{ number_format($payment->amount, 2) }}
+                            {{-- Módulo 18: Show converted amount for multi-currency payments --}}
+                            @if($payment->converted_amount && $payment->exchange_rate)
+                                <br><small class="text-muted">= {{ number_format($payment->converted_amount, 2) }} {{ $costCurrency }} (TC: {{ number_format($payment->exchange_rate, 2) }})</small>
+                            @endif
+                        </td>
                         <td><small>{{ $payment->currency->code ?? '-' }}</small></td>
                         <td><small>{{ $payment->payment_method ?? '-' }}</small></td>
                         <td><small>{{ $payment->reference_number ?? '-' }}</small></td>
@@ -160,6 +169,7 @@
                             <span class="badge bg-{{ $payment->status_color }}">{{ $payment->status_label }}</span>
                         </td>
                         <td><small>{{ $payment->verifiedBy->name ?? '-' }}</small></td>
+                        {{-- Módulo 17: Payment actions with state protection --}}
                         <td>
                             <div class="d-flex gap-1">
                                 @if($payment->status === 'pending')
@@ -167,13 +177,12 @@
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-outline-success py-0" title="Verificar"><i class="fas fa-check"></i></button>
                                     </form>
-                                    <form method="POST" action="{{ route('admin.payments.reject', $payment->id) }}" class="d-inline" onsubmit="return confirm('¿Rechazar este pago?')">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0" title="Rechazar"><i class="fas fa-times"></i></button>
-                                    </form>
+                                    <button class="btn btn-sm btn-outline-danger py-0" title="Rechazar" data-bs-toggle="modal" data-bs-target="#rejectPaymentModal{{ $payment->id }}"><i class="fas fa-times"></i></button>
+                                @elseif($payment->status === 'verified')
+                                    <button class="btn btn-sm btn-outline-warning py-0" title="Revertir verificación" data-bs-toggle="modal" data-bs-target="#revertPaymentModal{{ $payment->id }}"><i class="fas fa-undo"></i></button>
                                 @endif
                                 @if($payment->receipt_path)
-                                    <a href="{{ Storage::disk('public')->url($payment->receipt_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary py-0" title="Ver comprobante">
+                                    <a href="{{ asset('storage/' . $payment->receipt_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary py-0" title="Ver comprobante">
                                         <i class="fas fa-receipt"></i>
                                     </a>
                                 @endif
@@ -206,6 +215,25 @@
 </div>
 
 {{-- G3: Plan de Cuotas --}}
+@if(!$installmentPlan && $totalCost > 0)
+{{-- Módulo 18: Create installment plan when none exists --}}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-calendar-check text-primary me-2"></i> G3. Plan de Cuotas
+        </h5>
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createInstallmentModal">
+            <i class="fas fa-plus me-1"></i> Crear Plan de Cuotas
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="text-center py-3">
+            <i class="fas fa-calendar-alt fa-2x text-muted mb-2 d-block opacity-25"></i>
+            <p class="text-muted small mb-0">No hay un plan de cuotas configurado. Puede crear uno para este participante.</p>
+        </div>
+    </div>
+</div>
+@endif
 @if($installmentPlan)
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-white">
@@ -280,21 +308,7 @@
 </div>
 @endif
 
-{{-- G4: Notas de Pagos --}}
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-white">
-        <h5 class="card-title mb-0">
-            <i class="fas fa-sticky-note text-primary me-2"></i> G4. Notas de Pagos
-        </h5>
-    </div>
-    <div class="card-body">
-        <form method="POST" action="{{ route('admin.aupair.profiles.update-payment-notes', $user->id) }}">
-            @csrf @method('PUT')
-            <textarea name="payment_notes" class="form-control form-control-sm" rows="3" placeholder="Notas internas sobre pagos, acuerdos de pago, observaciones...">{{ $proc->notes ?? '' }}</textarea>
-            <button type="submit" class="btn btn-sm btn-primary mt-2"><i class="fas fa-save me-1"></i> Guardar Notas</button>
-        </form>
-    </div>
-</div>
+{{-- Módulo 14: Notas movidas a sección independiente en show.blade.php --}}
 
 {{-- Alerta de pagos faltantes --}}
 @if(!$stages['_meta']['payment1_verified'] || !$stages['_meta']['payment2_verified'])
@@ -316,6 +330,8 @@
             <form method="POST" action="{{ route('admin.payments.store') }}" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="user_id" value="{{ $user->id }}">
+                {{-- Módulo 18: Redirect back to Au Pair profile payments tab after payment --}}
+                <input type="hidden" name="redirect_to" value="{{ route('admin.aupair.profiles.show', ['id' => $user->id, 'tab' => 'payments']) }}">
                 @if($application)
                 <input type="hidden" name="application_id" value="{{ $application->id }}">
                 <input type="hidden" name="program_id" value="{{ $application->program_id }}">
@@ -343,19 +359,25 @@
                             <label class="form-label small">Especificar concepto</label>
                             <input type="text" name="other_concept" class="form-control form-control-sm" placeholder="Detalle del concepto...">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label small">Monto <span class="text-danger">*</span></label>
-                            <input type="number" name="amount" class="form-control form-control-sm" step="0.01" min="0" required>
+                            <input type="number" name="amount" class="form-control form-control-sm" step="0.01" min="0" required id="paymentAmount">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label small">Moneda <span class="text-danger">*</span></label>
-                            <select name="currency_id" class="form-select form-select-sm" required>
+                            <select name="currency_id" class="form-select form-select-sm" required id="paymentCurrency">
                                 @foreach($currencies as $currency)
-                                    <option value="{{ $currency->id }}">{{ $currency->code }} ({{ $currency->symbol }})</option>
+                                    <option value="{{ $currency->id }}" data-code="{{ $currency->code }}">{{ $currency->code }} ({{ $currency->symbol }})</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        {{-- Módulo 18: Exchange rate for multi-currency payments --}}
+                        <div class="col-md-3" id="exchangeRateWrapper" style="display:none;">
+                            <label class="form-label small">Tipo de Cambio</label>
+                            <input type="number" name="exchange_rate" class="form-control form-control-sm" step="0.01" min="0" id="paymentExchangeRate" placeholder="Ej: 7500">
+                            <small class="text-muted" id="convertedAmountHint"></small>
+                        </div>
+                        <div class="col-md-3">
                             <label class="form-label small">Método de Pago <span class="text-danger">*</span></label>
                             <select name="payment_method" class="form-select form-select-sm" required>
                                 <option value="">-- Seleccionar --</option>
@@ -368,11 +390,17 @@
                                 <option value="Otro">Otro</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label small">N° Referencia <span class="text-danger">*</span></label>
                             <input type="text" name="reference_number" class="form-control form-control-sm" required placeholder="N° de transacción o comprobante">
                         </div>
-                        <div class="col-md-6">
+                        {{-- Módulo 18: Manual payment date for historical entries --}}
+                        <div class="col-md-4">
+                            <label class="form-label small">Fecha de Pago</label>
+                            <input type="date" name="payment_date" class="form-control form-control-sm" value="{{ now()->format('Y-m-d') }}">
+                            <small class="text-muted">Dejar vacío para fecha actual</small>
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label small">Estado <span class="text-danger">*</span></label>
                             <select name="status" class="form-select form-select-sm" required>
                                 <option value="pending">Pendiente de verificación</option>
@@ -436,6 +464,106 @@
     </div>
 </div>
 
+{{-- Módulo 17: Reject Payment Modals (require reason) --}}
+@foreach($payments->where('status', 'pending') as $payment)
+<div class="modal fade" id="rejectPaymentModal{{ $payment->id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.payments.reject', $payment->id) }}">
+                @csrf
+                <div class="modal-header bg-danger text-white">
+                    <h6 class="modal-title"><i class="fas fa-times-circle me-1"></i> Rechazar Pago</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small mb-2">Pago: <strong>{{ $payment->concept ?? '-' }}</strong> — {{ number_format($payment->amount, 2) }} {{ $payment->currency->code ?? '' }}</p>
+                    <label class="form-label small">Motivo del rechazo <span class="text-danger">*</span></label>
+                    <textarea name="rejection_reason" class="form-control form-control-sm" rows="3" required placeholder="Indique por qué se rechaza este pago..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times me-1"></i> Rechazar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
+{{-- Módulo 17: Revert Verified Payment Modals (require reason) --}}
+@foreach($payments->where('status', 'verified') as $payment)
+<div class="modal fade" id="revertPaymentModal{{ $payment->id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.payments.revert', $payment->id) }}">
+                @csrf
+                <div class="modal-header bg-warning">
+                    <h6 class="modal-title"><i class="fas fa-undo me-1"></i> Revertir Verificación</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning py-2 px-3 mb-3">
+                        <small><i class="fas fa-exclamation-triangle me-1"></i> Este pago está <strong>verificado</strong>. Al revertirlo volverá a estado pendiente.</small>
+                    </div>
+                    <p class="small mb-2">Pago: <strong>{{ $payment->concept ?? '-' }}</strong> — {{ number_format($payment->amount, 2) }} {{ $payment->currency->code ?? '' }}</p>
+                    <p class="small mb-2 text-muted">Verificado por: {{ $payment->verifiedBy->name ?? '-' }} el {{ $payment->verified_at ? $payment->verified_at->format('d/m/Y H:i') : '-' }}</p>
+                    <label class="form-label small">Motivo de la reversión <span class="text-danger">*</span></label>
+                    <textarea name="revert_reason" class="form-control form-control-sm" rows="3" required placeholder="Indique por qué se revierte este pago verificado..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-warning"><i class="fas fa-undo me-1"></i> Revertir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
+{{-- Módulo 18: Create Installment Plan Modal --}}
+@if(!$installmentPlan && $totalCost > 0 && $application)
+<div class="modal fade" id="createInstallmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.aupair.profiles.store-installment-plan', $user->id) }}">
+                @csrf
+                <div class="modal-header">
+                    <h6 class="modal-title"><i class="fas fa-calendar-check me-2"></i> Crear Plan de Cuotas</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info py-2 px-3 mb-3">
+                        <small><i class="fas fa-info-circle me-1"></i> Costo del programa: <strong>{{ number_format($totalCost, 2) }} {{ $costCurrency }}</strong>. Saldo restante: <strong>{{ number_format(max(0, $totalCost - $totalPaid), 2) }} {{ $costCurrency }}</strong></small>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small">Nombre del Plan</label>
+                            <input type="text" name="plan_name" class="form-control form-control-sm" value="Plan de Cuotas" placeholder="Ej: Plan de Cuotas Mensual">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Cantidad de Cuotas <span class="text-danger">*</span></label>
+                            <input type="number" name="total_installments" class="form-control form-control-sm" min="2" max="24" required value="6">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Monto Total del Plan <span class="text-danger">*</span></label>
+                            <input type="number" name="total_amount" class="form-control form-control-sm" step="0.01" min="0" required value="{{ number_format(max(0, $totalCost - $totalPaid), 2, '.', '') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Fecha de Primera Cuota <span class="text-danger">*</span></label>
+                            <input type="date" name="first_due_date" class="form-control form-control-sm" required value="{{ now()->addMonth()->startOfMonth()->format('Y-m-d') }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-save me-1"></i> Crear Plan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -447,6 +575,51 @@ document.addEventListener('DOMContentLoaded', function() {
             wrapper.style.display = this.value === 'Otro' ? '' : 'none';
         });
     }
+
+    // Módulo 18: Show/hide exchange rate field based on currency vs program currency
+    const programCurrency = '{{ $costCurrency }}';
+    const currencySelect = document.getElementById('paymentCurrency');
+    const exchangeWrapper = document.getElementById('exchangeRateWrapper');
+    const exchangeInput = document.getElementById('paymentExchangeRate');
+    const amountInput = document.getElementById('paymentAmount');
+    const hint = document.getElementById('convertedAmountHint');
+
+    function updateExchangeVisibility() {
+        if (!currencySelect || !exchangeWrapper) return;
+        const selected = currencySelect.options[currencySelect.selectedIndex];
+        const code = selected ? selected.getAttribute('data-code') : '';
+        exchangeWrapper.style.display = (code && code !== programCurrency) ? '' : 'none';
+        if (code === programCurrency) {
+            exchangeInput.value = '';
+            hint.textContent = '';
+        }
+    }
+
+    function updateConvertedHint() {
+        if (!exchangeInput || !amountInput || !hint) return;
+        const amount = parseFloat(amountInput.value) || 0;
+        const rate = parseFloat(exchangeInput.value) || 0;
+        if (amount > 0 && rate > 0) {
+            const selected = currencySelect.options[currencySelect.selectedIndex];
+            const code = selected ? selected.getAttribute('data-code') : '';
+            let converted;
+            if (programCurrency === 'USD' && code === 'PYG') {
+                converted = (amount / rate).toFixed(2);
+            } else {
+                converted = (amount * rate).toFixed(2);
+            }
+            hint.textContent = '= ' + converted + ' ' + programCurrency;
+        } else {
+            hint.textContent = '';
+        }
+    }
+
+    if (currencySelect) {
+        currencySelect.addEventListener('change', updateExchangeVisibility);
+        updateExchangeVisibility();
+    }
+    if (exchangeInput) exchangeInput.addEventListener('input', updateConvertedHint);
+    if (amountInput) amountInput.addEventListener('input', updateConvertedHint);
 });
 </script>
 @endpush

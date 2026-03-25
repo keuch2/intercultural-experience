@@ -205,8 +205,14 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/finance/payments*') ? 'active' : '' }}" href="{{ url('/admin/finance/payments') }}">
+                                <a class="nav-link {{ request()->is('admin/finance/payments') ? 'active' : '' }}" href="{{ url('/admin/finance/payments') }}">
                                     <i class="fas fa-money-bill-wave"></i> Pagos
+                                </a>
+                            </li>
+                            {{-- Módulo 18: Gestión de Pagos per participant --}}
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/finance/payment-management*') ? 'active' : '' }}" href="{{ route('admin.finance.payment-management') }}">
+                                    <i class="fas fa-users-cog"></i> Gestión de Pagos
                                 </a>
                             </li>
                         </ul>

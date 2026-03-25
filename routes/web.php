@@ -172,6 +172,8 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::post('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'store'])->name('admin.payments.store');
         Route::post('/payments/{payment}/verify', [\App\Http\Controllers\Admin\PaymentController::class, 'verify'])->name('admin.payments.verify');
         Route::post('/payments/{payment}/reject', [\App\Http\Controllers\Admin\PaymentController::class, 'reject'])->name('admin.payments.reject');
+        // Módulo 17: Revert verified payment back to pending
+        Route::post('/payments/{payment}/revert', [\App\Http\Controllers\Admin\PaymentController::class, 'revert'])->name('admin.payments.revert');
         Route::put('/payments/{payment}', [\App\Http\Controllers\Admin\PaymentController::class, 'update'])->name('admin.payments.update');
         Route::delete('/payments/{payment}', [\App\Http\Controllers\Admin\PaymentController::class, 'destroy'])->name('admin.payments.destroy');
         
@@ -243,6 +245,8 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         // Finance Management
         Route::get('/finance', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'index'])->name('admin.finance.index');
         Route::get('/finance/payments', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'payments'])->name('admin.finance.payments');
+        // Módulo 18: Gestión de Pagos — participant-centric payment management
+        Route::get('/finance/payment-management', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'paymentManagement'])->name('admin.finance.payment-management');
         Route::get('/finance/payments/create', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'createPayment'])->name('admin.finance.payments.create');
         Route::post('/finance/payments', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'storePayment'])->name('admin.finance.payments.store');
         Route::post('/finance/payments/{payment}/verify', [\App\Http\Controllers\Admin\AdminFinanceController::class, 'verifyPayment'])->name('admin.finance.payments.verify');
@@ -447,6 +451,8 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             Route::put('/perfiles/{id}/payment-flag', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updatePaymentFlag'])->name('profiles.update-payment-flag');
             Route::put('/perfiles/{id}/payment-notes', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updatePaymentNotes'])->name('profiles.update-payment-notes');
             Route::put('/perfiles/{id}/program-cost', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updateProgramCost'])->name('profiles.update-program-cost');
+            // Módulo 18: Installment plan creation
+            Route::post('/perfiles/{id}/installment-plan', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeInstallmentPlan'])->name('profiles.store-installment-plan');
             // Resources
             Route::get('/recursos', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'resources'])->name('resources.index');
             Route::post('/recursos', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeResource'])->name('resources.store');

@@ -21,27 +21,52 @@ class PaymentController extends Controller
             'program_id' => 'nullable|exists:programs,id',
             'currency_id' => 'required|exists:currencies,id',
             'amount' => 'required|numeric|min:0',
+            'exchange_rate' => 'nullable|numeric|min:0',
             'concept' => 'required|string',
             'other_concept' => 'nullable|string|required_if:concept,Otro',
             'payment_method' => 'required|string',
             'reference_number' => 'required|string',
+            'payment_date' => 'nullable|date',
             'notes' => 'nullable|string',
             'status' => 'required|in:pending,verified',
             'created_by' => 'nullable|exists:users,id',
+            'redirect_to' => 'nullable|string',
         ]);
 
         // Si el concepto es "Otro" y se proporcionó un concepto personalizado, usarlo
         if ($validated['concept'] === 'Otro' && !empty($validated['other_concept'])) {
             $validated['concept'] = $validated['other_concept'];
         }
-        
-        // Remover other_concept del array ya que no existe en la tabla
+
+        // Remover campos auxiliares que no existen en la tabla
         unset($validated['other_concept']);
+        $redirectTo = $validated['redirect_to'] ?? null;
+        unset($validated['redirect_to']);
 
         // Establecer valores por defecto
-        $validated['payment_date'] = now()->toDateString();
+        $validated['payment_date'] = $validated['payment_date'] ?? now()->toDateString();
         $validated['created_by'] = $validated['created_by'] ?? auth()->id();
-        
+
+        // Módulo 18: Multi-currency — calculate converted amount if exchange rate provided
+        if (!empty($validated['exchange_rate']) && $validated['exchange_rate'] > 0) {
+            // Get application to check program currency
+            $application = $validated['application_id']
+                ? Application::find($validated['application_id'])
+                : null;
+            $programCurrency = $application->cost_currency ?? 'USD';
+            $paymentCurrency = \App\Models\Currency::find($validated['currency_id']);
+
+            // Convert: if program is USD and payment is PYG, divide by rate
+            // if program is PYG and payment is USD, multiply by rate
+            if ($paymentCurrency && $paymentCurrency->code !== $programCurrency) {
+                if ($programCurrency === 'USD' && $paymentCurrency->code === 'PYG') {
+                    $validated['converted_amount'] = round($validated['amount'] / $validated['exchange_rate'], 2);
+                } else {
+                    $validated['converted_amount'] = round($validated['amount'] * $validated['exchange_rate'], 2);
+                }
+            }
+        }
+
         // Si el pago es "Realizado" (verified), establecer verificación automática
         if ($validated['status'] === 'verified') {
             $validated['verified_by'] = auth()->id();
@@ -50,13 +75,16 @@ class PaymentController extends Controller
 
         Payment::create($validated);
 
-        $message = $validated['status'] === 'verified' 
-            ? 'Pago registrado como REALIZADO exitosamente.' 
+        $message = $validated['status'] === 'verified'
+            ? 'Pago registrado como REALIZADO exitosamente.'
             : 'Pago registrado como PENDIENTE de verificación.';
 
-        return redirect()
-            ->route('admin.participants.show', $validated['user_id'])
-            ->with('success', $message);
+        // Módulo 18: Redirect back to origin (Au Pair profile or general participant)
+        if ($redirectTo) {
+            return redirect($redirectTo)->with('success', $message);
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
@@ -65,6 +93,12 @@ class PaymentController extends Controller
     public function verify($id)
     {
         $payment = Payment::findOrFail($id);
+
+        // Módulo 17: Block re-verification of already verified payments
+        if ($payment->status === 'verified') {
+            return back()->with('error', 'Este pago ya está verificado.');
+        }
+
         $payment->verify(auth()->id());
 
         return redirect()
@@ -78,13 +112,50 @@ class PaymentController extends Controller
     public function reject(Request $request, $id)
     {
         $payment = Payment::findOrFail($id);
-        
-        $notes = $request->input('notes');
-        $payment->reject(auth()->id(), $notes);
+
+        // Módulo 17: Block rejection of verified payments — must revert first
+        if ($payment->status === 'verified') {
+            return back()->with('error', 'No se puede rechazar un pago verificado. Debe revertirlo primero.');
+        }
+
+        $request->validate([
+            'rejection_reason' => 'required|string|max:500',
+        ], [
+            'rejection_reason.required' => 'Debe indicar un motivo para rechazar el pago.',
+        ]);
+
+        $payment->reject(auth()->id(), $request->input('rejection_reason'));
 
         return redirect()
             ->route('admin.participants.show', $payment->application_id)
             ->with('warning', 'Pago rechazado.');
+    }
+
+    /**
+     * Módulo 17: Revert a verified payment back to pending (admin only).
+     */
+    public function revert(Request $request, $id)
+    {
+        $payment = Payment::findOrFail($id);
+
+        if ($payment->status !== 'verified') {
+            return back()->with('error', 'Solo se pueden revertir pagos verificados.');
+        }
+
+        $request->validate([
+            'revert_reason' => 'required|string|max:500',
+        ], [
+            'revert_reason.required' => 'Debe indicar un motivo para revertir la verificación.',
+        ]);
+
+        $payment->update([
+            'status' => 'pending',
+            'verified_by' => null,
+            'verified_at' => null,
+            'notes' => ($payment->notes ? $payment->notes . ' | ' : '') . 'Revertido: ' . $request->revert_reason . ' (por ' . auth()->user()->name . ', ' . now()->format('d/m/Y H:i') . ')',
+        ]);
+
+        return back()->with('success', 'Verificación revertida. El pago vuelve a estado pendiente.');
     }
 
     /**

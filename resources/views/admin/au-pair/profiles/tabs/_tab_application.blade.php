@@ -506,16 +506,16 @@
                         {{ $proc && $proc->itep_completed ? 'checked' : '' }}>
                     <span>ITEP (examen obligatorio - perfil online y verificado)</span>
                 </label>
-                {{-- Módulo 7 fix: contract_signed auto-sets when contract file is uploaded; disabled if no file exists --}}
+                {{-- Módulo 9 fix: contract_signed is fully automatic — checked when file exists, cannot be manually toggled --}}
                 <label class="list-group-item d-flex align-items-center {{ ($proc && $proc->contract_signed) ? 'list-group-item-success' : 'list-group-item-warning' }}">
                     <input class="form-check-input me-3" type="checkbox" name="contract_signed" value="1"
                         {{ $proc && $proc->contract_signed ? 'checked' : '' }}
-                        {{ $proc && $proc->contract_file_path ? '' : 'disabled' }}>
+                        disabled>
                     <span>Contrato firmado con IE</span>
                     @if($proc && $proc->contract_signed)
                         <small class="ms-auto text-success"><i class="fas fa-check"></i> {{ $proc->contract_signed_at ? $proc->contract_signed_at->format('d/m/Y') : '' }}</small>
-                    @elseif(!$proc || !$proc->contract_file_path)
-                        <small class="ms-auto text-muted"><i class="fas fa-info-circle"></i> Suba el contrato para activar</small>
+                    @else
+                        <small class="ms-auto text-muted"><i class="fas fa-info-circle"></i> Se activa automáticamente al subir el contrato</small>
                     @endif
                 </label>
             </div>
@@ -525,19 +525,32 @@
                 <h6 class="small fw-bold text-muted mb-2"><i class="fas fa-file-contract me-1"></i> Archivo del Contrato Firmado</h6>
                 @if($proc && $proc->contract_file_path)
                     <div class="d-flex align-items-center">
-                        {{-- Módulo 7 fix: Use public disk URL — file is stored on 'public' disk --}}
-                        <a href="{{ Storage::disk('public')->url($proc->contract_file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                        {{-- Módulo 9 fix: Use asset() with storage path for reliable file serving --}}
+                        <a href="{{ asset('storage/' . $proc->contract_file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">
                             <i class="fas fa-file-pdf me-1"></i> {{ $proc->contract_original_filename ?? 'Ver Contrato' }}
                         </a>
                         <small class="text-success"><i class="fas fa-check-circle"></i> Archivo cargado</small>
                     </div>
+                    @if($proc->contract_signed)
+                        {{-- Módulo 9 fix: Once signed, contract cannot be replaced directly.
+                             To replace, the admin must first delete the contract (with a reason),
+                             following the same logic as other approved documents in the system. --}}
+                        <div class="mt-2">
+                            <small class="text-muted"><i class="fas fa-lock me-1"></i> El contrato firmado no puede reemplazarse directamente. Para subir uno nuevo, elimínelo primero indicando una razón.</small>
+                        </div>
+                    @else
+                        <div class="mt-2">
+                            <input type="file" name="contract_file" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png">
+                            <small class="text-muted">Reemplazar archivo del contrato (PDF o imagen)</small>
+                        </div>
+                    @endif
                 @else
                     <small class="text-muted d-block mb-2">No se ha cargado el archivo del contrato firmado.</small>
+                    <div class="mt-2">
+                        <input type="file" name="contract_file" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png">
+                        <small class="text-muted">Suba el contrato firmado escaneado (PDF o imagen)</small>
+                    </div>
                 @endif
-                <div class="mt-2">
-                    <input type="file" name="contract_file" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png">
-                    <small class="text-muted">Suba el contrato firmado escaneado (PDF o imagen)</small>
-                </div>
             </div>
 
             <button type="submit" class="btn btn-sm btn-primary mt-3">

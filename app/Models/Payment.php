@@ -16,6 +16,8 @@ class Payment extends Model
         'program_id',
         'currency_id',
         'amount',
+        'exchange_rate',
+        'converted_amount',
         'payment_method',
         'concept',
         'reference_number',
@@ -30,6 +32,8 @@ class Payment extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'exchange_rate' => 'decimal:4',
+        'converted_amount' => 'decimal:2',
         'payment_date' => 'date',
         'verified_at' => 'datetime',
     ];

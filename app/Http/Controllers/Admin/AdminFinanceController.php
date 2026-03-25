@@ -747,4 +747,51 @@ class AdminFinanceController extends Controller
         return redirect()->route('admin.finance.transactions')
             ->with('success', 'Transacción eliminada correctamente.');
     }
+
+    /**
+     * Módulo 18: Gestión de Pagos — participant-centric payment overview.
+     * Lists all participants with program cost, payment status, and balance.
+     */
+    public function paymentManagement(Request $request)
+    {
+        $query = Application::query()
+            ->with(['user', 'program', 'payments' => fn($q) => $q->withTrashed()])
+            ->whereHas('user')
+            ->whereNotNull('program_id');
+
+        // Filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('user', fn($q) => $q->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"));
+        }
+
+        if ($request->filled('program_id')) {
+            $query->where('program_id', $request->program_id);
+        }
+
+        if ($request->filled('payment_status')) {
+            if ($request->payment_status === 'paid') {
+                $query->whereRaw('total_cost > 0')
+                      ->whereRaw('(SELECT COALESCE(SUM(COALESCE(converted_amount, amount)), 0) FROM payments WHERE payments.application_id = applications.id AND payments.status = "verified" AND payments.deleted_at IS NULL) >= applications.total_cost');
+            } elseif ($request->payment_status === 'pending') {
+                $query->where(function($q) {
+                    $q->whereNull('total_cost')
+                      ->orWhere('total_cost', 0)
+                      ->orWhereRaw('(SELECT COALESCE(SUM(COALESCE(converted_amount, amount)), 0) FROM payments WHERE payments.application_id = applications.id AND payments.status = "verified" AND payments.deleted_at IS NULL) < applications.total_cost');
+                });
+            }
+        }
+
+        if ($request->filled('year')) {
+            $query->whereYear('created_at', $request->year);
+        }
+
+        $applications = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        $programs = Program::orderBy('name')->get();
+        $years = Application::selectRaw('YEAR(created_at) as year')
+            ->distinct()->orderBy('year', 'desc')->pluck('year');
+
+        return view('admin.finance.payment_management', compact('applications', 'programs', 'years'));
+    }
 }

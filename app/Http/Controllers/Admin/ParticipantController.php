@@ -491,9 +491,8 @@ class ParticipantController extends Controller
         $user = $contact->user;
         $contact->delete();
 
-        $participant = Application::where('user_id', $user->id)->latest()->first();
-
-        return redirect()->route('admin.participants.show', $participant->id ?? 0)
+        // Módulo 3 fix: Redirect using User ID (not Application ID) to match route model binding
+        return redirect()->route('admin.participants.show', $user->id)
             ->with('success', 'Contacto de emergencia eliminado correctamente.');
     }
 
@@ -543,9 +542,8 @@ class ParticipantController extends Controller
         $user = $experience->user;
         $experience->delete();
 
-        $participant = Application::where('user_id', $user->id)->latest()->first();
-
-        return redirect()->route('admin.participants.show', $participant->id ?? 0)
+        // Módulo 3 fix: Redirect using User ID (not Application ID) to match route model binding
+        return redirect()->route('admin.participants.show', $user->id)
             ->with('success', 'Experiencia laboral eliminada correctamente.');
     }
 }

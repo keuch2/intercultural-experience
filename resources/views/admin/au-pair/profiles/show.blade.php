@@ -133,9 +133,10 @@
                         @endswitch
                     </span>
                     <span class="small fw-semibold">{{ $tabLabel }}</span>
+                    {{-- Módulo 16: Payment percentage badge instead of X/2 --}}
                     @if($tabKey === 'payments')
-                        <span class="ms-auto badge {{ $stages['_meta']['payment1_verified'] && $stages['_meta']['payment2_verified'] ? 'bg-success' : 'bg-warning text-dark' }}" style="font-size: 0.65rem;">
-                            {{ ($stages['_meta']['payment1_verified'] ? 1 : 0) + ($stages['_meta']['payment2_verified'] ? 1 : 0) }}/2
+                        <span class="ms-auto badge {{ $paymentPercentage >= 100 ? 'bg-success' : ($paymentPercentage > 0 ? 'bg-warning text-dark' : 'bg-danger') }}" style="font-size: 0.65rem;">
+                            {{ $paymentPercentage }}%
                         </span>
                     @endif
                 </a>
@@ -143,7 +144,34 @@
             </div>
         </div>
 
-        {{-- Mini resumen --}}
+        {{-- Módulo 15: Restructured summary widget --}}
+        @php
+            // Módulo 10 fix: Calculate last update from all relevant sources
+            $lastUpdate = collect([
+                $user->updated_at,
+                $process ? $process->updated_at : null,
+                $application ? $application->updated_at : null,
+            ])->filter()->max();
+
+            // Módulo 15/16: Calculate payment progress percentage
+            $paymentPercentage = 0;
+            if ($application && $application->total_cost > 0) {
+                $totalPaid = $application->payments()->where('status', 'verified')->sum('amount');
+                $paymentPercentage = min(100, round(($totalPaid / $application->total_cost) * 100));
+            } elseif ($stages['_meta']['payment1_verified'] && $stages['_meta']['payment2_verified']) {
+                $paymentPercentage = 100;
+            } elseif ($stages['_meta']['payment1_verified'] || $stages['_meta']['payment2_verified']) {
+                $paymentPercentage = 50;
+            }
+
+            $stageLabels = [
+                'admission' => 'Admisión',
+                'application' => 'Aplicación',
+                'match_visa' => 'Match / Visa J1',
+                'support' => 'Support',
+                'completed' => 'Completado',
+            ];
+        @endphp
         <div class="card shadow-sm mt-3">
             <div class="card-body py-3">
                 <h6 class="card-title small text-muted text-uppercase mb-2">Resumen</h6>
@@ -153,30 +181,21 @@
                         <span class="fw-semibold">{{ $stages['_meta']['english_level'] ?? 'Sin evaluar' }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-1">
-                        <span class="text-muted">Pago 1:</span>
-                        @if($stages['_meta']['payment1_verified'])
-                            <span class="text-success"><i class="fas fa-check"></i> Verificado</span>
-                        @else
-                            <span class="text-danger"><i class="fas fa-times"></i> Pendiente</span>
-                        @endif
+                        <span class="text-muted">Pagos:</span>
+                        <span class="fw-semibold {{ $paymentPercentage >= 100 ? 'text-success' : ($paymentPercentage > 0 ? 'text-warning' : 'text-danger') }}">{{ $paymentPercentage }}%</span>
                     </div>
                     <div class="d-flex justify-content-between mb-1">
-                        <span class="text-muted">Pago 2:</span>
-                        @if($stages['_meta']['payment2_verified'])
-                            <span class="text-success"><i class="fas fa-check"></i> Verificado</span>
-                        @else
-                            <span class="text-danger"><i class="fas fa-times"></i> Pendiente</span>
-                        @endif
-                    </div>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="text-muted">Docs Admisión:</span>
-                        @if($stages['_meta']['admission_docs_approved'])
-                            <span class="text-success"><i class="fas fa-check"></i></span>
-                        @else
-                            <span class="text-warning"><i class="fas fa-clock"></i></span>
-                        @endif
+                        <span class="text-muted">Etapa:</span>
+                        <span class="fw-semibold">{{ $stageLabels[$stages['_meta']['current_stage']] ?? ucfirst($stages['_meta']['current_stage']) }}</span>
                     </div>
                 </div>
+                {{-- Módulo 10 fix: Show last update timestamp --}}
+                @if($lastUpdate)
+                <hr class="my-2">
+                <div class="text-muted" style="font-size: 0.75rem;">
+                    <i class="fas fa-clock me-1"></i> Última actualización: {{ $lastUpdate->format('d/m/Y H:i') }}
+                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -192,4 +211,33 @@
         ])
     </div>
 </div>
+
+{{-- Módulo 14: Notas del proceso — sección independiente visible en todas las pestañas --}}
+@if($process)
+<div class="row mt-2">
+    <div class="col-md-9 col-lg-10 offset-md-3 offset-lg-2">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-2" role="button" data-bs-toggle="collapse" data-bs-target="#notasProcesoCollapse" aria-expanded="{{ ($process->notes) ? 'true' : 'false' }}">
+                <h6 class="mb-0">
+                    <i class="fas fa-sticky-note text-primary me-1"></i> Notas del Proceso
+                    @if($process->notes)
+                        <span class="badge bg-info ms-1" style="font-size: 0.65rem;">Con notas</span>
+                    @endif
+                </h6>
+                <i class="fas fa-chevron-down text-muted small"></i>
+            </div>
+            <div class="collapse {{ ($process->notes) ? 'show' : '' }}" id="notasProcesoCollapse">
+                <div class="card-body">
+                    <form method="POST" action="{{ route('admin.aupair.profiles.update-payment-notes', $user->id) }}">
+                        @csrf @method('PUT')
+                        <input type="hidden" name="redirect_tab" value="{{ $activeTab }}">
+                        <textarea name="payment_notes" class="form-control form-control-sm" rows="3" placeholder="Notas internas del proceso: observaciones, acuerdos, seguimiento...">{{ $process->notes ?? '' }}</textarea>
+                        <button type="submit" class="btn btn-sm btn-primary mt-2"><i class="fas fa-save me-1"></i> Guardar Notas</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 @endsection

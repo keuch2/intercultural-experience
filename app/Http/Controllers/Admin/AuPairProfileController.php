@@ -134,10 +134,11 @@ class AuPairProfileController extends Controller
 
         // Auto-create process if user has Au Pair application but no process yet
         if ($application && !$process) {
+            // Módulo 10 fix: Use applied_at (actual enrollment date) if available, not created_at
             $process = AuPairProcess::create([
                 'application_id' => $application->id,
                 'user_id' => $user->id,
-                'enrollment_date' => $application->created_at->toDateString(),
+                'enrollment_date' => ($application->applied_at ?? $application->created_at)->toDateString(),
                 'enrollment_city' => $user->city,
                 'enrollment_country' => $user->country,
             ]);
@@ -372,8 +373,9 @@ class AuPairProfileController extends Controller
             ])
             ->log("Documento '{$doc->document_type}' eliminado");
 
+        // Módulo 12 fix: Use soft delete (not forceDelete) to preserve deletion_reason in audit trail
         Storage::disk('public')->delete($doc->file_path);
-        $doc->forceDelete();
+        $doc->delete();
 
         return redirect()
             ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => $tab])
@@ -508,25 +510,22 @@ class AuPairProfileController extends Controller
             $validated[$field] = $request->has($field);
         }
 
-        // Handle contract file upload
+        // Módulo 9 fix: Contract handling — contract_signed is fully automatic
         if ($request->hasFile('contract_file')) {
+            // Block replacing a signed contract — must delete first (same as approved documents)
+            if ($process->contract_signed) {
+                return back()->with('error', 'El contrato firmado no puede reemplazarse directamente. Elimínelo primero indicando una razón.');
+            }
             $file = $request->file('contract_file');
             $path = $file->store("au-pair-contracts/{$user->id}", 'public');
             $validated['contract_file_path'] = $path;
             $validated['contract_original_filename'] = $file->getClientOriginalName();
-            // Módulo 7 fix: Auto-set contract_signed when contract document is uploaded
-            if (!$process->contract_signed) {
-                $validated['contract_signed'] = true;
-                $validated['contract_signed_at'] = now();
-                $validated['contract_confirmed_by'] = Auth::id();
-            }
+            $validated['contract_signed'] = true;
+            $validated['contract_signed_at'] = now();
+            $validated['contract_confirmed_by'] = Auth::id();
         } else {
-            // Módulo 7 fix: Don't allow manual contract_signed without an existing contract file
-            $validated['contract_signed'] = $process->contract_file_path ? $request->has('contract_signed') : false;
-            if ($validated['contract_signed'] && !$process->contract_signed) {
-                $validated['contract_signed_at'] = now();
-                $validated['contract_confirmed_by'] = Auth::id();
-            }
+            // contract_signed is read-only — preserve current value, never allow manual toggle
+            $validated['contract_signed'] = $process->contract_signed;
         }
         unset($validated['contract_file']);
 
@@ -834,7 +833,13 @@ class AuPairProfileController extends Controller
             'value' => 'required|boolean',
         ]);
 
-        $process->update([$request->flag => (bool) $request->value]);
+        // Módulo 17: Block un-verifying a payment that is already verified
+        $flag = $request->flag;
+        if ($process->$flag && !(bool) $request->value) {
+            return back()->with('error', 'No se puede revertir un pago verificado desde aquí. Use la sección de pagos.');
+        }
+
+        $process->update([$flag => (bool) $request->value]);
 
         return redirect()
             ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'payments'])
@@ -856,9 +861,11 @@ class AuPairProfileController extends Controller
         $request->validate(['payment_notes' => 'nullable|string|max:2000']);
         $process->update(['notes' => $request->payment_notes]);
 
+        // Módulo 14: Redirect back to the current tab (notes widget is now visible on all tabs)
+        $tab = $request->input('redirect_tab', $request->query('tab', 'admission'));
         return redirect()
-            ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'payments'])
-            ->with('success', 'Notas de pago guardadas.');
+            ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => $tab])
+            ->with('success', 'Notas guardadas.');
     }
 
     /**
@@ -887,6 +894,70 @@ class AuPairProfileController extends Controller
         return redirect()
             ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'payments'])
             ->with('success', 'Costo del programa actualizado.');
+    }
+
+    /**
+     * Módulo 18: Create installment plan for a participant's Au Pair program.
+     */
+    public function storeInstallmentPlan(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $application = $user->applications()
+            ->whereHas('program', fn($q) => $q->where('subcategory', 'Au Pair'))
+            ->latest()->first();
+
+        if (!$application) {
+            return back()->with('error', 'Aplicación Au Pair no encontrada.');
+        }
+
+        $validated = $request->validate([
+            'plan_name' => 'nullable|string|max:100',
+            'total_installments' => 'required|integer|min:2|max:24',
+            'total_amount' => 'required|numeric|min:0',
+            'first_due_date' => 'required|date',
+        ]);
+
+        $installmentAmount = round($validated['total_amount'] / $validated['total_installments'], 2);
+
+        // Create the installment plan
+        $plan = \App\Models\PaymentInstallment::create([
+            'application_id' => $application->id,
+            'user_id' => $user->id,
+            'program_id' => $application->program_id,
+            'plan_name' => $validated['plan_name'] ?? 'Plan de Cuotas',
+            'total_installments' => $validated['total_installments'],
+            'total_amount' => $validated['total_amount'],
+            'interest_rate' => 0,
+            'currency_id' => $application->cost_currency === 'PYG'
+                ? \App\Models\Currency::where('code', 'PYG')->first()?->id
+                : \App\Models\Currency::where('code', 'USD')->first()?->id,
+            'status' => 'active',
+            'created_by' => auth()->id(),
+        ]);
+
+        // Create individual installment details with monthly dates
+        $dueDate = \Carbon\Carbon::parse($validated['first_due_date']);
+        for ($i = 1; $i <= $validated['total_installments']; $i++) {
+            // Last installment gets the rounding difference
+            $amount = ($i === $validated['total_installments'])
+                ? $validated['total_amount'] - ($installmentAmount * ($validated['total_installments'] - 1))
+                : $installmentAmount;
+
+            \App\Models\InstallmentDetail::create([
+                'payment_installment_id' => $plan->id,
+                'installment_number' => $i,
+                'amount' => $amount,
+                'due_date' => $dueDate->copy(),
+                'status' => 'pending',
+                'late_fee' => 0,
+            ]);
+
+            $dueDate->addMonth();
+        }
+
+        return redirect()
+            ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'payments'])
+            ->with('success', "Plan de {$validated['total_installments']} cuotas creado exitosamente.");
     }
 
     // =========================================================================

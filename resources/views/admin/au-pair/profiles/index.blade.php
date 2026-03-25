@@ -142,7 +142,16 @@
                     $prof = $user->auPairProfile;
                     $proc = $user->auPairProcess;
                     $bestEnglish = $user->englishEvaluations->sortByDesc('score')->first();
-                    $verifiedPayments = $proc ? (($proc->payment_1_verified ? 1 : 0) + ($proc->payment_2_verified ? 1 : 0)) : ($app ? $app->payments->where('status', 'verified')->count() : 0);
+                    // Módulo 16: Calculate payment percentage instead of simple count
+                    $paymentPct = 0;
+                    if ($app && $app->total_cost > 0) {
+                        $totalPaid = $app->payments->where('status', 'verified')->sum('amount');
+                        $paymentPct = min(100, round(($totalPaid / $app->total_cost) * 100));
+                    } elseif ($proc) {
+                        $p1 = $proc->payment_1_verified ? 1 : 0;
+                        $p2 = $proc->payment_2_verified ? 1 : 0;
+                        $paymentPct = ($p1 + $p2) * 50;
+                    }
                     $procDocs = $proc ? $proc->documents : collect();
                     $totalDocs = $procDocs->count();
                     $approvedDocs = $procDocs->where('status', 'approved')->count();
@@ -197,14 +206,11 @@
                             <span class="text-muted">-</span>
                         @endif
                     </td>
+                    {{-- Módulo 16: Payment percentage instead of 2/2 --}}
                     <td class="text-center">
-                        @if($verifiedPayments >= 2)
-                            <span class="badge bg-success"><i class="fas fa-check"></i> 2/2</span>
-                        @elseif($verifiedPayments == 1)
-                            <span class="badge bg-warning text-dark">1/2</span>
-                        @else
-                            <span class="badge bg-danger">0/2</span>
-                        @endif
+                        <span class="badge {{ $paymentPct >= 100 ? 'bg-success' : ($paymentPct > 0 ? 'bg-warning text-dark' : 'bg-danger') }}">
+                            {{ $paymentPct }}%
+                        </span>
                     </td>
                     <td class="text-center">
                         @if($bestEnglish)

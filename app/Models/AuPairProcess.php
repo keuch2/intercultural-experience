@@ -115,20 +115,31 @@ class AuPairProcess extends Model
     }
 
     /**
-     * Check if admission docs (required) are all approved
+     * Check if admission docs (required) are all approved.
+     * Módulo 1 fix: Use static definitions as source of truth for required types,
+     * and check that each required type has at least one approved document.
+     * This aligns with the view logic and avoids false negatives when a document
+     * type has multiple records (e.g., a rejected + an approved version).
      */
     public function admissionDocsApproved(): bool
     {
-        $required = $this->documents()
-            ->where('stage', 'admission')
-            ->where('is_required', true)
-            ->get();
+        $admissionDefs = AuPairDocument::documentTypesForStage('admission');
+        $requiredTypes = collect($admissionDefs)->filter(fn($d) => $d['required'])->keys();
 
-        if ($required->isEmpty()) {
+        if ($requiredTypes->isEmpty()) {
             return false;
         }
 
-        return $required->every(fn($doc) => $doc->status === 'approved');
+        $docs = $this->documents()->where('stage', 'admission')->get();
+
+        foreach ($requiredTypes as $type) {
+            $hasApproved = $docs->where('document_type', $type)->where('status', 'approved')->isNotEmpty();
+            if (!$hasApproved) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

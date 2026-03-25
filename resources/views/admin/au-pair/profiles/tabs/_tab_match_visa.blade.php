@@ -48,7 +48,8 @@
     <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-file-alt text-primary me-1"></i> C1.1. Documentos del Participante (Visa)</h6></div>
     <div class="card-body">
         <p class="text-muted small mb-3">Documentos que el participante debe cargar para el proceso de visa. También pueden ser cargados por el staff de IE.</p>
-        @php $participantVisaDocs = collect($visaDocDefs)->filter(fn($d) => !isset($d['uploaded_by']) || $d['uploaded_by'] !== 'staff'); @endphp
+        {{-- Módulo 13 fix: C1.1 shows participant docs (no uploaded_by or uploaded_by=participant), excluding section-assigned docs --}}
+        @php $participantVisaDocs = collect($visaDocDefs)->filter(fn($d) => (!isset($d['uploaded_by']) || $d['uploaded_by'] !== 'staff') && (!isset($d['section']) || $d['section'] !== 'c6')); @endphp
         <div class="table-responsive">
             <table class="table table-sm table-bordered align-middle">
                 <thead class="table-light">
@@ -106,7 +107,8 @@
                 @endif
             </label>
         </div>
-        @php $staffDocDefs = collect($visaDocDefs)->filter(fn($d) => isset($d['uploaded_by']) && $d['uploaded_by'] === 'staff'); @endphp
+        {{-- Módulo 13 fix: C2 shows staff docs except those assigned to C6 section --}}
+        @php $staffDocDefs = collect($visaDocDefs)->filter(fn($d) => isset($d['uploaded_by']) && $d['uploaded_by'] === 'staff' && (!isset($d['section']) || $d['section'] !== 'c6')); @endphp
         @foreach($staffDocDefs as $docKey => $docDef)
         @php $doc = $visaDocs->where('document_type', $docKey)->first(); @endphp
         <div class="border rounded p-2 mb-2 d-flex align-items-center justify-content-between">
@@ -284,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-chalkboard-teacher text-primary me-1"></i> C6. Orientación Pre-partida</h6></div>
     <div class="card-body">
-        <div class="row g-3 align-items-end">
+        <div class="row g-3 align-items-end mb-3">
             <div class="col-md-4">
                 <label class="form-label small">Fecha programada</label>
                 <input type="date" name="pre_departure_orientation_date" class="form-control form-control-sm" value="{{ $visa && $visa->pre_departure_orientation_date ? $visa->pre_departure_orientation_date->format('Y-m-d') : '' }}">
@@ -296,6 +298,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
         </div>
+        {{-- Módulo 13 fix: Pre-departure orientation document now lives in C6 --}}
+        @php
+            $c6DocDefs = collect($visaDocDefs)->filter(fn($d) => isset($d['section']) && $d['section'] === 'c6');
+        @endphp
+        @foreach($c6DocDefs as $docKey => $docDef)
+        @php $doc = $visaDocs->where('document_type', $docKey)->first(); @endphp
+        <div class="border rounded p-2 mb-2 d-flex align-items-center justify-content-between">
+            <span class="small"><i class="fas fa-file-alt text-info me-1"></i> {{ $docDef['label'] }}</span>
+            <div class="d-flex gap-1 align-items-center">
+                @if($doc)
+                    <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $doc->id]) }}" class="btn btn-sm btn-outline-primary py-0"><i class="fas fa-download"></i></a>
+                    @if($doc->status !== 'approved')
+                        <form method="POST" action="{{ route('admin.aupair.profiles.review-doc', [$user->id, $doc->id]) }}" class="d-inline">@csrf @method('PUT')<input type="hidden" name="action" value="approve"><button type="submit" class="btn btn-sm btn-outline-success py-0" title="Aprobar"><i class="fas fa-check"></i></button></form>
+                    @endif
+                    <span class="badge bg-{{ $doc->status_color }}">{{ $doc->status_label }}</span>
+                @else
+                    <span class="badge bg-light text-dark me-1">Sin cargar</span>
+                    <button type="button" class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#uploadVisaDoc{{ $docKey }}"><i class="fas fa-upload"></i></button>
+                @endif
+            </div>
+        </div>
+        @endforeach
     </div>
 </div>
 

@@ -180,23 +180,36 @@ class Application extends Model
     }
     
     /**
-     * Calcula el progreso de la solicitud en porcentaje
-     * 
+     * Calcula el progreso de la solicitud en porcentaje.
+     * Módulo 4 fix: Falls back to stage-based calculation when no requisites exist
+     * (e.g., Au Pair uses AuPairProcess stages instead of ProgramRequisites).
+     *
      * @return int
      */
     public function getProgressPercentage()
     {
         $totalRequisites = $this->requisites()->count();
-        
-        if ($totalRequisites === 0) {
-            return 0;
+
+        if ($totalRequisites > 0) {
+            $completedRequisites = $this->requisites()
+                ->whereIn('status', ['completed', 'verified'])
+                ->count();
+            return round(($completedRequisites / $totalRequisites) * 100);
         }
-        
-        $completedRequisites = $this->requisites()
-            ->whereIn('status', ['completed', 'verified'])
-            ->count();
-            
-        return round(($completedRequisites / $totalRequisites) * 100);
+
+        // Fallback: calculate from current_stage
+        $stageProgress = [
+            'registration' => 5,
+            'admission' => 20,
+            'application' => 40,
+            'match_visa' => 60,
+            'support' => 80,
+            'completed' => 100,
+            'cancelled' => 0,
+        ];
+
+        $stage = $this->attributes['current_stage'] ?? 'registration';
+        return $stageProgress[$stage] ?? 0;
     }
 
     /**
