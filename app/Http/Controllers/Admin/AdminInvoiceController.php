@@ -101,12 +101,13 @@ class AdminInvoiceController extends Controller
 
         // Obtener datos del usuario
         $user = User::findOrFail($validated['user_id']);
-        $application = $request->application_id ? Application::find($request->application_id) : null;
+        $applicationId = $validated['application_id'] ?? null;
+        $application = $applicationId ? Application::find($applicationId) : null;
 
         $invoice = Invoice::create([
             'invoice_number' => $invoiceNumber,
             'user_id' => $validated['user_id'],
-            'application_id' => $validated['application_id'],
+            'application_id' => $applicationId,
             'program_id' => $application?->program_id,
             'billing_name' => $validated['billing_name'],
             'billing_email' => $validated['billing_email'],

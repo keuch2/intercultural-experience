@@ -130,8 +130,6 @@
     </div>
 </div>
 
-@endif
-
 {{-- Add Support Log Modal --}}
 <div class="modal fade" id="addSupportLogModal" tabindex="-1">
     <div class="modal-dialog">
