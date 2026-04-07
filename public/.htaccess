@@ -18,8 +18,11 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Handle root directory request explicitly (public/ is a real directory, so !-d fails)
-    RewriteRule ^$ index.php [L]
+    # Handle root directory: CompiledRouteCollection strips trailing slash from REQUEST_URI,
+    # breaking Symfony's base URL detection when app is in a subdirectory. Redirect to
+    # login directly at Apache level to bypass this framework limitation.
+    # Uses %{REQUEST_URI} so this works in any subdirectory path (local and production).
+    RewriteRule ^$ %{REQUEST_URI}login [R=302,L]
 
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
