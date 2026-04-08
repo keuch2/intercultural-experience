@@ -453,6 +453,9 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             Route::put('/perfiles/{id}/program-cost', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updateProgramCost'])->name('profiles.update-program-cost');
             // Módulo 18: Installment plan creation
             Route::post('/perfiles/{id}/installment-plan', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeInstallmentPlan'])->name('profiles.store-installment-plan');
+            // Notes
+            Route::post('/perfiles/{id}/notes', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeNote'])->name('profiles.store-note');
+            Route::delete('/perfiles/{id}/notes/{noteId}', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'deleteNote'])->name('profiles.delete-note');
             // Resources
             Route::get('/recursos', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'resources'])->name('resources.index');
             Route::post('/recursos', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeResource'])->name('resources.store');

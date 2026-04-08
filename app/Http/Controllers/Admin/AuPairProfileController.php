@@ -11,6 +11,7 @@ use App\Models\Application;
 use App\Models\Payment;
 use App\Models\EnglishEvaluation;
 use App\Models\ActivityLog;
+use App\Models\ParticipantNote;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -154,8 +155,13 @@ class AuPairProfileController extends Controller
         // Datos para cada tab
         $tabData = $this->getTabData($activeTab, $user, $application, $profile, $process);
 
+        $notes = ParticipantNote::where('user_id', $id)
+            ->with('admin:id,name')
+            ->latest()
+            ->get();
+
         return view('admin.au-pair.profiles.show', compact(
-            'user', 'application', 'profile', 'process', 'stages', 'activeTab', 'tabData'
+            'user', 'application', 'profile', 'process', 'stages', 'activeTab', 'tabData', 'notes'
         ));
     }
 
@@ -810,6 +816,36 @@ class AuPairProfileController extends Controller
         return redirect()
             ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'support'])
             ->with('success', 'Registro eliminado.');
+    }
+
+    // =========================================================================
+    // ACTIONS: Participant Notes
+    // =========================================================================
+
+    public function storeNote(Request $request, $id)
+    {
+        $request->validate(['content' => 'required|string|max:2000']);
+
+        User::findOrFail($id);
+
+        ParticipantNote::create([
+            'user_id'  => $id,
+            'admin_id' => Auth::id(),
+            'content'  => $request->content,
+        ]);
+
+        return back()->with('success', 'Nota guardada.');
+    }
+
+    public function deleteNote($id, $noteId)
+    {
+        $note = ParticipantNote::where('id', $noteId)
+            ->where('user_id', $id)
+            ->firstOrFail();
+
+        $note->delete();
+
+        return back()->with('success', 'Nota eliminada.');
     }
 
     // =========================================================================
