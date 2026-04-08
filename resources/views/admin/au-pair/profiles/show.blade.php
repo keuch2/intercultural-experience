@@ -109,6 +109,17 @@
     <div class="col-md-3 col-lg-2 mb-4">
         <div class="card shadow-sm">
             <div class="list-group list-group-flush">
+                @php
+                    $paymentPercentage = 0;
+                    if ($application && $application->total_cost > 0) {
+                        $totalPaid = $application->payments()->where('status', 'verified')->sum('amount');
+                        $paymentPercentage = min(100, round(($totalPaid / $application->total_cost) * 100));
+                    } elseif ($stages['_meta']['payment1_verified'] && $stages['_meta']['payment2_verified']) {
+                        $paymentPercentage = 100;
+                    } elseif ($stages['_meta']['payment1_verified'] || $stages['_meta']['payment2_verified']) {
+                        $paymentPercentage = 50;
+                    }
+                @endphp
                 @foreach(['admission' => 'Admisión', 'application' => 'Aplicación', 'match_visa' => 'Match / Visa J1', 'support' => 'Support', 'resources' => 'Recursos', 'reports' => 'Informes', 'payments' => 'Pagos'] as $tabKey => $tabLabel)
                 @php
                     $stage = $stages[$tabKey] ?? ['status' => 'available'];
@@ -152,17 +163,6 @@
                 $process ? $process->updated_at : null,
                 $application ? $application->updated_at : null,
             ])->filter()->max();
-
-            // Módulo 15/16: Calculate payment progress percentage
-            $paymentPercentage = 0;
-            if ($application && $application->total_cost > 0) {
-                $totalPaid = $application->payments()->where('status', 'verified')->sum('amount');
-                $paymentPercentage = min(100, round(($totalPaid / $application->total_cost) * 100));
-            } elseif ($stages['_meta']['payment1_verified'] && $stages['_meta']['payment2_verified']) {
-                $paymentPercentage = 100;
-            } elseif ($stages['_meta']['payment1_verified'] || $stages['_meta']['payment2_verified']) {
-                $paymentPercentage = 50;
-            }
 
             $stageLabels = [
                 'admission' => 'Admisión',
