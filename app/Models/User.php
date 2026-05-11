@@ -114,18 +114,19 @@ class User extends Authenticatable
      */
     public function getAvatarUrlAttribute()
     {
-        if (!$this->avatar) {
-            // Retornar avatar por defecto basado en iniciales
+        // Preferir profile_photo (campo nuevo, actualizado por el modal Editar Foto)
+        // sobre avatar (campo legacy con referencias a archivos no existentes).
+        $source = $this->profile_photo ?: $this->avatar;
+
+        if (!$source) {
             return $this->getDefaultAvatarUrl();
         }
-        
-        // Si ya es una URL completa, retornarla
-        if (filter_var($this->avatar, FILTER_VALIDATE_URL)) {
-            return $this->avatar;
+
+        if (filter_var($source, FILTER_VALIDATE_URL)) {
+            return $source;
         }
-        
-        // Si es una ruta relativa, construir URL completa
-        return asset('storage/' . $this->avatar);
+
+        return asset('storage/' . $source);
     }
 
     /**
