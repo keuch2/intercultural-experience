@@ -208,6 +208,8 @@
                     @endif
 
                     {{-- Formularios Específicos por Programa --}}
+                    {{-- Nota: el form 'au_pair' se removió porque el módulo Au Pair Legacy fue deshabilitado.
+                         Para editar datos específicos de Au Pair, usar la sección Au Pair > Perfiles. --}}
                     <div id="specific-program-form-container" class="mt-4">
                         @if(isset($formView) && $formView)
                             <hr>
@@ -215,7 +217,11 @@
                                 @if($formView === 'work_travel')
                                     @include('admin.participants.forms.work_travel', ['workTravelData' => $workTravelData ?? null])
                                 @elseif($formView === 'au_pair')
-                                    @include('admin.participants.forms.au_pair', ['auPairData' => $auPairData ?? null])
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        El módulo Au Pair Legacy fue deshabilitado. Para editar datos específicos de Au Pair (proceso, documentos, evaluaciones, visa, match) usá la sección
+                                        <a href="{{ route('admin.aupair.profiles.show', $participant->id) }}" class="alert-link">Au Pair &gt; Perfiles &gt; {{ $participant->full_name }}</a>.
+                                    </div>
                                 @elseif($formView === 'teacher')
                                     @include('admin.participants.forms.teacher', ['teacherData' => $teacherData ?? null])
                                 @endif

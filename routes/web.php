@@ -480,28 +480,41 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             Route::get('/reportes', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'reports'])->name('reports.index');
         });
 
-        // Au Pair Management (Legacy - kept for backward compatibility)
-        Route::prefix('au-pair')->name('admin.au-pair.')->group(function () {
-            Route::get('/dashboard', [\App\Http\Controllers\Admin\AuPairController::class, 'dashboard'])->name('dashboard');
-            Route::get('/profiles', [\App\Http\Controllers\Admin\AuPairController::class, 'profiles'])->name('profiles');
-            Route::get('/profiles/{id}', [\App\Http\Controllers\Admin\AuPairController::class, 'profileShow'])->name('profile.show');
-            Route::post('/profiles/{id}/approve', [\App\Http\Controllers\Admin\AuPairController::class, 'approveProfile'])->name('profile.approve');
-            Route::get('/families', [\App\Http\Controllers\Admin\AuPairController::class, 'families'])->name('families');
-            Route::get('/families/create', [\App\Http\Controllers\Admin\AuPairController::class, 'createFamily'])->name('families.create');
-            Route::post('/families', [\App\Http\Controllers\Admin\AuPairController::class, 'storeFamily'])->name('families.store');
-            Route::get('/families/{id}', [\App\Http\Controllers\Admin\AuPairController::class, 'familyShow'])->name('families.show');
-            Route::get('/families/{id}/edit', [\App\Http\Controllers\Admin\AuPairController::class, 'familyEdit'])->name('families.edit');
-            Route::put('/families/{id}', [\App\Http\Controllers\Admin\AuPairController::class, 'familyUpdate'])->name('families.update');
-            Route::get('/matching', [\App\Http\Controllers\Admin\AuPairController::class, 'matching'])->name('matching');
-            Route::post('/matching/suggest', [\App\Http\Controllers\Admin\AuPairController::class, 'suggestMatch'])->name('matching.suggest');
-            Route::post('/matching/{id}/confirm', [\App\Http\Controllers\Admin\AuPairController::class, 'confirmMatch'])->name('matching.confirm');
-            Route::get('/matches/{id}', [\App\Http\Controllers\Admin\AuPairController::class, 'matchShow'])->name('matches.show');
-            Route::get('/childcare/{userId}', [\App\Http\Controllers\Admin\AuPairController::class, 'childcareExperiences'])->name('childcare');
-            Route::post('/childcare/{userId}', [\App\Http\Controllers\Admin\AuPairController::class, 'storeChildcareExperience'])->name('childcare.store');
-            Route::get('/references/{userId}', [\App\Http\Controllers\Admin\AuPairController::class, 'references'])->name('references');
-            Route::post('/references/{id}/verify', [\App\Http\Controllers\Admin\AuPairController::class, 'verifyReference'])->name('references.verify');
-            Route::get('/stats', [\App\Http\Controllers\Admin\AuPairController::class, 'matchingStats'])->name('stats');
+        // Au Pair Legacy: DEPRECATED. Cualquier acceso redirige a la nueva sección.
+        // Se conservan los route names para no romper enlaces guardados o referencias internas.
+        Route::prefix('au-pair-legacy')->name('admin.au-pair.')->group(function () {
+            $legacyRedirect = fn () => redirect()
+                ->route('admin.aupair.profiles.index')
+                ->with('warning', 'El módulo Au Pair Legacy fue deshabilitado. Estás ahora en la nueva sección Au Pair > Perfiles.');
+
+            Route::get('/dashboard', $legacyRedirect)->name('dashboard');
+            Route::get('/profiles', $legacyRedirect)->name('profiles');
+            Route::get('/profiles/{id}', $legacyRedirect)->name('profile.show');
+            Route::post('/profiles/{id}/approve', $legacyRedirect)->name('profile.approve');
+            Route::get('/families', $legacyRedirect)->name('families');
+            Route::get('/families/create', $legacyRedirect)->name('families.create');
+            Route::post('/families', $legacyRedirect)->name('families.store');
+            Route::get('/families/{id}', $legacyRedirect)->name('families.show');
+            Route::get('/families/{id}/edit', $legacyRedirect)->name('families.edit');
+            Route::put('/families/{id}', $legacyRedirect)->name('families.update');
+            Route::get('/matching', $legacyRedirect)->name('matching');
+            Route::post('/matching/suggest', $legacyRedirect)->name('matching.suggest');
+            Route::post('/matching/{id}/confirm', $legacyRedirect)->name('matching.confirm');
+            Route::get('/matches/{id}', $legacyRedirect)->name('matches.show');
+            Route::get('/childcare/{userId}', $legacyRedirect)->name('childcare');
+            Route::post('/childcare/{userId}', $legacyRedirect)->name('childcare.store');
+            Route::get('/references/{userId}', $legacyRedirect)->name('references');
+            Route::post('/references/{id}/verify', $legacyRedirect)->name('references.verify');
+            Route::get('/stats', $legacyRedirect)->name('stats');
         });
+
+        // Backward-compat: URLs antiguas /admin/au-pair/* redirigen al nuevo /admin/au-pair/perfiles
+        // (las rutas nuevas `admin.aupair.*` con prefijo `au-pair/perfiles` no chocan)
+        Route::get('/au-pair/dashboard', fn () => redirect()->route('admin.aupair.profiles.index'));
+        Route::get('/au-pair/profiles', fn () => redirect()->route('admin.aupair.profiles.index'));
+        Route::get('/au-pair/profiles/{id}', fn ($id) => redirect()->route('admin.aupair.profiles.show', ['id' => $id]));
+        Route::get('/au-pair/families', fn () => redirect()->route('admin.aupair.profiles.index'));
+        Route::get('/au-pair/matching', fn () => redirect()->route('admin.aupair.profiles.index'));
         
         // Work & Travel Management
         Route::prefix('work-travel')->name('admin.work-travel.')->group(function () {

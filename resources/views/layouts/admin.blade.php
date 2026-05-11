@@ -255,11 +255,7 @@
                         </div>
                         <div class="collapse" id="sidebar-otros">
                             <ul class="nav flex-column" style="font-size: 0.85rem;">
-                                <li class="nav-item">
-                                    <a class="nav-link py-1" href="{{ route('admin.au-pair.dashboard') }}">
-                                        <i class="fas fa-child"></i> Au Pair (legacy)
-                                    </a>
-                                </li>
+                                {{-- Legacy "Au Pair (legacy)" removed — usar Au Pair > Perfiles --}}
                                 <li class="nav-item">
                                     <a class="nav-link py-1" href="{{ url('/admin/applications') }}">
                                         <i class="fas fa-file-alt"></i> Solicitudes
