@@ -1259,14 +1259,41 @@ class AuPairProfileController extends Controller
             $englishLevel = $bestEnglish ? $bestEnglish->cefr_level : null;
         }
 
-        // Determine stage statuses — admin panel always has full access, no locks
+        // Determine stage statuses — based on REQUIREMENT FULFILLMENT, not just current_stage.
+        // Una etapa se marca 'complete' cuando se cumplen sus requisitos, aunque el admin
+        // aún no haya clickeado "Avanzar Etapa".
         $stageOrder = ['admission', 'application', 'match_visa', 'support', 'completed'];
-        $currentIndex = array_search($currentStage, $stageOrder) ?: 0;
+        $currentIndex = array_search($currentStage, $stageOrder);
+        if ($currentIndex === false) $currentIndex = 0;
 
-        $admissionStatus = $currentIndex > 0 ? 'complete' : 'in_progress';
-        $applicationStatus = $currentIndex > 1 ? 'complete' : ($currentIndex === 1 ? 'in_progress' : 'pending');
-        $matchVisaStatus = $currentIndex > 2 ? 'complete' : ($currentIndex === 2 ? 'in_progress' : 'pending');
-        $supportStatus = $currentIndex > 3 ? 'complete' : ($currentIndex === 3 ? 'in_progress' : 'pending');
+        // Indicadores de "cumplimiento" por etapa (desde process si existe).
+        $admissionDone   = $process && (
+                              $process->admission_status === 'approved'
+                              || $process->current_stage !== 'admission'  // ya avanzó manualmente
+                              || $admissionDocsApproved
+                          );
+        $applicationDone = $process && (
+                              $process->application_status === 'approved'
+                              || in_array($process->current_stage, ['match_visa', 'support', 'completed'])
+                              || ($admissionDone && $payment1Verified && $contractSigned && method_exists($process, 'canAdvanceToMatchVisa') && $process->canAdvanceToMatchVisa())
+                          );
+        $matchVisaDone   = $process && (
+                              ($process->match_visa_status ?? null) === 'approved'
+                              || in_array($process->current_stage, ['support', 'completed'])
+                          );
+        $supportDone     = $process && $process->current_stage === 'completed';
+
+        // Mapear cumplimiento + posición actual a estados visuales.
+        $statusFor = function (bool $done, string $key) use ($currentStage) {
+            if ($done) return 'complete';
+            if ($currentStage === $key) return 'in_progress';
+            return 'pending';
+        };
+
+        $admissionStatus   = $statusFor($admissionDone, 'admission');
+        $applicationStatus = $statusFor($applicationDone, 'application');
+        $matchVisaStatus   = $statusFor($matchVisaDone, 'match_visa');
+        $supportStatus     = $statusFor($supportDone, 'support');
 
         return [
             'admission' => [
