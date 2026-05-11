@@ -727,7 +727,14 @@
                         <!-- Tab 7: Evaluación de Inglés -->
                         {{-- Módulo 3 fix: Group evaluations by program/year --}}
                         <div class="tab-pane fade" id="english" role="tabpanel">
-                            <h5 class="mb-3">Evaluación de Inglés</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">Evaluación de Inglés</h5>
+                                @if($participant->englishEvaluations->count() < 3)
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#registerEnglishEvalModal">
+                                    <i class="fas fa-plus me-1"></i> Registrar Evaluación
+                                </button>
+                                @endif
+                            </div>
                             @if($participant->englishEvaluations && $participant->englishEvaluations->count() > 0)
                                 <div class="row mb-4">
                                     <div class="col-md-12">
@@ -777,7 +784,7 @@
                                         <span class="badge bg-secondary">{{ $evals->count() }} intento(s)</span>
                                     </h6>
                                     <div class="table-responsive">
-                                        <table class="table table-bordered">
+                                        <table class="table table-bordered align-middle">
                                             <thead>
                                                 <tr>
                                                     <th>Intento</th>
@@ -785,10 +792,9 @@
                                                     <th>Puntaje</th>
                                                     <th>Nivel CEFR</th>
                                                     <th>Clasificación</th>
-                                                    @if($evals->first()->oral_score)
-                                                        <th>Oral</th>
-                                                    @endif
+                                                    <th>Oral</th>
                                                     <th>Evaluador</th>
+                                                    <th class="text-center" style="width:120px;">Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -803,10 +809,17 @@
                                                                 {{ $eval->classification }}
                                                             </span>
                                                         </td>
-                                                        @if($evals->first()->oral_score)
-                                                            <td>{{ $eval->oral_score ?? '-' }}</td>
-                                                        @endif
+                                                        <td>{{ $eval->oral_score ?? '-' }}</td>
                                                         <td>{{ $eval->evaluated_by ?? 'Sistema' }}</td>
+                                                        <td class="text-center">
+                                                            <button type="button" class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#editEnglishEvalModal{{ $eval->id }}" title="Editar">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <form method="POST" action="{{ route('admin.english-evaluations.destroy', $eval->id) }}" class="d-inline" onsubmit="return confirm('¿Eliminar esta evaluación? Los intentos se reordenan automáticamente.');">
+                                                                @csrf @method('DELETE')
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                                            </form>
+                                                        </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
@@ -1650,5 +1663,135 @@ function toggleOtherConcept() {
         </div>
     </div>
 </div>
+
+{{-- Modal: Registrar Evaluación de Inglés (general) --}}
+<div class="modal fade" id="registerEnglishEvalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.english-evaluations.store') }}">
+                @csrf
+                <input type="hidden" name="user_id" value="{{ $participant->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-language me-1"></i> Registrar Evaluación de Inglés</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Puntaje (0-100) <span class="text-danger">*</span></label>
+                            <input type="number" name="score" min="0" max="100" class="form-control" required>
+                            <small class="text-muted">CEFR y clasificación se calculan automáticamente.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Oral</label>
+                            <select name="oral_score" class="form-select">
+                                <option value="">— Sin evaluar —</option>
+                                <option value="Good">Good</option>
+                                <option value="Great">Great</option>
+                                <option value="Excellent">Excellent</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Programa / Aplicación</label>
+                            <select name="application_id" class="form-select">
+                                <option value="">— General (sin programa específico) —</option>
+                                @foreach($allApplications as $app)
+                                    <option value="{{ $app->id }}">
+                                        {{ optional($app->program)->name ?? 'Sin programa' }}
+                                        ({{ $app->created_at->format('Y') }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Evaluador</label>
+                            <input type="text" name="evaluated_by" class="form-control" value="{{ Auth::user()->name }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha de Evaluación</label>
+                            <input type="date" name="evaluated_at" class="form-control" value="{{ now()->toDateString() }}">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Notas / Observaciones</label>
+                            <textarea name="notes" rows="3" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: Editar Evaluación de Inglés (uno por evaluación) --}}
+@foreach($participant->englishEvaluations as $eval)
+<div class="modal fade" id="editEnglishEvalModal{{ $eval->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.english-evaluations.update', $eval->id) }}">
+                @csrf @method('PUT')
+                <input type="hidden" name="redirect_to" value="{{ url()->current() }}#english">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit me-1"></i> Editar Evaluación #{{ $eval->attempt_number }} — {{ $eval->evaluated_at->format('d/m/Y') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Puntaje (0-100) <span class="text-danger">*</span></label>
+                            <input type="number" name="score" min="0" max="100" class="form-control" value="{{ $eval->score }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Oral</label>
+                            <select name="oral_score" class="form-select">
+                                <option value="">— Sin evaluar —</option>
+                                @foreach(['Good', 'Great', 'Excellent'] as $opt)
+                                    <option value="{{ $opt }}" {{ $eval->oral_score == $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Programa / Aplicación</label>
+                            <select name="application_id" class="form-select">
+                                <option value="">— General (sin programa específico) —</option>
+                                @foreach($allApplications as $app)
+                                    <option value="{{ $app->id }}" {{ $eval->application_id == $app->id ? 'selected' : '' }}>
+                                        {{ optional($app->program)->name ?? 'Sin programa' }}
+                                        ({{ $app->created_at->format('Y') }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Evaluador</label>
+                            <input type="text" name="evaluated_by" class="form-control" value="{{ $eval->evaluated_by }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha de Evaluación</label>
+                            <input type="date" name="evaluated_at" class="form-control" value="{{ $eval->evaluated_at->format('Y-m-d') }}">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Notas / Observaciones</label>
+                            <textarea name="notes" rows="3" class="form-control">{{ $eval->notes }}</textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="alert alert-info py-2 px-3 mb-0">
+                                <small><i class="fas fa-info-circle me-1"></i> Nivel CEFR actual: <strong>{{ $eval->cefr_level }}</strong> — se recalcula al guardar.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 @endsection

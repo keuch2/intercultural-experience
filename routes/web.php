@@ -414,6 +414,7 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             Route::get('/create', [\App\Http\Controllers\Admin\EnglishEvaluationController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\Admin\EnglishEvaluationController::class, 'store'])->name('store');
             Route::get('/{id}', [\App\Http\Controllers\Admin\EnglishEvaluationController::class, 'show'])->name('show');
+            Route::put('/{id}', [\App\Http\Controllers\Admin\EnglishEvaluationController::class, 'update'])->name('update');
             Route::delete('/{id}', [\App\Http\Controllers\Admin\EnglishEvaluationController::class, 'destroy'])->name('destroy');
         });
         

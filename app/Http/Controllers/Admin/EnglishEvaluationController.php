@@ -80,30 +80,42 @@ class EnglishEvaluationController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
+            'application_id' => 'nullable|exists:applications,id',
             'score' => 'required|integer|min:0|max:100',
+            'oral_score' => 'nullable|in:Good,Great,Excellent',
             'listening_score' => 'nullable|integer|min:0|max:100',
             'reading_score' => 'nullable|integer|min:0|max:100',
             'writing_score' => 'nullable|integer|min:0|max:100',
             'speaking_score' => 'nullable|integer|min:0|max:100',
             'evaluated_by' => 'nullable|string|max:255',
+            'evaluated_at' => 'nullable|date',
             'notes' => 'nullable|string',
         ]);
 
         // Verificar que el usuario no haya excedido los 3 intentos
         $attemptCount = EnglishEvaluation::where('user_id', $validated['user_id'])->count();
-        
+
         if ($attemptCount >= 3) {
             return back()->with('error', 'El participante ya ha completado los 3 intentos permitidos.');
         }
 
         // Calcular número de intento
         $validated['attempt_number'] = $attemptCount + 1;
-        
-        // Fecha de evaluación
-        $validated['evaluated_at'] = now();
+
+        // Fecha de evaluación: usar la enviada o now()
+        $validated['evaluated_at'] = $validated['evaluated_at'] ?? now();
 
         // Crear evaluación (el modelo calculará automáticamente CEFR y clasificación)
         $evaluation = EnglishEvaluation::create($validated);
+
+        // Si vino del perfil del participante, volver allí en lugar de la vista global
+        if ($request->filled('user_id') && $request->headers->get('referer')) {
+            $referer = $request->headers->get('referer');
+            if (str_contains($referer, '/admin/participants/')) {
+                return redirect($referer . '#english')
+                    ->with('success', 'Evaluación registrada exitosamente. Nivel: ' . $evaluation->cefr_level);
+            }
+        }
 
         return redirect()
             ->route('admin.english-evaluations.show', $evaluation->id)
@@ -196,12 +208,37 @@ class EnglishEvaluationController extends Controller
     public function destroy($id)
     {
         $evaluation = EnglishEvaluation::findOrFail($id);
-        
+
         $userName = $evaluation->user->name;
         $evaluation->delete();
 
         return redirect()
             ->route('admin.english-evaluations.index')
             ->with('success', "Evaluación de {$userName} eliminada exitosamente.");
+    }
+
+    /**
+     * Update an existing evaluation. Admin libre — sin restricción de estado.
+     * El modelo recalcula CEFR/classification al setear score.
+     */
+    public function update(Request $request, $id)
+    {
+        $evaluation = EnglishEvaluation::findOrFail($id);
+
+        $validated = $request->validate([
+            'score' => 'required|integer|min:0|max:100',
+            'oral_score' => 'nullable|in:Good,Great,Excellent',
+            'application_id' => 'nullable|exists:applications,id',
+            'evaluated_by' => 'nullable|string|max:255',
+            'evaluated_at' => 'nullable|date',
+            'notes' => 'nullable|string',
+        ]);
+
+        $evaluation->update($validated);
+
+        $redirect = $request->input('redirect_to');
+
+        return ($redirect ? redirect($redirect) : back())
+            ->with('success', "Evaluación actualizada. Nivel CEFR recalculado: {$evaluation->fresh()->cefr_level}");
     }
 }
