@@ -14,9 +14,10 @@
 </div>
 @endif
 
-{{-- Visa Process Form --}}
-<form method="POST" action="{{ route('admin.aupair.profiles.update-visa', $user->id) }}">
+{{-- Visa Process Form (Módulo B2/B5 fix: standalone form anchor, inputs bound by `form="visaProcessForm"` to avoid nested forms breaking document operations) --}}
+<form id="visaProcessForm" method="POST" action="{{ route('admin.aupair.profiles.update-visa', $user->id) }}">
 @csrf @method('PUT')
+</form>
 
 {{-- C1: Aplicación Visa --}}
 <div class="card shadow-sm mb-4">
@@ -24,19 +25,19 @@
     <div class="card-body">
         <div class="list-group mb-3">
             <label class="list-group-item d-flex align-items-center">
-                <input class="form-check-input me-3" type="checkbox" name="visa_email_sent" value="1" {{ $visa && $visa->visa_email_sent ? 'checked' : '' }}>
+                <input class="form-check-input me-3" type="checkbox" form="visaProcessForm" name="visa_email_sent" value="1" {{ $visa && $visa->visa_email_sent ? 'checked' : '' }}>
                 <span>Correo de visa enviado al participante</span>
             </label>
             <label class="list-group-item d-flex align-items-center">
-                <input class="form-check-input me-3" type="checkbox" name="consular_fee_paid" value="1" {{ $visa && $visa->consular_fee_paid ? 'checked' : '' }}>
+                <input class="form-check-input me-3" type="checkbox" form="visaProcessForm" name="consular_fee_paid" value="1" {{ $visa && $visa->consular_fee_paid ? 'checked' : '' }}>
                 <span>Pago de tarifa consular</span>
             </label>
             <label class="list-group-item d-flex align-items-center">
-                <input class="form-check-input me-3" type="checkbox" name="appointment_scheduled" value="1" {{ $visa && $visa->appointment_scheduled ? 'checked' : '' }}>
+                <input class="form-check-input me-3" type="checkbox" form="visaProcessForm" name="appointment_scheduled" value="1" {{ $visa && $visa->appointment_scheduled ? 'checked' : '' }}>
                 <span>Agendamiento de cita</span>
             </label>
             <label class="list-group-item d-flex align-items-center">
-                <input class="form-check-input me-3" type="checkbox" name="documents_sent_for_appointment" value="1" {{ $visa && $visa->documents_sent_for_appointment ? 'checked' : '' }}>
+                <input class="form-check-input me-3" type="checkbox" form="visaProcessForm" name="documents_sent_for_appointment" value="1" {{ $visa && $visa->documents_sent_for_appointment ? 'checked' : '' }}>
                 <span>Envío de documentos para cita de visa</span>
             </label>
         </div>
@@ -100,7 +101,7 @@
     <div class="card-body">
         <div class="list-group mb-3">
             <label class="list-group-item d-flex align-items-center bg-warning bg-opacity-10">
-                <input class="form-check-input me-3" type="checkbox" name="document_check_completed" value="1" {{ $visa && $visa->document_check_completed ? 'checked' : '' }}>
+                <input class="form-check-input me-3" type="checkbox" form="visaProcessForm" name="document_check_completed" value="1" {{ $visa && $visa->document_check_completed ? 'checked' : '' }}>
                 <span class="small fw-bold">Chequeo de documentos realizado con el participante</span>
                 @if($visa && $visa->document_check_completed_at)
                     <small class="ms-auto text-success">{{ $visa->document_check_completed_at->format('d/m/Y H:i') }}</small>
@@ -142,15 +143,15 @@
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label small">Fecha</label>
-                <input type="date" name="appointment_date" class="form-control form-control-sm" value="{{ $visa && $visa->appointment_date ? $visa->appointment_date->format('Y-m-d') : '' }}">
+                <input type="date" form="visaProcessForm" name="appointment_date" class="form-control form-control-sm" value="{{ $visa && $visa->appointment_date ? $visa->appointment_date->format('Y-m-d') : '' }}">
             </div>
             <div class="col-md-4">
                 <label class="form-label small">Hora</label>
-                <input type="time" name="appointment_time" class="form-control form-control-sm" value="{{ $visa->appointment_time ?? '' }}">
+                <input type="time" form="visaProcessForm" name="appointment_time" class="form-control form-control-sm" value="{{ $visa->appointment_time ?? '' }}">
             </div>
             <div class="col-md-4">
                 <label class="form-label small">Embajada</label>
-                <input type="text" name="embassy" class="form-control form-control-sm" value="{{ $visa->embassy ?? '' }}" placeholder="Ej: Embajada USA Asunción">
+                <input type="text" form="visaProcessForm" name="embassy" class="form-control form-control-sm" value="{{ $visa->embassy ?? '' }}" placeholder="Ej: Embajada USA Asunción">
             </div>
         </div>
     </div>
@@ -163,7 +164,7 @@
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label small">Resultado</label>
-                <select name="interview_result" class="form-select form-select-sm">
+                <select name="interview_result" form="visaProcessForm" class="form-select form-select-sm">
                     @foreach(['pending' => 'Pendiente', 'approved' => 'Aprobada', 'denied' => 'Denegada', 'administrative_process' => 'Proceso Administrativo'] as $val => $lbl)
                         <option value="{{ $val }}" {{ ($visa->interview_result ?? 'pending') == $val ? 'selected' : '' }}>{{ $lbl }}</option>
                     @endforeach
@@ -171,7 +172,7 @@
             </div>
             <div class="col-md-8">
                 <label class="form-label small">Notas</label>
-                <input type="text" name="interview_result_notes" class="form-control form-control-sm" value="{{ $visa->interview_result_notes ?? '' }}" placeholder="Observaciones...">
+                <input type="text" name="interview_result_notes" form="visaProcessForm" class="form-control form-control-sm" value="{{ $visa->interview_result_notes ?? '' }}" placeholder="Observaciones...">
             </div>
         </div>
     </div>
@@ -192,11 +193,11 @@
         <div class="row g-3 mb-3">
             <div class="col-md-4">
                 <label class="form-label small">Fecha/hora salida</label>
-                <input type="datetime-local" name="departure_datetime" class="form-control form-control-sm" value="{{ $visa && $visa->departure_datetime ? $visa->departure_datetime->format('Y-m-d\TH:i') : '' }}">
+                <input type="datetime-local" form="visaProcessForm" name="departure_datetime" class="form-control form-control-sm" value="{{ $visa && $visa->departure_datetime ? $visa->departure_datetime->format('Y-m-d\TH:i') : '' }}">
             </div>
             <div class="col-md-4">
                 <label class="form-label small">Fecha/hora llegada USA</label>
-                <input type="datetime-local" name="arrival_usa_datetime" class="form-control form-control-sm" value="{{ $visa && $visa->arrival_usa_datetime ? $visa->arrival_usa_datetime->format('Y-m-d\TH:i') : '' }}">
+                <input type="datetime-local" form="visaProcessForm" name="arrival_usa_datetime" class="form-control form-control-sm" value="{{ $visa && $visa->arrival_usa_datetime ? $visa->arrival_usa_datetime->format('Y-m-d\TH:i') : '' }}">
             </div>
         </div>
 
@@ -204,22 +205,22 @@
             @forelse($outboundLegs as $i => $leg)
             <div class="border rounded p-2 mb-2 outbound-leg">
                 <div class="row g-2 align-items-end">
-                    <div class="col-md-2"><label class="form-label small">Tramo {{ $i + 1 }}</label><input type="text" name="outbound_legs[{{ $i }}][origin]" class="form-control form-control-sm" value="{{ $leg['origin'] ?? '' }}" placeholder="Origen"></div>
-                    <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="outbound_legs[{{ $i }}][destination]" class="form-control form-control-sm" value="{{ $leg['destination'] ?? '' }}" placeholder="Destino"></div>
-                    <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="outbound_legs[{{ $i }}][airline]" class="form-control form-control-sm" value="{{ $leg['airline'] ?? '' }}" placeholder="Aerolínea"></div>
-                    <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="outbound_legs[{{ $i }}][flight_number]" class="form-control form-control-sm" value="{{ $leg['flight_number'] ?? '' }}" placeholder="AA 1234"></div>
-                    <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="outbound_legs[{{ $i }}][departure]" class="form-control form-control-sm" value="{{ $leg['departure'] ?? '' }}"></div>
+                    <div class="col-md-2"><label class="form-label small">Tramo {{ $i + 1 }}</label><input type="text" name="outbound_legs[{{ $i }}][origin]" form="visaProcessForm" class="form-control form-control-sm" value="{{ $leg['origin'] ?? '' }}" placeholder="Origen"></div>
+                    <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="outbound_legs[{{ $i }}][destination]" form="visaProcessForm" class="form-control form-control-sm" value="{{ $leg['destination'] ?? '' }}" placeholder="Destino"></div>
+                    <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="outbound_legs[{{ $i }}][airline]" form="visaProcessForm" class="form-control form-control-sm" value="{{ $leg['airline'] ?? '' }}" placeholder="Aerolínea"></div>
+                    <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="outbound_legs[{{ $i }}][flight_number]" form="visaProcessForm" class="form-control form-control-sm" value="{{ $leg['flight_number'] ?? '' }}" placeholder="AA 1234"></div>
+                    <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="outbound_legs[{{ $i }}][departure]" form="visaProcessForm" class="form-control form-control-sm" value="{{ $leg['departure'] ?? '' }}"></div>
                     <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger remove-leg" title="Quitar"><i class="fas fa-times"></i></button></div>
                 </div>
             </div>
             @empty
             <div class="border rounded p-2 mb-2 outbound-leg">
                 <div class="row g-2 align-items-end">
-                    <div class="col-md-2"><label class="form-label small">Tramo 1</label><input type="text" name="outbound_legs[0][origin]" class="form-control form-control-sm" placeholder="Origen"></div>
-                    <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="outbound_legs[0][destination]" class="form-control form-control-sm" placeholder="Destino"></div>
-                    <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="outbound_legs[0][airline]" class="form-control form-control-sm" placeholder="Aerolínea"></div>
-                    <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="outbound_legs[0][flight_number]" class="form-control form-control-sm" placeholder="AA 1234"></div>
-                    <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="outbound_legs[0][departure]" class="form-control form-control-sm"></div>
+                    <div class="col-md-2"><label class="form-label small">Tramo 1</label><input type="text" name="outbound_legs[0][origin]" form="visaProcessForm" class="form-control form-control-sm" placeholder="Origen"></div>
+                    <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="outbound_legs[0][destination]" form="visaProcessForm" class="form-control form-control-sm" placeholder="Destino"></div>
+                    <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="outbound_legs[0][airline]" form="visaProcessForm" class="form-control form-control-sm" placeholder="Aerolínea"></div>
+                    <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="outbound_legs[0][flight_number]" form="visaProcessForm" class="form-control form-control-sm" placeholder="AA 1234"></div>
+                    <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="outbound_legs[0][departure]" form="visaProcessForm" class="form-control form-control-sm"></div>
                     <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger remove-leg" title="Quitar"><i class="fas fa-times"></i></button></div>
                 </div>
             </div>
@@ -235,11 +236,11 @@
             @forelse($returnLegs as $i => $leg)
             <div class="border rounded p-2 mb-2 return-leg">
                 <div class="row g-2 align-items-end">
-                    <div class="col-md-2"><label class="form-label small">Tramo {{ $i + 1 }}</label><input type="text" name="return_legs[{{ $i }}][origin]" class="form-control form-control-sm" value="{{ $leg['origin'] ?? '' }}" placeholder="Origen"></div>
-                    <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="return_legs[{{ $i }}][destination]" class="form-control form-control-sm" value="{{ $leg['destination'] ?? '' }}" placeholder="Destino"></div>
-                    <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="return_legs[{{ $i }}][airline]" class="form-control form-control-sm" value="{{ $leg['airline'] ?? '' }}" placeholder="Aerolínea"></div>
-                    <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="return_legs[{{ $i }}][flight_number]" class="form-control form-control-sm" value="{{ $leg['flight_number'] ?? '' }}" placeholder="AA 1234"></div>
-                    <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="return_legs[{{ $i }}][departure]" class="form-control form-control-sm" value="{{ $leg['departure'] ?? '' }}"></div>
+                    <div class="col-md-2"><label class="form-label small">Tramo {{ $i + 1 }}</label><input type="text" name="return_legs[{{ $i }}][origin]" form="visaProcessForm" class="form-control form-control-sm" value="{{ $leg['origin'] ?? '' }}" placeholder="Origen"></div>
+                    <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="return_legs[{{ $i }}][destination]" form="visaProcessForm" class="form-control form-control-sm" value="{{ $leg['destination'] ?? '' }}" placeholder="Destino"></div>
+                    <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="return_legs[{{ $i }}][airline]" form="visaProcessForm" class="form-control form-control-sm" value="{{ $leg['airline'] ?? '' }}" placeholder="Aerolínea"></div>
+                    <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="return_legs[{{ $i }}][flight_number]" form="visaProcessForm" class="form-control form-control-sm" value="{{ $leg['flight_number'] ?? '' }}" placeholder="AA 1234"></div>
+                    <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="return_legs[{{ $i }}][departure]" form="visaProcessForm" class="form-control form-control-sm" value="{{ $leg['departure'] ?? '' }}"></div>
                     <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger remove-leg" title="Quitar"><i class="fas fa-times"></i></button></div>
                 </div>
             </div>
@@ -262,11 +263,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const div = document.createElement('div');
         div.className = 'border rounded p-2 mb-2 ' + prefix + '-leg';
         div.innerHTML = `<div class="row g-2 align-items-end">
-            <div class="col-md-2"><label class="form-label small">Tramo ${idx + 1}</label><input type="text" name="${prefix}_legs[${idx}][origin]" class="form-control form-control-sm" placeholder="Origen"></div>
-            <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="${prefix}_legs[${idx}][destination]" class="form-control form-control-sm" placeholder="Destino"></div>
-            <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="${prefix}_legs[${idx}][airline]" class="form-control form-control-sm" placeholder="Aerolínea"></div>
-            <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="${prefix}_legs[${idx}][flight_number]" class="form-control form-control-sm" placeholder="AA 1234"></div>
-            <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="${prefix}_legs[${idx}][departure]" class="form-control form-control-sm"></div>
+            <div class="col-md-2"><label class="form-label small">Tramo ${idx + 1}</label><input type="text" name="${prefix}_legs[${idx}][origin]" form="visaProcessForm" class="form-control form-control-sm" placeholder="Origen"></div>
+            <div class="col-md-2"><label class="form-label small">&nbsp;</label><input type="text" name="${prefix}_legs[${idx}][destination]" form="visaProcessForm" class="form-control form-control-sm" placeholder="Destino"></div>
+            <div class="col-md-2"><label class="form-label small">Aerolínea</label><input type="text" name="${prefix}_legs[${idx}][airline]" form="visaProcessForm" class="form-control form-control-sm" placeholder="Aerolínea"></div>
+            <div class="col-md-2"><label class="form-label small">Vuelo #</label><input type="text" name="${prefix}_legs[${idx}][flight_number]" form="visaProcessForm" class="form-control form-control-sm" placeholder="AA 1234"></div>
+            <div class="col-md-3"><label class="form-label small">Salida</label><input type="datetime-local" name="${prefix}_legs[${idx}][departure]" form="visaProcessForm" class="form-control form-control-sm"></div>
             <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger remove-leg" title="Quitar"><i class="fas fa-times"></i></button></div>
         </div>`;
         container.appendChild(div);
@@ -289,11 +290,11 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="row g-3 align-items-end mb-3">
             <div class="col-md-4">
                 <label class="form-label small">Fecha programada</label>
-                <input type="date" name="pre_departure_orientation_date" class="form-control form-control-sm" value="{{ $visa && $visa->pre_departure_orientation_date ? $visa->pre_departure_orientation_date->format('Y-m-d') : '' }}">
+                <input type="date" form="visaProcessForm" name="pre_departure_orientation_date" class="form-control form-control-sm" value="{{ $visa && $visa->pre_departure_orientation_date ? $visa->pre_departure_orientation_date->format('Y-m-d') : '' }}">
             </div>
             <div class="col-md-4">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="pre_departure_orientation_completed" value="1" id="preDepOri" {{ $visa && $visa->pre_departure_orientation_completed ? 'checked' : '' }}>
+                    <input class="form-check-input" type="checkbox" form="visaProcessForm" name="pre_departure_orientation_completed" value="1" id="preDepOri" {{ $visa && $visa->pre_departure_orientation_completed ? 'checked' : '' }}>
                     <label class="form-check-label small" for="preDepOri">Se realizó la orientación</label>
                 </div>
             </div>
@@ -323,13 +324,12 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
-{{-- Save Visa Form Button --}}
+{{-- Save Visa Form Button (bound to visaProcessForm via form attribute) --}}
 <div class="mb-4">
-    <button type="submit" class="btn btn-primary">
+    <button type="submit" form="visaProcessForm" class="btn btn-primary">
         <i class="fas fa-save me-1"></i> Guardar Proceso de Visa
     </button>
 </div>
-</form>
 
 {{-- C7: Matches --}}
 <div class="card shadow-sm mb-4">

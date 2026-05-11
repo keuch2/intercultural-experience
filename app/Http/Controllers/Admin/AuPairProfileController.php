@@ -299,7 +299,74 @@ class AuPairProfileController extends Controller
             ->whereHas('process', fn($q) => $q->where('user_id', $id))
             ->firstOrFail();
 
+        if (!Storage::disk('public')->exists($doc->file_path)) {
+            abort(404, 'Archivo no encontrado en el servidor.');
+        }
+
         return Storage::disk('public')->download($doc->file_path, $doc->original_filename);
+    }
+
+    /**
+     * Download all files for a multi-file document type as a zip bundle.
+     */
+    public function downloadDocumentsBundle($id, $documentType)
+    {
+        $user = User::findOrFail($id);
+        $process = $user->auPairProcess;
+        if (!$process) {
+            abort(404, 'Proceso Au Pair no encontrado.');
+        }
+
+        $docs = AuPairDocument::where('au_pair_process_id', $process->id)
+            ->where('document_type', $documentType)
+            ->get();
+
+        if ($docs->isEmpty()) {
+            abort(404, 'No hay documentos para descargar.');
+        }
+
+        $tmpDir = storage_path('app/tmp');
+        if (!is_dir($tmpDir)) {
+            mkdir($tmpDir, 0775, true);
+        }
+        $zipPath = $tmpDir . '/' . $documentType . '_' . $user->id . '_' . time() . '.zip';
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            abort(500, 'No se pudo crear el archivo zip.');
+        }
+
+        foreach ($docs as $doc) {
+            $absolutePath = Storage::disk('public')->path($doc->file_path);
+            if (file_exists($absolutePath)) {
+                $zip->addFile($absolutePath, $doc->original_filename);
+            }
+        }
+        $zip->close();
+
+        $downloadName = $documentType . '_' . $user->name . '.zip';
+
+        return response()->download($zipPath, $downloadName)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Download the signed contract file safely through Storage (no symlink dependency).
+     */
+    public function downloadContract($id)
+    {
+        $user = User::findOrFail($id);
+        $process = $user->auPairProcess;
+        if (!$process || !$process->contract_file_path) {
+            abort(404, 'No hay contrato cargado.');
+        }
+
+        if (!Storage::disk('public')->exists($process->contract_file_path)) {
+            abort(404, 'Archivo del contrato no encontrado en el servidor.');
+        }
+
+        $filename = $process->contract_original_filename ?? basename($process->contract_file_path);
+
+        return Storage::disk('public')->download($process->contract_file_path, $filename);
     }
 
     /**

@@ -209,9 +209,9 @@
                                     <i class="fas fa-money-bill-wave"></i> Pagos
                                 </a>
                             </li>
-                            {{-- Módulo 18: Gestión de Pagos per participant --}}
+                            {{-- Fase 4: Gestión de Pagos (refactor de Módulo 18 — participant-centric con cuotas + carga histórica) --}}
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->is('admin/finance/payment-management*') ? 'active' : '' }}" href="{{ route('admin.finance.payment-management') }}">
+                                <a class="nav-link {{ request()->is('admin/payment-management*') ? 'active' : '' }}" href="{{ route('admin.payment-management.index') }}">
                                     <i class="fas fa-users-cog"></i> Gestión de Pagos
                                 </a>
                             </li>

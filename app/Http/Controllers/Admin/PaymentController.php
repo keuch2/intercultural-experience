@@ -33,6 +33,21 @@ class PaymentController extends Controller
             'redirect_to' => 'nullable|string',
         ]);
 
+        // Fase 4 F4.7: exchange_rate es obligatorio cuando la moneda del pago ≠ moneda del costo del programa.
+        if (!empty($validated['application_id'])) {
+            $app = Application::find($validated['application_id']);
+            $paymentCurrencyCode = optional(\App\Models\Currency::find($validated['currency_id']))->code;
+            $programCurrencyCode = $app->cost_currency ?? null;
+
+            if ($app && $programCurrencyCode && $paymentCurrencyCode && $paymentCurrencyCode !== $programCurrencyCode) {
+                if (empty($validated['exchange_rate']) || $validated['exchange_rate'] <= 0) {
+                    return back()
+                        ->withInput()
+                        ->withErrors(['exchange_rate' => "Debe indicar el tipo de cambio: la moneda del pago ({$paymentCurrencyCode}) no coincide con la moneda del programa ({$programCurrencyCode})."]);
+                }
+            }
+        }
+
         // Si el concepto es "Otro" y se proporcionó un concepto personalizado, usarlo
         if ($validated['concept'] === 'Otro' && !empty($validated['other_concept'])) {
             $validated['concept'] = $validated['other_concept'];

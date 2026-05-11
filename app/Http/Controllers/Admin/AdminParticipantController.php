@@ -233,9 +233,16 @@ class AdminParticipantController extends Controller
      */
     public function show(User $participant)
     {
-        // Verificar que sea un participante (role = user)
+        // Módulo B3 fix: Si el usuario no es participante, en vez de 404 ciego damos un mensaje útil.
+        // Esto facilita el debug cuando el botón "Perfil General" se invoca con un id incorrecto.
         if ($participant->role !== 'user') {
-            abort(404);
+            \Log::warning('admin.participants.show: tried to view non-participant user', [
+                'user_id' => $participant->id,
+                'role'    => $participant->role,
+                'caused_by' => optional(auth()->user())->id,
+            ]);
+            return redirect()->route('admin.participants.index')
+                ->with('warning', "El usuario #{$participant->id} no es un participante (rol: {$participant->role}).");
         }
         
         // Cargar todas las relaciones necesarias incluyendo las nuevas
@@ -268,8 +275,14 @@ class AdminParticipantController extends Controller
         
         // Programs for new application modal
         $programs = \App\Models\Program::where('is_active', true)->orderBy('name')->get();
-        
-        return view('admin.participants.show', compact('participant', 'applicationStats', 'totalPoints', 'allApplications', 'currencies', 'programs'));
+
+        // Módulo C9: Notas del participante (generalizadas — antes solo en Au Pair)
+        $notes = \App\Models\ParticipantNote::where('user_id', $participant->id)
+            ->with('admin')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('admin.participants.show', compact('participant', 'applicationStats', 'totalPoints', 'allApplications', 'currencies', 'programs', 'notes'));
     }
 
     /**
@@ -545,5 +558,39 @@ class AdminParticipantController extends Controller
         return response($csv, 200)
             ->header('Content-Type', 'text/csv')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    /**
+     * Módulo C9: Store a participant note (generic — used by both Au Pair and general profile sidebar).
+     */
+    public function storeNote(Request $request, User $user)
+    {
+        if ($user->role !== 'user') {
+            abort(404);
+        }
+
+        $request->validate(['content' => 'required|string|max:2000']);
+
+        \App\Models\ParticipantNote::create([
+            'user_id'  => $user->id,
+            'admin_id' => auth()->id(),
+            'content'  => $request->content,
+        ]);
+
+        return back()->with('success', 'Nota guardada.');
+    }
+
+    /**
+     * Módulo C9: Delete a participant note.
+     */
+    public function deleteNote(User $user, \App\Models\ParticipantNote $note)
+    {
+        if ($note->user_id !== $user->id) {
+            abort(404);
+        }
+
+        $note->delete();
+
+        return back()->with('success', 'Nota eliminada.');
     }
 }

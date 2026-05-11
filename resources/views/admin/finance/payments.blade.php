@@ -21,16 +21,14 @@
         </div>
         <div class="card-body">
             <form method="GET" action="{{ route('admin.finance.payments') }}" class="row">
-                <div class="col-md-3 mb-3">
-                    <label for="status">Estado</label>
-                    <select name="status" id="status" class="form-control">
-                        <option value="">Todos</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pendiente</option>
-                        <option value="verified" {{ request('status') == 'verified' ? 'selected' : '' }}>Verificado</option>
-                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rechazado</option>
-                    </select>
+                {{-- Fase 4 F4.6: filtro de estado removido — solo se listan pagos verificados.
+                     Los pendientes/rechazados se gestionan dentro del perfil financiero del participante. --}}
+                <div class="col-md-12 mb-3">
+                    <div class="alert alert-info py-2 px-3 mb-0">
+                        <small><i class="fas fa-info-circle me-1"></i> <strong>Pagos Registrados</strong> muestra únicamente pagos <strong>verificados</strong>. Para gestionar pagos pendientes o registrar nuevos, accedé a <a href="{{ route('admin.payment-management.index') }}" class="alert-link">Gestión de Pagos</a>.</small>
+                    </div>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="program_id">Programa</label>
                     <select name="program_id" id="program_id" class="form-control">
                         <option value="">Todos</option>
@@ -41,11 +39,11 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="date_from">Fecha Desde</label>
                     <input type="date" name="date_from" id="date_from" class="form-control" value="{{ request('date_from') }}">
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="date_to">Fecha Hasta</label>
                     <input type="date" name="date_to" id="date_to" class="form-control" value="{{ request('date_to') }}">
                 </div>

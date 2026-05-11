@@ -26,6 +26,8 @@ class Application extends Model
         'amount_paid',
         'payment_deadline',
         'exchange_rate',
+        'cost_manual_date',
+        'cost_locked_at',
         'applied_at',
         'started_at',
         'completed_at',
@@ -41,6 +43,8 @@ class Application extends Model
         'amount_paid' => 'decimal:2',
         'payment_deadline' => 'date',
         'exchange_rate' => 'decimal:2',
+        'cost_manual_date' => 'date',
+        'cost_locked_at' => 'datetime',
         'progress_percentage' => 'integer',
     ];
 
@@ -197,15 +201,20 @@ class Application extends Model
             return round(($completedRequisites / $totalRequisites) * 100);
         }
 
-        // Fallback: calculate from current_stage
+        // Fallback: calculate from current_stage. Mapea etapas legacy + Au Pair + W&T.
         $stageProgress = [
             'registration' => 5,
             'admission' => 20,
             'application' => 40,
             'match_visa' => 60,
+            'match' => 65,
+            'visa' => 70,
             'support' => 80,
+            'pre_departure' => 85,
+            'in_program' => 90,
             'completed' => 100,
             'cancelled' => 0,
+            'rejected' => 0,
         ];
 
         $stage = $this->attributes['current_stage'] ?? 'registration';

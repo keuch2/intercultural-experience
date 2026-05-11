@@ -167,7 +167,17 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
 
         // Módulo 6: Profile photo update
         Route::post('/participants/{participant}/photo', [AdminParticipantController::class, 'updatePhoto'])->name('admin.participants.update-photo');
+
+        // Módulo C9: Participant notes (generalized — works for any participant, not just Au Pair)
+        Route::post('/participants/{user}/notes', [AdminParticipantController::class, 'storeNote'])->name('admin.participants.notes.store');
+        Route::delete('/participants/{user}/notes/{note}', [AdminParticipantController::class, 'deleteNote'])->name('admin.participants.notes.delete');
         
+        // Fase 4: Gestión de Pagos (nueva sección global)
+        Route::get('/payment-management', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'index'])->name('admin.payment-management.index');
+        Route::get('/payment-management/{application}', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'show'])->name('admin.payment-management.show');
+        Route::put('/payment-management/{application}/cost', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'updateCost'])->name('admin.payment-management.update-cost');
+        Route::post('/payment-management/{application}/installment-plan', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'storeInstallmentPlan'])->name('admin.payment-management.installment-plan');
+
         // Payments Management
         Route::post('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'store'])->name('admin.payments.store');
         Route::post('/payments/{payment}/verify', [\App\Http\Controllers\Admin\PaymentController::class, 'verify'])->name('admin.payments.verify');
@@ -429,8 +439,10 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             // Actions: Documents
             Route::post('/perfiles/{id}/documents', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'uploadDocument'])->name('profiles.upload-doc');
             Route::get('/perfiles/{id}/documents/{docId}/download', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'downloadDocument'])->name('profiles.download-doc');
+            Route::get('/perfiles/{id}/documents/{documentType}/download-all', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'downloadDocumentsBundle'])->name('profiles.download-doc-bundle');
             Route::put('/perfiles/{id}/documents/{docId}/review', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'reviewDocument'])->name('profiles.review-doc');
             Route::delete('/perfiles/{id}/documents/{docId}', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'deleteDocument'])->name('profiles.delete-doc');
+            Route::get('/perfiles/{id}/contract/download', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'downloadContract'])->name('profiles.download-contract');
             // Actions: English Tests
             Route::post('/perfiles/{id}/english-tests', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeEnglishTest'])->name('profiles.store-english-test');
             Route::get('/perfiles/{id}/english-tests/{testId}/pdf', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'downloadEnglishTestPdf'])->name('profiles.download-english-pdf');

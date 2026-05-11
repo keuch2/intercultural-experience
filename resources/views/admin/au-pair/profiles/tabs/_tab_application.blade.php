@@ -263,6 +263,15 @@
                                     <div class="d-flex flex-column gap-1">
                                         @foreach($allDocs as $multiDoc)
                                         <div class="d-flex gap-1 align-items-center">
+                                            {{-- Módulo C3: inline preview for images, icon for PDFs --}}
+                                            @php $ext = strtolower(pathinfo($multiDoc->original_filename, PATHINFO_EXTENSION)); @endphp
+                                            @if(in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                                                <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $multiDoc->id]) }}" target="_blank" title="{{ $multiDoc->original_filename }}">
+                                                    <img src="{{ asset('storage/' . $multiDoc->file_path) }}" alt="thumb" loading="lazy" style="width:34px; height:34px; object-fit:cover; border-radius:4px;">
+                                                </a>
+                                            @else
+                                                <i class="fas fa-file-pdf text-danger" title="{{ $multiDoc->original_filename }}"></i>
+                                            @endif
                                             <small class="text-muted text-truncate" style="max-width:100px;" title="{{ $multiDoc->original_filename }}">{{ $multiDoc->original_filename }}</small>
                                             <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $multiDoc->id]) }}" class="btn btn-sm btn-outline-primary py-0" title="Descargar"><i class="fas fa-download"></i></a>
                                             @if($multiDoc->status !== 'approved')
@@ -276,7 +285,11 @@
                                             @endif
                                         </div>
                                         @endforeach
-                                        <button class="btn btn-sm btn-outline-primary py-0 mt-1" data-bs-toggle="modal" data-bs-target="#uploadP1Modal{{ $docKey }}"><i class="fas fa-plus me-1"></i>Agregar más</button>
+                                        <div class="d-flex gap-1 mt-1">
+                                            <button class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#uploadP1Modal{{ $docKey }}"><i class="fas fa-plus me-1"></i>Agregar más</button>
+                                            {{-- Módulo B4: zip download of all files for this doctype --}}
+                                            <a href="{{ route('admin.aupair.profiles.download-doc-bundle', [$user->id, $docKey]) }}" class="btn btn-sm btn-outline-success py-0" title="Descargar todos como .zip"><i class="fas fa-file-archive me-1"></i>Descargar todo (.zip)</a>
+                                        </div>
                                     </div>
                                 @elseif($doc)
                                     <div class="d-flex gap-1 flex-wrap">
@@ -384,6 +397,14 @@
                                     <div class="d-flex flex-column gap-1">
                                         @foreach($allDocs as $multiDoc)
                                         <div class="d-flex gap-1 align-items-center">
+                                            @php $ext = strtolower(pathinfo($multiDoc->original_filename, PATHINFO_EXTENSION)); @endphp
+                                            @if(in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                                                <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $multiDoc->id]) }}" target="_blank" title="{{ $multiDoc->original_filename }}">
+                                                    <img src="{{ asset('storage/' . $multiDoc->file_path) }}" alt="thumb" loading="lazy" style="width:34px; height:34px; object-fit:cover; border-radius:4px;">
+                                                </a>
+                                            @else
+                                                <i class="fas fa-file-pdf text-danger" title="{{ $multiDoc->original_filename }}"></i>
+                                            @endif
                                             <small class="text-muted text-truncate" style="max-width:100px;" title="{{ $multiDoc->original_filename }}">{{ $multiDoc->original_filename }}</small>
                                             <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $multiDoc->id]) }}" class="btn btn-sm btn-outline-primary py-0" title="Descargar"><i class="fas fa-download"></i></a>
                                             @if($multiDoc->status !== 'approved')
@@ -397,7 +418,10 @@
                                             @endif
                                         </div>
                                         @endforeach
-                                        <button class="btn btn-sm btn-outline-primary py-0 mt-1" data-bs-toggle="modal" data-bs-target="#uploadP2Modal{{ $docKey }}"><i class="fas fa-plus me-1"></i>Agregar más</button>
+                                        <div class="d-flex gap-1 mt-1">
+                                            <button class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#uploadP2Modal{{ $docKey }}"><i class="fas fa-plus me-1"></i>Agregar más</button>
+                                            <a href="{{ route('admin.aupair.profiles.download-doc-bundle', [$user->id, $docKey]) }}" class="btn btn-sm btn-outline-success py-0" title="Descargar todos como .zip"><i class="fas fa-file-archive me-1"></i>Descargar todo (.zip)</a>
+                                        </div>
                                     </div>
                                 @elseif($doc)
                                     <div class="d-flex gap-1 flex-wrap">
@@ -525,8 +549,8 @@
                 <h6 class="small fw-bold text-muted mb-2"><i class="fas fa-file-contract me-1"></i> Archivo del Contrato Firmado</h6>
                 @if($proc && $proc->contract_file_path)
                     <div class="d-flex align-items-center">
-                        {{-- Módulo 9 fix: Use asset() with storage path for reliable file serving --}}
-                        <a href="{{ asset('storage/' . $proc->contract_file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                        {{-- Módulo B1 fix: Use dedicated download route to avoid blank pages when storage symlink is missing or path is invalid --}}
+                        <a href="{{ route('admin.aupair.profiles.download-contract', $user->id) }}" class="btn btn-sm btn-outline-primary me-2">
                             <i class="fas fa-file-pdf me-1"></i> {{ $proc->contract_original_filename ?? 'Ver Contrato' }}
                         </a>
                         <small class="text-success"><i class="fas fa-check-circle"></i> Archivo cargado</small>

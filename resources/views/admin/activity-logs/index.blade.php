@@ -150,6 +150,10 @@
                                     @if($log->log_name)
                                         <br><span class="badge bg-light text-dark">{{ $log->log_name }}</span>
                                     @endif
+                                    {{-- Módulo B7 fix: surface deletion_reason for document_delete actions --}}
+                                    @if($log->action === 'document_delete' && !empty($log->properties['deletion_reason']))
+                                        <br><small class="text-danger"><i class="fas fa-comment-alt me-1"></i><strong>Motivo:</strong> {{ Str::limit($log->properties['deletion_reason'], 120) }}</small>
+                                    @endif
                                 </td>
                                 <td><small class="text-muted">{{ $log->ip_address }}</small></td>
                                 <td>

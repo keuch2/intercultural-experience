@@ -111,6 +111,9 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Módulo C9: Notas del participante (generalizado del widget Au Pair) --}}
+            @include('admin.partials._participant_notes_widget', ['user' => $participant, 'notes' => $notes])
         </div>
 
         <!-- Contenido principal con tabs -->

@@ -147,31 +147,30 @@ class AdminFinanceController extends Controller
      */
     public function payments(Request $request)
     {
+        // Fase 4 F4.6: Pagos Registrados muestra SOLO pagos verificados.
+        // Los pendientes/rechazados se gestionan dentro del perfil financiero del participante.
         $query = \App\Models\Payment::query()
-            ->with(['user', 'program', 'currency']);
-        
-        // Filtros
-        if ($request->has('status') && $request->status != '') {
-            $query->where('status', $request->status);
-        }
-        
+            ->with(['user', 'program', 'currency'])
+            ->where('status', 'verified');
+
         if ($request->has('program_id') && $request->program_id != '') {
             $query->where('program_id', $request->program_id);
         }
-        
+
         if ($request->has('date_from') && $request->date_from != '') {
-            $query->whereDate('created_at', '>=', $request->date_from);
+            $query->whereDate('payment_date', '>=', $request->date_from);
         }
-        
+
         if ($request->has('date_to') && $request->date_to != '') {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            $query->whereDate('payment_date', '<=', $request->date_to);
         }
-        
-        $payments = $query->orderBy('created_at', 'desc')
-            ->paginate(15);
-            
+
+        $payments = $query->orderByDesc('payment_date')->orderByDesc('id')
+            ->paginate(15)
+            ->withQueryString();
+
         $programs = Program::orderBy('name')->get();
-        
+
         return view('admin.finance.payments', compact('payments', 'programs'));
     }
     
