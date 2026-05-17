@@ -17,6 +17,7 @@ interface AuthContextType {
   error: AppError | null;
   login: (email: string, password: string) => Promise<AuthResult>;
   register: (name: string, email: string, password: string, passwordConfirmation: string) => Promise<AuthResult>;
+  setupPassword: (email: string, password: string, passwordConfirmation: string) => Promise<AuthResult>;
   logout: () => Promise<void>;
   clearError: () => void;
   refreshUser: () => Promise<void>;
@@ -142,6 +143,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const setupPassword = async (
+    email: string,
+    password: string,
+    passwordConfirmation: string,
+  ): Promise<AuthResult> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await authService.setupPassword(email, password, passwordConfirmation);
+      if ((response as any).status === 'success' && (response as any).user) {
+        setUser((response as any).user);
+        setIsAuthenticated(true);
+        return { success: true };
+      }
+      return { success: false, message: (response as any).message || 'No pudimos crear la contraseña.' };
+    } catch (err: any) {
+      const appError = handleApiError(err, 'PASSWORD_SETUP');
+      logError(appError);
+      setError(appError);
+      return {
+        success: false,
+        message: appError.message,
+        errors: appError.details?.errors,
+        appError,
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = async () => {
     setIsLoading(true);
     setError(null);
@@ -215,6 +246,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         error,
         login,
         register,
+        setupPassword,
         logout,
         clearError,
         refreshUser,

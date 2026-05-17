@@ -157,6 +157,16 @@ class AuthController extends Controller
 
             $user = User::where('email', $request->email)->first();
 
+            // V1 mobile: si el postulante existe pero todavía no seteó su contraseña
+            // (cargado por admin), devolvemos un código distinto para que el cliente
+            // ofrezca el flujo de "Crear contraseña".
+            if ($user && $user->requires_password_setup) {
+                return response()->json([
+                    'status' => 'password_setup_required',
+                    'message' => 'Este usuario necesita crear su contraseña antes de ingresar.',
+                ], 409);
+            }
+
             if (!$user || !Hash::check($request->password, $user->password)) {
                 return response()->json([
                     'status' => 'error',
@@ -291,5 +301,103 @@ class AuthController extends Controller
                 'errors' => ['general' => [$e->getMessage()]]
             ], 500);
         }
+    }
+
+    /**
+     * POST /api/auth/check-email
+     *
+     * Permite a la app mobile averiguar el estado de un email antes de pedir
+     * contraseña. Útil para postulantes existentes que nunca usaron la app:
+     * el flujo de Login detecta "tenés que crear tu contraseña" sin tener que
+     * adivinar credenciales.
+     *
+     * Por seguridad NO confirmamos si un email existe o no para usuarios
+     * normales: devolvemos siempre 'register' como fallback. Solo el caso
+     * 'password_setup_required' es informativo, porque el admin ya cargó al
+     * usuario y queremos guiarlo.
+     */
+    public function checkEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'status' => 'success',
+                'state' => 'not_found',
+            ]);
+        }
+
+        if ($user->role === 'admin') {
+            return response()->json([
+                'status' => 'success',
+                'state' => 'admin',
+                'message' => 'Los administradores deben usar el panel web.',
+            ]);
+        }
+
+        if ($user->requires_password_setup) {
+            return response()->json([
+                'status' => 'success',
+                'state' => 'password_setup_required',
+                'name' => $user->name,
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'state' => 'has_password',
+        ]);
+    }
+
+    /**
+     * POST /api/auth/setup-password
+     *
+     * Primera contraseña de un postulante ya cargado en backend. Solo funciona
+     * mientras `requires_password_setup=true`. Después de setear, el usuario
+     * recibe su token igual que en login.
+     *
+     * Rate limit: el grupo en routes/api.php lo limita a 3/min para mitigar
+     * fuerza bruta sobre emails de postulantes.
+     */
+    public function setupPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user || ! $user->requires_password_setup) {
+            // No revelamos cuál de las dos condiciones falló; ambas tienen
+            // el mismo significado funcional para la app.
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Este email no puede crear una contraseña inicial. Usá "Olvidé mi contraseña" si ya tenés cuenta.',
+            ], 422);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->requires_password_setup = false;
+        $user->password_set_at = now();
+        $user->save();
+
+        // Registrar la contraseña en el historial para evitar reutilización
+        if (method_exists($user, 'addPasswordToHistory')) {
+            $user->addPasswordToHistory($request->password);
+        }
+
+        // Emitir token igual que login (auto-login post setup)
+        $user->tokens()->delete();
+        $token = $user->createToken('mobile-app-token', ['*'], now()->addDays(30))->plainTextToken;
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Contraseña creada. Bienvenido.',
+            'user' => $user,
+            'token' => $token,
+        ]);
     }
 }

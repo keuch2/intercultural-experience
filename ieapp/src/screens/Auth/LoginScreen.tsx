@@ -16,6 +16,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePublicAuth } from '../../contexts/PublicAuthContext';
+import { authService } from '../../services/api';
 import InputField from '../../components/InputField';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -53,15 +54,36 @@ const LoginScreen: React.FC = () => {
   
   const handleLogin = async () => {
     if (!validateForm()) return;
-    
+
     // Clear previous errors
     setApiError(null);
     setDebugInfo(null);
     clearError();
-    
-    console.log('Attempting login with:', { email, password });
+
+    // V1 mobile: antes del login chequeamos el estado del email. Si es un
+    // postulante cargado por admin que nunca seteó contraseña, lo desviamos al
+    // flujo "crear contraseña" sin gastarle un intento de login.
+    try {
+      const check = await authService.checkEmail(email);
+      if (check.state === 'password_setup_required') {
+        navigation.navigate('SetupPassword', { email, name: check.name });
+        return;
+      }
+      if (check.state === 'admin') {
+        Alert.alert('Solo administradores', check.message || 'Los administradores deben usar el panel web.');
+        return;
+      }
+      // not_found y has_password siguen al login normal: el backend devolverá
+      // el mensaje apropiado si las credenciales no coinciden.
+    } catch (err) {
+      // Si check-email falla (red, rate limit), seguimos al login normal —
+      // no queremos bloquear al user por un endpoint auxiliar caído.
+      console.log('check-email failed, continuando con login normal');
+    }
+
+    console.log('Attempting login with:', { email });
     const result = await login(email, password);
-    
+
     if (result.success) {
       // Login successful - navigation will happen automatically through AuthContext
       console.log('Login successful, navigation will happen automatically');

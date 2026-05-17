@@ -145,7 +145,38 @@ const authService = {
       password_confirmation: passwordConfirmation
     });
     return response.data;
-  }
+  },
+
+  /**
+   * Consulta el estado del email para decidir si mostrar login normal,
+   * flujo de "crear contraseña" o flujo de registro.
+   *
+   * Estados posibles devueltos por el backend:
+   *  - 'not_found'                → el email no existe (mostrar registro)
+   *  - 'password_setup_required'  → postulante cargado por admin sin contraseña
+   *  - 'has_password'             → user existente, pedir su contraseña
+   *  - 'admin'                    → admins solo entran por web
+   */
+  checkEmail: async (email: string): Promise<{ state: string; name?: string; message?: string }> => {
+    const response = await apiClient.post('/auth/check-email', { email });
+    return response.data;
+  },
+
+  /**
+   * Setea la contraseña por primera vez para un postulante cargado por admin.
+   * Devuelve token igual que login (auto-login).
+   */
+  setupPassword: async (email: string, password: string, passwordConfirmation: string) => {
+    const response = await apiClient.post<AuthResponse>('/auth/setup-password', {
+      email,
+      password,
+      password_confirmation: passwordConfirmation,
+    });
+    if (response.data.status === 'success' && response.data.token) {
+      await AsyncStorage.setItem('auth_token', response.data.token);
+    }
+    return response.data;
+  },
 };
 
 export default authService;

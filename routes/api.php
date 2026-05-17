@@ -20,6 +20,17 @@ Route::middleware(['throttle:5,1'])->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
+// V1 mobile: first-login flow para postulantes cargados desde admin.
+// check-email: consulta pública para saber si el email tiene cuenta y si debe
+//              crear contraseña la primera vez. Throttle alto para enumeration.
+// setup-password: setea la contraseña inicial. Throttle estricto.
+Route::middleware(['throttle:10,1'])->group(function () {
+    Route::post('/auth/check-email', [AuthController::class, 'checkEmail']);
+});
+Route::middleware(['throttle:3,1'])->group(function () {
+    Route::post('/auth/setup-password', [AuthController::class, 'setupPassword']);
+});
+
 // Registration: 3 attempts/minute for security (R4.8)
 Route::middleware(['throttle:3,1'])->group(function () {
     Route::post('/register', [AuthController::class, 'register']);

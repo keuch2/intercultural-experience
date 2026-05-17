@@ -31,7 +31,9 @@ class User extends Authenticatable
         'entry_denied', 'visa_denial_reason', 'smoker', 'has_drivers_license',
         'driving_years', 'can_swim', 'first_aid_certified', 'cpr_certified',
         'mec_registration', 'teaching_degree', 'teaching_years',
-        'program_expectations', 'hobbies', 'gender', 'date_of_birth'
+        'program_expectations', 'hobbies', 'gender', 'date_of_birth',
+        // V1 mobile: postulantes cargados por admin
+        'requires_password_setup', 'password_set_at',
     ];
 
     protected $casts = [
@@ -52,6 +54,8 @@ class User extends Authenticatable
         'usa_times' => 'integer',
         'driving_years' => 'integer',
         'teaching_years' => 'integer',
+        'requires_password_setup' => 'boolean',
+        'password_set_at' => 'datetime',
     ];
 
     protected $hidden = [

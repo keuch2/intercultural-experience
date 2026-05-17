@@ -5,6 +5,7 @@ import RegisterScreen from '../screens/Auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/Auth/ForgotPasswordScreen';
 import ResetPasswordScreen from '../screens/Auth/ResetPasswordScreen';
 import ApiTestScreen from '../screens/ApiTestScreen';
+import SetupPasswordScreen from '../screens/Auth/SetupPasswordScreen';
 
 /**
  * Stack de autenticación. Puede llegar acá desde PublicNavigator
@@ -20,6 +21,7 @@ export type AuthStackParamList = {
   Register: { programId?: number } | undefined;
   ForgotPassword: undefined;
   ResetPassword: { token: string };
+  SetupPassword: { email: string; name?: string };
   ApiTest: undefined;
 };
 
@@ -31,6 +33,7 @@ const AuthNavigator: React.FC = () => (
     <Stack.Screen name="Register" component={RegisterScreen} />
     <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
     <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+    <Stack.Screen name="SetupPassword" component={SetupPasswordScreen} />
     <Stack.Screen name="ApiTest" component={ApiTestScreen} />
   </Stack.Navigator>
 );

@@ -2,23 +2,37 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
+import Constants from 'expo-constants';
 import { OfflineManager } from '../../utils/OfflineUtils';
 
-// Determine the base URL based on platform
+/**
+ * URL del API. Por defecto apunta a PRODUCCIÓN para que la app funcione desde
+ * cualquier red sin configurar nada — el usuario abre Expo Go y ya consume
+ * ie.org.py.
+ *
+ * Para desarrollar contra la Mac local, agregá `extra.apiUrl` en `app.json`:
+ *
+ *   { "expo": { "extra": { "apiUrl": "http://192.168.0.4/intercultural-experience/public/api" } } }
+ *
+ * Eso solo afecta el binario de Expo Go local; el QR/URL prod sigue limpio.
+ */
+const PRODUCTION_API_URL = 'https://ie.org.py/app/public/api';
+const LOCAL_API_PATH = '/intercultural-experience/public/api';
+
 const getBaseUrl = () => {
-  // Get current window location for web to handle different Expo ports
-  if (Platform.OS === 'web') {
-    // Use a direct full URL to XAMPP
-    return 'http://localhost/intercultural-experience/public/api';
-  } else if (Platform.OS === 'ios') {
-    return 'http://localhost/intercultural-experience/public/api'; // Works for iOS simulator
-  } else if (Platform.OS === 'android') {
-    return 'http://10.0.2.2/intercultural-experience/public/api'; // For Android emulator
-  } else {
-    // For physical devices, you'll need to use your computer's local IP address
-    // Example: return 'http://192.168.1.100/intercultural-experience/public/api';
-    return 'http://localhost/intercultural-experience/public/api';
+  // 1. Override explícito por app.json extra.apiUrl (útil para dev local).
+  const extraUrl = (Constants as any)?.expoConfig?.extra?.apiUrl;
+  if (typeof extraUrl === 'string' && extraUrl.length > 0) {
+    return extraUrl;
   }
+
+  // 2. Web servido desde la Mac → API local (mismo origen).
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
+    return `http://localhost${LOCAL_API_PATH}`;
+  }
+
+  // 3. Default: producción. Funciona desde cualquier red, sin LAN tricks.
+  return PRODUCTION_API_URL;
 };
 
 // Flag to control whether to use mock data in development
