@@ -59,6 +59,16 @@ class ApplicationController extends Controller
                 'message' => 'Este programa no está disponible actualmente.'
             ], 422);
         }
+
+        // V1 mobile: solo Au Pair puede postularse desde la app. Los otros
+        // programas existen en el catálogo público pero no admiten Application
+        // desde mobile hasta que se habiliten uno por uno.
+        if (!$program->is_available_in_app) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Este programa todavía no está disponible para postulación desde la app. Contactanos por WhatsApp.'
+            ], 422);
+        }
         
         // Verificar si el usuario ya tiene una solicitud para este programa
         $existingApplication = Application::where('user_id', auth()->id())

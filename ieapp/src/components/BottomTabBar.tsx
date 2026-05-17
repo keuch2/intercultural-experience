@@ -5,129 +5,87 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
-export type TabType = 'home' | 'programs' | 'rewards' | 'applications' | 'profile';
+/**
+ * V1 (Au Pair-only): tabs centrados en el flujo Au Pair.
+ *  - home          → AuPairDashboard (Sprint 2). Mientras tanto cae en HomeScreen.
+ *  - documents     → AuPairDocuments (Sprint 2). Por ahora cae en MyApplications.
+ *  - payments      → PaymentsScreen (Sprint 3). Por ahora cae en MyApplications.
+ *  - notifications → NotificationsScreen (Sprint 6). Por ahora cae en Home.
+ *  - profile       → ProfileScreen.
+ *
+ * `applications`, `programs`, `rewards` quedan en el union para compat,
+ * pero no se renderizan como tabs en V1.
+ */
+export type TabType = 'home' | 'documents' | 'payments' | 'notifications' | 'profile'
+  // legacy values aún referenciados por código existente
+  | 'programs' | 'rewards' | 'applications';
 
 interface BottomTabBarProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
 }
 
+type TabConfig = {
+  key: TabType;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconActive: keyof typeof Ionicons.glyphMap;
+  target: keyof RootStackParamList;
+};
+
+const TABS: TabConfig[] = [
+  { key: 'home', label: 'Inicio', icon: 'home-outline', iconActive: 'home', target: 'AuPairDashboard' },
+  { key: 'documents', label: 'Documentos', icon: 'document-text-outline', iconActive: 'document-text', target: 'AuPairDocuments' },
+  { key: 'payments', label: 'Pagos', icon: 'card-outline', iconActive: 'card', target: 'Payments' },
+  { key: 'notifications', label: 'Avisos', icon: 'notifications-outline', iconActive: 'notifications', target: 'Notifications' },
+  { key: 'profile', label: 'Perfil', icon: 'person-outline', iconActive: 'person', target: 'Profile' },
+];
+
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, setActiveTab }) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const handleTabPress = (tab: TabType) => {
-    setActiveTab(tab);
-    
-    // Navegar a la pantalla correspondiente según la pestaña
-    switch (tab) {
-      case 'home':
-        navigation.navigate('Home');
-        break;
-      case 'programs':
-        navigation.navigate('Programs');
-        break;
-      case 'rewards':
-        navigation.navigate('Rewards');
-        break;
-      case 'applications':
-        navigation.navigate('MyApplications');
-        break;
-      case 'profile':
-        navigation.navigate('Profile');
-        break;
-    }
+  const handlePress = (tab: TabConfig) => {
+    setActiveTab(tab.key);
+    navigation.navigate(tab.target as never);
   };
 
   return (
     <View style={styles.bottomNav}>
-      <TouchableOpacity 
-        style={styles.navItem} 
-        onPress={() => handleTabPress('home')}
-      >
-        <Ionicons 
-          name="home" 
-          size={24} 
-          color={activeTab === 'home' ? "#E52224" : "#777"} 
-        />
-        <Text style={activeTab === 'home' ? styles.activeNavText : styles.navText}>Inicio</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity 
-        style={styles.navItem} 
-        onPress={() => handleTabPress('programs')}
-      >
-        <Ionicons 
-          name="globe-outline" 
-          size={24} 
-          color={activeTab === 'programs' ? "#E52224" : "#777"} 
-        />
-        <Text style={activeTab === 'programs' ? styles.activeNavText : styles.navText}>Programas</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity 
-        style={styles.navItem} 
-        onPress={() => handleTabPress('rewards')}
-      >
-        <Ionicons 
-          name="gift-outline" 
-          size={24} 
-          color={activeTab === 'rewards' ? "#E52224" : "#777"} 
-        />
-        <Text style={activeTab === 'rewards' ? styles.activeNavText : styles.navText}>Recompensas</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity 
-        style={styles.navItem} 
-        onPress={() => handleTabPress('applications')}
-      >
-        <Ionicons 
-          name="document-text-outline" 
-          size={24} 
-          color={activeTab === 'applications' ? "#E52224" : "#777"} 
-        />
-        <Text style={activeTab === 'applications' ? styles.activeNavText : styles.navText}>Solicitudes</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity 
-        style={styles.navItem} 
-        onPress={() => handleTabPress('profile')}
-      >
-        <Ionicons 
-          name="person-outline" 
-          size={24} 
-          color={activeTab === 'profile' ? "#E52224" : "#777"} 
-        />
-        <Text style={activeTab === 'profile' ? styles.activeNavText : styles.navText}>Perfil</Text>
-      </TouchableOpacity>
+      {TABS.map(tab => {
+        const active = activeTab === tab.key;
+        return (
+          <TouchableOpacity
+            key={tab.key}
+            style={styles.navItem}
+            onPress={() => handlePress(tab)}
+            accessibilityLabel={tab.label}
+          >
+            <Ionicons
+              name={active ? tab.iconActive : tab.icon}
+              size={24}
+              color={active ? '#E52224' : '#777'}
+            />
+            <Text style={active ? styles.activeNavText : styles.navText}>{tab.label}</Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  bottomNav: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-around', 
-    padding: 10, 
+  bottomNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
     paddingBottom: 15,
-    borderTopWidth: 1, 
+    borderTopWidth: 1,
     borderColor: '#eee',
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
   },
-  navItem: {
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  activeNavText: {
-    color: '#E52224',
-    fontSize: 12,
-    marginTop: 2,
-    fontWeight: 'bold'
-  },
-  navText: {
-    color: '#777',
-    fontSize: 12,
-    marginTop: 2
-  },
+  navItem: { alignItems: 'center', justifyContent: 'center' },
+  activeNavText: { color: '#E52224', fontSize: 11, marginTop: 2, fontWeight: 'bold' },
+  navText: { color: '#777', fontSize: 11, marginTop: 2 },
 });
 
 export default BottomTabBar;

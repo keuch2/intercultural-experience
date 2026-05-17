@@ -15,7 +15,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePublicAuth } from '../../contexts/PublicAuthContext';
 import InputField from '../../components/InputField';
+import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 
@@ -24,6 +26,7 @@ const { width, height } = Dimensions.get('window');
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { login, isLoading, error: contextError, clearError } = useAuth();
+  const { clearAuthRequest } = usePublicAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -102,14 +105,22 @@ const LoginScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <ImageBackground 
-        source={require('../../../assets/images/background.jpg')} 
+      <ImageBackground
+        source={require('../../../assets/images/background.jpg')}
         style={styles.backgroundImage}
       >
         <LinearGradient
           colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.5)']}
           style={styles.gradientOverlay}
         >
+          <TouchableOpacity
+            style={loginExtraStyles.backChip}
+            onPress={() => clearAuthRequest()}
+            accessibilityLabel="Volver al inicio"
+          >
+            <Ionicons name="arrow-back" size={18} color="#fff" />
+            <Text style={loginExtraStyles.backChipText}>Volver</Text>
+          </TouchableOpacity>
           <ScrollView contentContainerStyle={{flexGrow: 1}}>
             <View style={styles.contentContainer}>
               {/* Logo and Headline */}
@@ -397,6 +408,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'monospace',
   }
+});
+
+const loginExtraStyles = StyleSheet.create({
+  backChip: {
+    position: 'absolute',
+    top: 44,
+    left: 14,
+    zIndex: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 18,
+  },
+  backChipText: { color: '#fff', marginLeft: 4, fontSize: 13, fontWeight: '600' },
 });
 
 export default LoginScreen;

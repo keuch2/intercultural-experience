@@ -37,6 +37,14 @@ Route::post('/password/reset', [PasswordResetController::class, 'reset']);
 // Public programs endpoint
 Route::get('/programs', [ProgramController::class, 'index']);
 
+// Public endpoints for mobile promotional view (no auth required)
+// V1: visitantes pueden explorar los 7 programas; solo Au Pair tiene
+// `is_available_in_app=true`. Los demás muestran CTA "Próximamente".
+Route::prefix('public')->group(function () {
+    Route::get('/programs', [\App\Http\Controllers\API\PublicProgramController::class, 'index']);
+    Route::get('/programs/{id}', [\App\Http\Controllers\API\PublicProgramController::class, 'show']);
+});
+
 // Public settings endpoints
 Route::get('/settings', [\App\Http\Controllers\API\SettingsController::class, 'index']);
 Route::get('/settings/whatsapp', [\App\Http\Controllers\API\SettingsController::class, 'whatsapp']);
@@ -231,6 +239,56 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/appointment', [\App\Http\Controllers\API\VisaProcessController::class, 'appointment']);
         Route::get('/{id}/payments', [\App\Http\Controllers\API\VisaProcessController::class, 'payments']);
         Route::get('/{id}/documents', [\App\Http\Controllers\API\VisaProcessController::class, 'documents']);
+    });
+
+    // ========================================
+    // AU PAIR — Mobile App V1 (Sprint 0 stubs)
+    // ========================================
+    Route::prefix('au-pair')->group(function () {
+        // Process del participante
+        Route::get('/process', [\App\Http\Controllers\API\AuPairProcessController::class, 'show']);
+
+        // Documentos por stage (admission, application_payment1/2, visa)
+        Route::get('/documents', [\App\Http\Controllers\API\AuPairDocumentController::class, 'index']);
+        Route::middleware('throttle:20,1')->group(function () {
+            Route::post('/documents', [\App\Http\Controllers\API\AuPairDocumentController::class, 'store']);
+        });
+        Route::delete('/documents/{id}', [\App\Http\Controllers\API\AuPairDocumentController::class, 'destroy']);
+        Route::get('/documents/{id}/download', [\App\Http\Controllers\API\AuPairDocumentController::class, 'download'])
+            ->name('api.au-pair.documents.download');
+
+        // English tests específicos Au Pair (tabla au_pair_english_tests)
+        Route::get('/english-tests', [\App\Http\Controllers\API\AuPairEnglishTestController::class, 'index']);
+        Route::middleware('throttle:5,60')->group(function () {
+            Route::post('/english-tests', [\App\Http\Controllers\API\AuPairEnglishTestController::class, 'store']);
+        });
+
+        // Visa (read-only en V1)
+        Route::get('/visa-process', [\App\Http\Controllers\API\AuPairVisaController::class, 'show']);
+
+        // Matches con host families
+        Route::get('/matches', [\App\Http\Controllers\API\AuPairMatchController::class, 'index']);
+        Route::get('/matches/{id}', [\App\Http\Controllers\API\AuPairMatchController::class, 'show']);
+
+        // Support logs visibles al participante
+        Route::get('/support-logs', [\App\Http\Controllers\API\AuPairSupportLogController::class, 'index']);
+
+        // Recursos descargables (guías, PDFs)
+        Route::get('/resources', [\App\Http\Controllers\API\AuPairResourceController::class, 'index']);
+        Route::get('/resources/{id}/download', [\App\Http\Controllers\API\AuPairResourceController::class, 'download']);
+    });
+
+    // ========================================
+    // PAYMENTS — Mobile App V1 (Sprint 0 stubs)
+    // ========================================
+    Route::prefix('payments')->group(function () {
+        Route::get('/', [\App\Http\Controllers\API\PaymentController::class, 'index']);
+        Route::get('/installments', [\App\Http\Controllers\API\PaymentController::class, 'installments']);
+        Route::get('/{id}', [\App\Http\Controllers\API\PaymentController::class, 'show']);
+        Route::middleware('throttle:10,1')->group(function () {
+            Route::post('/', [\App\Http\Controllers\API\PaymentController::class, 'store']);
+            Route::post('/{id}/receipt', [\App\Http\Controllers\API\PaymentController::class, 'uploadReceipt']);
+        });
     });
 
     // Admin Routes

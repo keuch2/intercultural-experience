@@ -8,7 +8,9 @@ use App\Traits\LogsActivity;
 class Program extends Model
 {
     use LogsActivity;
-    
+
+    public const SUBCATEGORY_AU_PAIR = 'Au Pair';
+
     protected $fillable = [
         'name',
         'description',
@@ -47,6 +49,7 @@ class Program extends Model
         'image_url',
         'status',
         'available_slots',
+        'is_available_in_app',
     ];
 
     // Relationships
@@ -187,6 +190,15 @@ class Program extends Model
     public function getStatusAttribute()
     {
         return $this->is_active ? 'active' : 'inactive';
+    }
+
+    /**
+     * Flag para mobile: indica si el programa puede postularse desde la app.
+     * V1: solo Au Pair. Los demás programas se muestran como promocionales.
+     */
+    public function getIsAvailableInAppAttribute(): bool
+    {
+        return $this->subcategory === self::SUBCATEGORY_AU_PAIR;
     }
 
     /**

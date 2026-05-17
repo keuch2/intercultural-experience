@@ -7,6 +7,10 @@ import { formService } from './formService';
 import { assignmentService } from './assignmentService';
 import { rewardService } from './rewardService';
 import { notificationService } from './notificationService';
+import { publicService } from './publicService';
+export type { PublicProgram } from './publicService';
+import auPairService from './auPairService';
+import paymentService from './paymentService';
 
 export {
   apiClient,
@@ -17,5 +21,8 @@ export {
   formService,
   assignmentService,
   rewardService,
-  notificationService
+  notificationService,
+  publicService,
+  auPairService,
+  paymentService,
 };
