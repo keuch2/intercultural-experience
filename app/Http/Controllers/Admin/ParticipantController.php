@@ -101,11 +101,14 @@ class ParticipantController extends Controller
                 $counter++;
             }
             
+            // Postulante creado por admin sin contraseña conocida: se marca
+            // para que en su primer ingreso a la app cree su propia clave.
             $user = User::create([
                 'name' => $validated['full_name'],
                 'email' => $email,
-                'password' => bcrypt('password'), // Contraseña temporal
+                'password' => bcrypt(\Illuminate\Support\Str::random(40)),
                 'role' => 'user',
+                'requires_password_setup' => true,
             ]);
             
             $validated['user_id'] = $user->id;

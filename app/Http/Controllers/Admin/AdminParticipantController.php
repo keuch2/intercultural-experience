@@ -132,7 +132,9 @@ class AdminParticipantController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            // Opcional: si el admin no provee contraseña, el postulante la crea
+            // en su primer ingreso desde la app (requires_password_setup=true).
+            'password' => ['nullable', 'confirmed', Password::defaults()],
             'phone' => ['nullable', 'string', 'max:50'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'birth_date' => ['nullable', 'date'],
@@ -156,10 +158,16 @@ class AdminParticipantController extends Controller
             'emergency_contact_phone' => ['nullable', 'string', 'max:50'],
         ]);
         
+        // Si el admin no ingresó contraseña, generamos un hash random no
+        // adivinable y marcamos al postulante para que la cree desde la app.
+        $hasExplicitPassword = $request->filled('password');
         $data = [
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($hasExplicitPassword
+                ? $request->password
+                : \Illuminate\Support\Str::random(40)),
+            'requires_password_setup' => ! $hasExplicitPassword,
             'role' => 'user',
             'phone' => $request->phone,
             'nationality' => $request->nationality,

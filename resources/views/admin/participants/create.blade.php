@@ -149,21 +149,26 @@
                                 </div>
                             </div>
 
+                            <div class="alert alert-info py-2 mb-2" style="font-size: 0.85rem;">
+                                <i class="fas fa-info-circle"></i>
+                                Si dejás los campos de contraseña vacíos, el postulante creará la suya
+                                en su primer ingreso desde la app mobile.
+                            </div>
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label for="password" class="form-label">Contraseña *</label>
+                                    <label for="password" class="form-label">Contraseña (opcional)</label>
                                     <div class="input-group">
-                                        <input type="password" class="form-control" id="password" name="password" required>
+                                        <input type="password" class="form-control" id="password" name="password">
                                         <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                     </div>
-                                    <div class="form-text">Mínimo 8 caracteres</div>
+                                    <div class="form-text">Mínimo 8 caracteres, o dejar vacío</div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="password_confirmation" class="form-label">Confirmar Contraseña *</label>
+                                    <label for="password_confirmation" class="form-label">Confirmar Contraseña</label>
                                     <div class="input-group">
-                                        <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                                        <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
                                         <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password_confirmation">
                                             <i class="fas fa-eye"></i>
                                         </button>
