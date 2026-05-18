@@ -42,12 +42,8 @@ const PublicHomeScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Header */}
+        {/* Header — solo botón de login alineado a la derecha */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.brand}>Experiencia Intercultural</Text>
-            <Text style={styles.subtitle}>Tu pasaporte al mundo</Text>
-          </View>
           <TouchableOpacity
             style={styles.loginBtn}
             onPress={() => requestAuth()}
@@ -130,14 +126,12 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: 40 },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 18,
     paddingTop: 16,
     paddingBottom: 8,
   },
-  brand: { fontSize: 20, fontWeight: '800', color: '#E52224' },
-  subtitle: { fontSize: 12, color: '#777', marginTop: 2 },
   loginBtn: {
     paddingHorizontal: 14,
     paddingVertical: 8,
