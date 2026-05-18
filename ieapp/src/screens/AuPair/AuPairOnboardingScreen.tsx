@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
   TouchableOpacity, SafeAreaView, Alert, Switch,
@@ -6,7 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { programService } from '../../services/api';
+import { programService, publicService } from '../../services/api';
 import { usePublicAuth } from '../../contexts/PublicAuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 
@@ -26,7 +26,32 @@ const AuPairOnboardingScreen: React.FC = () => {
   const navigation = useNavigation<Nav>();
   const route = useRoute<RouteP>();
   const { authRequest, clearAuthRequest } = usePublicAuth();
-  const programId = route.params?.programId ?? authRequest?.programId;
+
+  // Resolución del programId con 3 niveles de fallback:
+  //  1. Params explícitos (PublicProgramDetail → requestAuth → MainNavigator → Onboarding).
+  //  2. authRequest del context (mismo origen, redundancia por si los params se pierden).
+  //  3. Auto-resolución: buscar el primer programa Au Pair disponible en el catálogo público.
+  //     Esto cubre el caso "el user entró al Onboarding manualmente o el wizard se reinició".
+  const initialProgramId = route.params?.programId ?? authRequest?.programId ?? null;
+  const [programId, setProgramId] = useState<number | null>(initialProgramId);
+  const [resolving, setResolving] = useState(initialProgramId === null);
+
+  useEffect(() => {
+    if (programId !== null) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const programs = await publicService.getPublicPrograms();
+        const auPair = programs.find(p => p.is_available_in_app);
+        if (!cancelled && auPair) setProgramId(auPair.id);
+      } catch {
+        // si falla, programId queda en null y el botón Confirmar mostrará error
+      } finally {
+        if (!cancelled) setResolving(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [programId]);
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -47,7 +72,10 @@ const AuPairOnboardingScreen: React.FC = () => {
 
   const finish = async () => {
     if (!programId) {
-      Alert.alert('Falta programa', 'No detectamos a qué programa querés postular.');
+      Alert.alert(
+        'Programa no disponible',
+        'No pudimos cargar el catálogo de programas. Verificá tu conexión y volvé a intentar.',
+      );
       return;
     }
     try {
@@ -71,8 +99,7 @@ const AuPairOnboardingScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.headerBar}>
-        <Text style={styles.brand}>Bienvenida a IE</Text>
-        <Text style={styles.stepIndicator}>Paso {step} / 3</Text>
+        <Text style={styles.stepIndicator}>Paso {step} de 3</Text>
       </View>
 
       <View style={styles.bar}>
@@ -169,8 +196,7 @@ const Bullet: React.FC<{ text: string }> = ({ text }) => (
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#fff' },
-  headerBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18 },
-  brand: { fontSize: 16, fontWeight: '700', color: '#E52224' },
+  headerBar: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', padding: 18 },
   stepIndicator: { color: '#777', fontWeight: '600', fontSize: 12 },
   bar: { height: 4, backgroundColor: '#f4f4f5', marginHorizontal: 18, borderRadius: 2, overflow: 'hidden' },
   barFill: { height: '100%', backgroundColor: '#E52224' },

@@ -167,7 +167,11 @@ const MainNavigator: React.FC = () => {
       <Stack.Screen name="MyRedemptions" component={MyRedemptionsWithNav} />
       <Stack.Screen name="PointsHistory" component={PointsHistoryNoTabs} />
       <Stack.Screen name="Profile" component={ProfileWithNav} />
-      <Stack.Screen name="AuPairOnboarding" component={AuPairOnboardingScreen} />
+      <Stack.Screen
+        name="AuPairOnboarding"
+        component={AuPairOnboardingScreen}
+        initialParams={authRequest?.programId ? { programId: authRequest.programId } : undefined}
+      />
       <Stack.Screen name="Notifications" component={NotificationsWithNav} />
     </Stack.Navigator>
   </NavigationProvider>
