@@ -10,6 +10,7 @@ class ParticipantNote extends Model
     protected $fillable = [
         'user_id',
         'admin_id',
+        'application_id',
         'content',
     ];
 
@@ -21,5 +22,19 @@ class ParticipantNote extends Model
     public function admin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'admin_id');
+    }
+
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
+    }
+
+    public function scopeForApplication($query, ?int $applicationId)
+    {
+        if ($applicationId === null) {
+            return $query->whereNull('application_id');
+        }
+
+        return $query->where('application_id', $applicationId);
     }
 }

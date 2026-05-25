@@ -630,6 +630,9 @@
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {{-- Notas por aplicación (collapsible) --}}
+                                            @include('admin.applications._notes_widget', ['user' => $participant, 'application' => $application])
                                         </div>
                                     </div>
                                 @endforeach

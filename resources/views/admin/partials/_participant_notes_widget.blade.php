@@ -1,9 +1,16 @@
-{{-- Reusable participant notes widget. Expects: $user (User), $notes (collection of ParticipantNote). --}}
-<div class="card shadow-sm mt-3">
+{{-- Notas legacy (sin application_id) — visibles solo si existen notas huérfanas pre-rediseño.
+     Fase 2: la creación de notas ahora se hace dentro de cada tarjeta de Aplicación. --}}
+@if($notes->isNotEmpty())
+<div class="card shadow-sm mt-3 border-warning border-2">
     <div class="card-body py-3">
-        <h6 class="card-title small text-muted text-uppercase mb-2">Notas</h6>
+        <h6 class="card-title small text-warning text-uppercase mb-2">
+            <i class="fas fa-archive me-1"></i> Notas anteriores
+        </h6>
+        <p class="text-muted small mb-2" style="font-size:0.7rem;">
+            Notas registradas antes del rediseño (sin aplicación específica).
+        </p>
 
-        @forelse($notes as $note)
+        @foreach($notes as $note)
             <div class="border-bottom pb-2 mb-2">
                 <div class="small text-muted mb-1" style="font-size: 0.7rem;">
                     <i class="fas fa-user me-1"></i>{{ $note->admin->name ?? '—' }}
@@ -15,14 +22,7 @@
                 </div>
                 <div class="small" style="white-space: pre-wrap; word-break: break-word;">{{ $note->content }}</div>
             </div>
-        @empty
-            <p class="text-muted small mb-2">Sin notas.</p>
-        @endforelse
-
-        <form method="POST" action="{{ route('admin.participants.notes.store', ['user' => $user->id]) }}">
-            @csrf
-            <textarea name="content" class="form-control form-control-sm mb-2" rows="3" placeholder="Agregar observaciones importantes..." maxlength="2000" required></textarea>
-            <button type="submit" class="btn btn-sm btn-primary w-100">Guardar Nota</button>
-        </form>
+        @endforeach
     </div>
 </div>
+@endif

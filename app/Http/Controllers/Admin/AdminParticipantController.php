@@ -262,6 +262,7 @@ class AdminParticipantController extends Controller
             'applications.englishEvaluations',
             'applications.visaProcess',
             'applications.payments',
+            'applications.notes.admin',
             'points',
             'supportTickets',
             'emergencyContacts',
@@ -289,8 +290,10 @@ class AdminParticipantController extends Controller
         // Programs for new application modal
         $programs = \App\Models\Program::where('is_active', true)->orderBy('name')->get();
 
-        // Módulo C9: Notas del participante (generalizadas — antes solo en Au Pair)
+        // Fase 2: Notas huérfanas (sin application_id) — solo visibles en sidebar como legado.
+        // Las notas vinculadas a una Application se renderizan dentro de cada tarjeta.
         $notes = \App\Models\ParticipantNote::where('user_id', $participant->id)
+            ->whereNull('application_id')
             ->with('admin')
             ->orderByDesc('created_at')
             ->get();
@@ -574,7 +577,9 @@ class AdminParticipantController extends Controller
     }
 
     /**
-     * Módulo C9: Store a participant note (generic — used by both Au Pair and general profile sidebar).
+     * Store a participant note.
+     * Fase 2 rediseño: las notas viven asociadas a una Application específica.
+     * `application_id` ahora es requerido y debe pertenecer al mismo user.
      */
     public function storeNote(Request $request, User $user)
     {
@@ -582,12 +587,21 @@ class AdminParticipantController extends Controller
             abort(404);
         }
 
-        $request->validate(['content' => 'required|string|max:2000']);
+        $validated = $request->validate([
+            'content' => 'required|string|max:2000',
+            'application_id' => 'required|integer|exists:applications,id',
+        ]);
+
+        // Validar que la application pertenezca al user
+        $application = \App\Models\Application::where('id', $validated['application_id'])
+            ->where('user_id', $user->id)
+            ->firstOrFail();
 
         \App\Models\ParticipantNote::create([
-            'user_id'  => $user->id,
-            'admin_id' => auth()->id(),
-            'content'  => $request->content,
+            'user_id'        => $user->id,
+            'admin_id'       => auth()->id(),
+            'application_id' => $application->id,
+            'content'        => $validated['content'],
         ]);
 
         return back()->with('success', 'Nota guardada.');

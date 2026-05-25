@@ -157,6 +157,14 @@ class Application extends Model
     }
 
     /**
+     * Notas asociadas a esta aplicación (visibles dentro de la tarjeta del programa).
+     */
+    public function notes()
+    {
+        return $this->hasMany(ParticipantNote::class)->latest();
+    }
+
+    /**
      * Obtener datos específicos según el programa
      */
     public function getSpecificData()
