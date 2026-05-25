@@ -141,6 +141,22 @@ class Application extends Model
     }
 
     /**
+     * Evaluaciones de inglés asociadas a esta aplicación.
+     */
+    public function englishEvaluations()
+    {
+        return $this->hasMany(EnglishEvaluation::class);
+    }
+
+    /**
+     * Última evaluación de inglés (la más reciente por evaluated_at).
+     */
+    public function latestEnglishEvaluation()
+    {
+        return $this->hasOne(EnglishEvaluation::class)->latestOfMany('evaluated_at');
+    }
+
+    /**
      * Obtener datos específicos según el programa
      */
     public function getSpecificData()

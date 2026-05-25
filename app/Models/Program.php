@@ -202,6 +202,17 @@ class Program extends Model
     }
 
     /**
+     * Indica si el programa requiere proceso de visa.
+     * Au Pair, Work&Travel, Teachers, Intern/Trainee y Higher Education sí.
+     * Language Program y Work&Study (dentro del país de origen) suelen no requerir.
+     */
+    public function getRequiresVisaAttribute(): bool
+    {
+        $noVisa = ['Language Program', 'Work and Study'];
+        return !in_array($this->subcategory, $noVisa, true);
+    }
+
+    /**
      * Get available slots (alias para sincronizar con React Native)
      */
     public function getAvailableSlotsAttribute()

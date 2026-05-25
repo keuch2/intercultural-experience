@@ -147,28 +147,8 @@
                                 <i class="fas fa-file-alt"></i> Aplicaciones
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="payments-tab" data-bs-toggle="tab" href="#payments" role="tab">
-                                <i class="fas fa-dollar-sign"></i> Pagos
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="english-tab" data-bs-toggle="tab" href="#english" role="tab">
-                                <i class="fas fa-language"></i> Inglés
-                            </a>
-                        </li>
-                        {{-- Módulo 4: Job Offers tab removed from general profile.
-                             Job Offers are accessible within each program's profile (Work & Travel, Internship, etc.) --}}
-                        <li class="nav-item">
-                            <a class="nav-link" id="visa-tab" data-bs-toggle="tab" href="#visa" role="tab">
-                                <i class="fas fa-passport"></i> Visa
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="communications-tab" data-bs-toggle="tab" href="#communications" role="tab">
-                                <i class="fas fa-comments"></i> Mensajes
-                            </a>
-                        </li>
+                        {{-- Rediseño Fase 1: pestañas Pagos / Inglés / Visa / Mensajes eliminadas.
+                             Toda esa información ahora vive dentro de cada tarjeta de Aplicación. --}}
                     </ul>
                 </div>
 
@@ -444,605 +424,249 @@
                             @endif
                         </div>
 
-                        <!-- Tab 5: Aplicaciones -->
+                        <!-- Tab 5: Aplicaciones (Rediseño Fase 1 — núcleo del perfil) -->
                         <div class="tab-pane fade" id="applications" role="tabpanel">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div>
                                     <h5 class="mb-0">
-                                        <i class="bi bi-file-earmark-text"></i> Solicitudes de Programas
+                                        <i class="bi bi-briefcase"></i> Aplicaciones
                                     </h5>
-                                    <small class="text-muted">Total: {{ $allApplications->count() }} solicitud(es)</small>
+                                    <small class="text-muted">
+                                        Cada tarjeta representa una aplicación independiente a un programa.
+                                        Total: {{ $allApplications->count() }} aplicación(es).
+                                    </small>
                                 </div>
-                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newApplicationModal">
-                                    <i class="bi bi-plus-circle"></i> Nueva Solicitud
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newApplicationModal">
+                                    <i class="bi bi-plus-circle me-1"></i> Nueva Aplicación
                                 </button>
                             </div>
 
                             @if($allApplications->isEmpty())
                                 <div class="alert alert-info">
                                     <i class="bi bi-info-circle me-2"></i>
-                                    No hay solicitudes registradas para este participante.
+                                    No hay aplicaciones registradas para este participante.
                                 </div>
                             @else
-                                {{-- Lista de Solicitudes --}}
-                                <div class="row">
-                                    @foreach($allApplications as $application)
-                                        <div class="col-md-12 mb-3">
-                                            <div class="card {{ $application->id == $participant->id ? 'border-primary' : '' }}">
-                                                <div class="card-header d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <h6 class="mb-0">
-                                                            <i class="bi bi-file-earmark"></i>
-                                                            Solicitud #{{ $application->id }} - {{ optional($application->program)->name ?? 'Sin programa' }}
-                                                        </h6>
-                                                        @if($application->is_current_program)
-                                                            <span class="badge bg-success text-white mt-1">
-                                                                <i class="bi bi-star-fill"></i> Principal
-                                                            </span>
-                                                        @endif
-                                                    </div>
-                                                    <div class="btn-group" role="group">
-                                                        <a href="{{ route('admin.participants.show', $application->id) }}" 
-                                                           class="btn btn-sm btn-outline-primary" 
-                                                           title="Ver detalles">
-                                                            <i class="bi bi-eye"></i>
-                                                        </a>
-                                                        <a href="{{ route('admin.participants.edit', $application->id) }}" 
-                                                           class="btn btn-sm btn-outline-success" 
-                                                           title="Editar">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </a>
-                                                        <button type="button" 
-                                                                class="btn btn-sm btn-outline-danger" 
-                                                                onclick="confirmDelete({{ $application->id }})"
-                                                                title="Eliminar">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="row">
-                                                        <div class="col-md-3">
-                                                            <small class="text-muted">Estado</small><br>
-                                                            @php
-                                                                $statusColors = [
-                                                                    'pending' => 'warning',
-                                                                    'in_review' => 'info',
-                                                                    'approved' => 'success',
-                                                                    'rejected' => 'danger',
-                                                                    'completed' => 'secondary',
-                                                                ];
-                                                                $statusLabels = [
-                                                                    'pending' => 'Pendiente',
-                                                                    'in_review' => 'En Revisión',
-                                                                    'approved' => 'Aprobado',
-                                                                    'rejected' => 'Rechazado',
-                                                                    'completed' => 'Completado',
-                                                                ];
-                                                                $color = $statusColors[$application->status] ?? 'secondary';
-                                                                $label = $statusLabels[$application->status] ?? ucfirst($application->status);
-                                                            @endphp
-                                                            <span class="badge bg-{{ $color }}">{{ $label }}</span>
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            <small class="text-muted">Etapa Actual</small><br>
-                                                            <strong>{{ $application->current_stage ?? 'registration' }}</strong>
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            <small class="text-muted">Progreso</small><br>
-                                                            <div class="progress" style="height: 20px;">
-                                                                <div class="progress-bar" role="progressbar" 
-                                                                     style="width: {{ $application->progress_percentage }}%">
-                                                                    {{ $application->progress_percentage }}%
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            <small class="text-muted">Fecha de Aplicación</small><br>
-                                                            <strong>{{ optional($application->applied_at)->format('d/m/Y') ?? 'N/A' }}</strong>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <hr class="my-2">
-                                                    
-                                                    <div class="row">
-                                                        <div class="col-md-4">
-                                                            <small class="text-muted">Categoría</small><br>
-                                                            <span class="badge bg-primary">{{ optional($application->program)->main_category ?? 'N/A' }}</span>
-                                                            <span class="badge bg-secondary">{{ optional($application->program)->subcategory ?? 'N/A' }}</span>
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <small class="text-muted">Costo Total</small><br>
-                                                            <strong class="text-primary">${{ number_format($application->total_cost ?? 0, 2) }}</strong>
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <small class="text-muted">Saldo Pendiente</small><br>
-                                                            @php
-                                                                $balance = ($application->total_cost ?? 0) - ($application->amount_paid ?? 0);
-                                                            @endphp
-                                                            <strong class="{{ $balance > 0 ? 'text-danger' : 'text-success' }}">
-                                                                ${{ number_format($balance, 2) }}
-                                                            </strong>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
-
-                        <!-- Tab 6: Pagos -->
-                        <div class="tab-pane fade" id="payments" role="tabpanel">
-                            {{-- Módulo 18: Read-only payment summary — actions moved to program profile --}}
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div>
-                                    <h5 class="mb-0">
-                                        <i class="bi bi-cash-coin"></i> Resumen de Pagos
-                                    </h5>
-                                    <small class="text-muted">Total: {{ $participant->payments->count() }} pago(s)</small>
-                                </div>
-                                <span class="badge bg-secondary"><i class="fas fa-eye me-1"></i> Solo lectura</span>
-                            </div>
-
-                            <!-- Resumen de Pagos -->
-                            <div class="row mb-4">
-                                <div class="col-md-3">
-                                    <div class="card bg-primary text-white">
-                                        <div class="card-body">
-                                            <h6 class="mb-0">Total Pagado</h6>
-                                            <h3 class="mb-0">
-                                                ${{ number_format($participant->payments()->verified()->sum('amount'), 2) }}
-                                            </h3>
-                                            <small>{{ $participant->payments()->verified()->count() }} pagos</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-warning text-white">
-                                        <div class="card-body">
-                                            <h6 class="mb-0">Pendientes</h6>
-                                            <h3 class="mb-0">
-                                                ${{ number_format($participant->payments()->pending()->sum('amount'), 2) }}
-                                            </h3>
-                                            <small>{{ $participant->payments()->pending()->count() }} pagos</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-danger text-white">
-                                        <div class="card-body">
-                                            <h6 class="mb-0">Rechazados</h6>
-                                            <h3 class="mb-0">
-                                                ${{ number_format($participant->payments()->rejected()->sum('amount'), 2) }}
-                                            </h3>
-                                            <small>{{ $participant->payments()->rejected()->count() }} pagos</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-info text-white">
-                                        <div class="card-body">
-                                            <h6 class="mb-0">Saldo Pendiente</h6>
-                                            <h3 class="mb-0">
-                                                @php
-                                                    $totalPaid = $participant->payments()->verified()->sum('amount');
-                                                    $totalCost = optional($firstApp)->total_cost ?? 0;
-                                                    $balance = $totalCost - $totalPaid;
-                                                @endphp
-                                                ${{ number_format($balance, 2) }}
-                                            </h3>
-                                            <small>de ${{ number_format($totalCost, 2) }}</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            @if($participant->payments->isEmpty())
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    No hay pagos registrados para este participante.
-                                </div>
-                            @else
-                                <!-- Listado de Pagos -->
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Fecha</th>
-                                                <th>Concepto</th>
-                                                <th>Monto</th>
-                                                <th>Método</th>
-                                                <th>Referencia</th>
-                                                <th>Estado</th>
-                                                <th>Verificado Por</th>
-                                                <th>Comprobante</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($participant->payments as $payment)
-                                                <tr>
-                                                    <td><strong>#{{ $payment->id }}</strong></td>
-                                                    <td>{{ $payment->payment_date->format('d/m/Y') }}</td>
-                                                    <td>{{ $payment->concept }}</td>
-                                                    <td>
-                                                        <strong class="text-primary">
-                                                            {{ optional($payment->currency)->code ?? 'USD' }} 
-                                                            {{ number_format($payment->amount, 2) }}
-                                                        </strong>
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge bg-secondary">
-                                                            {{ ucfirst($payment->payment_method ?? 'N/A') }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <small class="text-muted">
-                                                            {{ $payment->reference_number ?? '-' }}
-                                                        </small>
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge bg-{{ $payment->status_color }}">
-                                                            {{ $payment->status_label }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        @if($payment->verifiedBy)
-                                                            <small>{{ optional($payment->verifiedBy)->name }}</small><br>
-                                                            <small class="text-muted">{{ optional($payment->verified_at)->format('d/m/Y H:i') }}</small>
-                                                        @else
-                                                            <span class="text-muted">-</span>
-                                                        @endif
-                                                    </td>
-                                                    {{-- Módulo 18: Read-only — only show receipt link --}}
-                                                    <td>
-                                                        @if($payment->receipt_path)
-                                                            <a href="{{ asset('storage/' . $payment->receipt_path) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Ver comprobante">
-                                                                <i class="bi bi-file-earmark-pdf"></i>
-                                                            </a>
-                                                        @else
-                                                            <span class="text-muted">-</span>
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                        <tfoot class="table-light">
-                                            <tr>
-                                                <th colspan="3" class="text-end">TOTAL VERIFICADO:</th>
-                                                <th colspan="6">
-                                                    <strong class="text-success">
-                                                        ${{ number_format($participant->payments()->verified()->sum('amount'), 2) }}
-                                                    </strong>
-                                                </th>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            @endif
-                        </div>
-
-                        <!-- Tab 7: Evaluación de Inglés -->
-                        {{-- Módulo 3 fix: Group evaluations by program/year --}}
-                        <div class="tab-pane fade" id="english" role="tabpanel">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="mb-0">Evaluación de Inglés</h5>
-                                @if($participant->englishEvaluations->count() < 3)
-                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#registerEnglishEvalModal">
-                                    <i class="fas fa-plus me-1"></i> Registrar Evaluación
-                                </button>
-                                @endif
-                            </div>
-                            @if($participant->englishEvaluations && $participant->englishEvaluations->count() > 0)
-                                <div class="row mb-4">
-                                    <div class="col-md-12">
-                                        @php
-                                            $bestEvaluation = $participant->englishEvaluations->sortByDesc('score')->first();
-                                        @endphp
-                                        <div class="card bg-light">
-                                            <div class="card-body">
-                                                <h6 class="text-primary">Mejor Evaluación</h6>
-                                                <div class="row">
-                                                    <div class="col-md-3 text-center">
-                                                        <h2 class="text-success">{{ $bestEvaluation->score }}/100</h2>
-                                                        <small class="text-muted">Puntaje</small>
-                                                    </div>
-                                                    <div class="col-md-3 text-center">
-                                                        <h2 class="text-info">{{ $bestEvaluation->cefr_level }}</h2>
-                                                        <small class="text-muted">Nivel CEFR</small>
-                                                    </div>
-                                                    <div class="col-md-3 text-center">
-                                                        <span class="badge bg-{{ $bestEvaluation->classification == 'EXCELLENT' ? 'success' : ($bestEvaluation->classification == 'GREAT' ? 'primary' : ($bestEvaluation->classification == 'GOOD' ? 'info' : 'warning')) }}">
-                                                            {{ $bestEvaluation->classification }}
-                                                        </span>
-                                                        <br><small class="text-muted">Clasificación</small>
-                                                    </div>
-                                                    <div class="col-md-3 text-center">
-                                                        <h6>{{ $bestEvaluation->evaluated_at->format('d/m/Y') }}</h6>
-                                                        <small class="text-muted">Fecha</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- Módulo 3: Group evaluations by program and year --}}
                                 @php
-                                    $groupedEvals = $participant->englishEvaluations->sortByDesc('evaluated_at')->groupBy(function($eval) {
-                                        $programName = optional(optional($eval->application)->program)->name ?? 'General';
-                                        $year = $eval->evaluated_at ? $eval->evaluated_at->format('Y') : 'N/A';
-                                        return $programName . ' — ' . $year;
-                                    });
+                                    $stageColors = [
+                                        'registration' => ['warning', 'Admisión'],
+                                        'admission' => ['warning', 'Admisión'],
+                                        'application' => ['info', 'Aplicación'],
+                                        'application_payment1' => ['info', 'Aplicación'],
+                                        'application_payment2' => ['info', 'Aplicación'],
+                                        'match_visa' => ['primary', 'Match / Visa'],
+                                        'match' => ['primary', 'Match / Visa'],
+                                        'visa' => ['primary', 'Visa'],
+                                        'support' => ['success', 'Participante (en programa)'],
+                                        'in_program' => ['success', 'Participante (en programa)'],
+                                        'completed' => ['secondary', 'Completado'],
+                                        'cancelled' => ['secondary', 'Cancelado'],
+                                        'rejected' => ['danger', 'Rechazado'],
+                                    ];
                                 @endphp
 
-                                @foreach($groupedEvals as $groupLabel => $evals)
-                                    <h6 class="mb-3 mt-4">
-                                        <i class="fas fa-language"></i> Evaluación de Inglés — {{ $groupLabel }}
-                                        <span class="badge bg-secondary">{{ $evals->count() }} intento(s)</span>
-                                    </h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered align-middle">
-                                            <thead>
-                                                <tr>
-                                                    <th>Intento</th>
-                                                    <th>Fecha</th>
-                                                    <th>Puntaje</th>
-                                                    <th>Nivel CEFR</th>
-                                                    <th>Clasificación</th>
-                                                    <th>Oral</th>
-                                                    <th>Evaluador</th>
-                                                    <th class="text-center" style="width:120px;">Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($evals->sortBy('attempt_number') as $eval)
-                                                    <tr>
-                                                        <td>{{ $eval->attempt_number }}</td>
-                                                        <td>{{ $eval->evaluated_at->format('d/m/Y') }}</td>
-                                                        <td><strong>{{ $eval->score }}/100</strong></td>
-                                                        <td><span class="badge bg-info">{{ $eval->cefr_level }}</span></td>
-                                                        <td>
-                                                            <span class="badge bg-{{ $eval->classification == 'EXCELLENT' ? 'success' : ($eval->classification == 'GREAT' ? 'primary' : ($eval->classification == 'GOOD' ? 'info' : 'warning')) }}">
-                                                                {{ $eval->classification }}
-                                                            </span>
-                                                        </td>
-                                                        <td>{{ $eval->oral_score ?? '-' }}</td>
-                                                        <td>{{ $eval->evaluated_by ?? 'Sistema' }}</td>
-                                                        <td class="text-center">
-                                                            <button type="button" class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#editEnglishEvalModal{{ $eval->id }}" title="Editar">
-                                                                <i class="fas fa-edit"></i>
+                                @foreach($allApplications as $application)
+                                    @php
+                                        $stageKey = $application->current_stage ?? 'registration';
+                                        [$stageColor, $stageLabel] = $stageColors[$stageKey] ?? ['secondary', ucfirst(str_replace('_', ' ', $stageKey))];
+                                        $progress = (int) ($application->progress_percentage ?? 0);
+                                        $progressColor = $progress >= 90 ? 'success' : ($progress >= 50 ? 'info' : 'warning');
+
+                                        $eng = $application->latestEnglishEvaluation;
+                                        $engCount = $application->englishEvaluations->count();
+
+                                        $visa = $application->visaProcess;
+                                        $requiresVisa = optional($application->program)->requires_visa ?? true;
+
+                                        $verifiedPaid = $application->payments->where('status', 'verified')->sum('amount');
+                                        $totalCost = (float) ($application->total_cost ?? 0);
+                                        $balance = $totalCost - $verifiedPaid;
+                                        $costCurrency = $application->cost_currency ?? 'USD';
+
+                                        $subcat = optional($application->program)->subcategory;
+                                        $programIcon = match($subcat) {
+                                            'Au Pair' => 'bi-people-fill',
+                                            'Work and Travel' => 'bi-suitcase-fill',
+                                            "Teacher's Program" => 'bi-mortarboard-fill',
+                                            'Intern/Trainee' => 'bi-briefcase-fill',
+                                            'Higher Education' => 'bi-book-half',
+                                            'Language Program' => 'bi-translate',
+                                            'Work and Study' => 'bi-easel2-fill',
+                                            default => 'bi-globe2',
+                                        };
+                                    @endphp
+
+                                    <div class="card shadow-sm mb-3">
+                                        <div class="card-body">
+                                            {{-- Header: programa + acciones --}}
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3"
+                                                         style="width:48px; height:48px;">
+                                                        <i class="bi {{ $programIcon }} fs-4 text-primary"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0 fw-bold">{{ optional($application->program)->name ?? 'Sin programa' }}</h6>
+                                                        <small class="text-muted">Solicitud #{{ $application->id }}</small>
+                                                    </div>
+                                                </div>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                                        <i class="bi bi-three-dots"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        @if($subcat === 'Au Pair')
+                                                            <li>
+                                                                <a class="dropdown-item" href="{{ route('admin.aupair.profiles.show', ['id' => $participant->id]) }}">
+                                                                    <i class="bi bi-eye me-1"></i> Ver perfil Au Pair
+                                                                </a>
+                                                            </li>
+                                                        @endif
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ route('admin.payment-management.show', $application->id) }}">
+                                                                <i class="bi bi-cash-coin me-1"></i> Perfil financiero
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ route('admin.participants.edit', $application->id) }}">
+                                                                <i class="bi bi-pencil me-1"></i> Editar
+                                                            </a>
+                                                        </li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item text-danger" onclick="confirmDelete({{ $application->id }})">
+                                                                <i class="bi bi-trash me-1"></i> Eliminar
                                                             </button>
-                                                            <form method="POST" action="{{ route('admin.english-evaluations.destroy', $eval->id) }}" class="d-inline" onsubmit="return confirm('¿Eliminar esta evaluación? Los intentos se reordenan automáticamente.');">
-                                                                @csrf @method('DELETE')
-                                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0" title="Eliminar"><i class="fas fa-trash"></i></button>
-                                                            </form>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+
+                                            {{-- Grid principal --}}
+                                            <div class="row g-3">
+                                                {{-- Estado de Etapa --}}
+                                                <div class="col-md-2">
+                                                    <small class="text-muted d-block">Estado de la Etapa</small>
+                                                    <span class="badge bg-{{ $stageColor }} bg-opacity-25 text-{{ $stageColor }} border border-{{ $stageColor }} px-2 py-1">
+                                                        {{ $stageLabel }}
+                                                    </span>
+                                                    @if($stageKey === 'in_program' || $stageKey === 'support')
+                                                        <small class="text-muted d-block mt-1">Actualmente en programa.</small>
+                                                    @elseif($stageKey === 'visa' || $stageKey === 'match_visa')
+                                                        <small class="text-muted d-block mt-1">En proceso de visa.</small>
+                                                    @elseif(in_array($stageKey, ['registration', 'admission']))
+                                                        <small class="text-muted d-block mt-1">En revisión de documentos.</small>
+                                                    @endif
+                                                </div>
+
+                                                {{-- Progreso --}}
+                                                <div class="col-md-3">
+                                                    <small class="text-muted d-block">Progreso General</small>
+                                                    <div class="progress mt-1" style="height: 10px;">
+                                                        <div class="progress-bar bg-{{ $progressColor }}" role="progressbar" style="width: {{ $progress }}%"></div>
+                                                    </div>
+                                                    <small class="text-muted">{{ $progress }}%</small>
+                                                    <div class="mt-2">
+                                                        <small class="text-muted d-block">Fecha de Aplicación</small>
+                                                        <strong>{{ optional($application->applied_at ?? $application->created_at)->format('d/m/Y') ?? 'N/A' }}</strong>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Inglés --}}
+                                                <div class="col-md-2">
+                                                    <small class="text-muted d-block">Inglés (Último test)</small>
+                                                    @if($eng)
+                                                        <span class="badge bg-success">{{ $eng->cefr_level }}</span>
+                                                        <small class="text-muted d-block mt-1">
+                                                            Último test: {{ $eng->evaluated_at->format('d/m/Y') }}
+                                                        </small>
+                                                        <small class="text-muted d-block">
+                                                            Intentos: {{ $engCount }} de 3
+                                                        </small>
+                                                    @else
+                                                        <span class="badge bg-light text-dark">Sin evaluar</span>
+                                                        <small class="text-muted d-block mt-1">0 de 3 intentos</small>
+                                                    @endif
+                                                </div>
+
+                                                {{-- Visa --}}
+                                                <div class="col-md-2">
+                                                    <small class="text-muted d-block">Visa</small>
+                                                    @if(!$requiresVisa)
+                                                        <span class="badge bg-light text-dark">No requiere</span>
+                                                    @elseif($visa)
+                                                        @php
+                                                            $vResult = $visa->visa_result;
+                                                            $vBadge = match($vResult) {
+                                                                'approved' => ['success', 'Aprobada'],
+                                                                'rejected' => ['danger', 'Rechazada'],
+                                                                default => ['info', 'En proceso'],
+                                                            };
+                                                        @endphp
+                                                        <span class="badge bg-{{ $vBadge[0] }}">{{ $vBadge[1] }}</span>
+                                                        @if(optional($application->program)->subcategory === 'Au Pair' || optional($application->program)->subcategory === 'Work and Travel')
+                                                            <small class="text-muted d-block mt-1">Tipo: J1</small>
+                                                        @endif
+                                                        @if($visa->consular_appointment_date)
+                                                            <small class="text-muted d-block">Cita: {{ $visa->consular_appointment_date->format('d/m/Y') }}</small>
+                                                        @endif
+                                                    @else
+                                                        <span class="badge bg-secondary">No iniciada</span>
+                                                        <small class="text-muted d-block mt-1">Sin iniciar proceso</small>
+                                                    @endif
+                                                </div>
+
+                                                {{-- Financiero --}}
+                                                <div class="col-md-3">
+                                                    <small class="text-muted d-block">Costo Total</small>
+                                                    <strong class="text-primary">
+                                                        {{ $costCurrency }} {{ number_format($totalCost, 2) }}
+                                                    </strong>
+                                                    <div class="mt-2">
+                                                        <small class="text-muted d-block">Saldo Pendiente</small>
+                                                        <strong class="{{ $balance > 0 ? 'text-danger' : 'text-success' }}">
+                                                            {{ $costCurrency }} {{ number_format(max($balance, 0), 2) }}
+                                                        </strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 @endforeach
 
-                                @if($participant->englishEvaluations->count() < 3)
-                                    <div class="alert alert-warning mt-3">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                        El participante puede realizar {{ 3 - $participant->englishEvaluations->count() }} evaluación(es) más.
-                                    </div>
-                                @endif
-                            @else
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle"></i> No se han registrado evaluaciones de inglés.
-                                    <br><small>El participante puede realizar hasta 3 evaluaciones.</small>
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- Módulo 4: Job Offers tab content removed from general profile.
-                             Job Offers are shown within each program's specific profile view. --}}
-
-                        <!-- Tab 8: Proceso de Visa -->
-                        {{-- Módulo 4 fix: Show visa steps based on participant's active program --}}
-                        <div class="tab-pane fade" id="visa" role="tabpanel">
-                            <h5 class="mb-3">Proceso de Visa</h5>
-                            @php
-                                $activeProgram = optional($firstApp)->program;
-                                $programSubcat = optional($activeProgram)->subcategory;
-                            @endphp
-                            @if($participant->visaProcess)
-                                <div class="row mb-4">
-                                    <div class="col-md-12">
-                                        <div class="card bg-light">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                                    <h6 class="text-primary mb-0">
-                                                        Estado del Proceso
-                                                        @if($activeProgram)
-                                                            <span class="badge bg-secondary">{{ $activeProgram->name }}</span>
-                                                        @endif
-                                                    </h6>
-                                                    {{-- Módulo 4 fix: Hide "Ver Timeline Completo" button until
-                                                         a clear destination is defined per program --}}
-                                                </div>
-                                                <div class="progress mb-3" style="height: 25px;">
-                                                    <div class="progress-bar bg-success" role="progressbar"
-                                                         style="width: {{ $participant->visaProcess->progress_percentage }}%">
-                                                        {{ $participant->visaProcess->progress_percentage }}%
-                                                    </div>
-                                                </div>
-                                                <div class="row text-center">
-                                                    <div class="col-md-4">
-                                                        <h6 class="text-muted">Etapa Actual</h6>
-                                                        <span class="badge bg-info badge-lg">
-                                                            {{ ucfirst(str_replace('_', ' ', $participant->visaProcess->current_step)) }}
-                                                        </span>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <h6 class="text-muted">Resultado</h6>
-                                                        @if($participant->visaProcess->visa_result && $participant->visaProcess->visa_result != 'pending')
-                                                            <span class="badge bg-{{ $participant->visaProcess->visa_result == 'approved' ? 'success' : ($participant->visaProcess->visa_result == 'rejected' ? 'danger' : 'warning') }} badge-lg">
-                                                                {{ strtoupper($participant->visaProcess->visa_result) }}
-                                                            </span>
-                                                        @else
-                                                            <span class="badge bg-secondary badge-lg">EN PROCESO</span>
-                                                        @endif
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <h6 class="text-muted">Cita Consular</h6>
-                                                        @if($participant->visaProcess->consular_appointment_scheduled)
-                                                            <i class="fas fa-check-circle text-success"></i>
-                                                            {{ $participant->visaProcess->consular_appointment_date->format('d/m/Y') }}
-                                                        @else
-                                                            <span class="text-muted">Sin programar</span>
-                                                        @endif
-                                                    </div>
+                                {{-- Leyenda de etapas --}}
+                                <div class="card bg-light mt-4 border-0">
+                                    <div class="card-body py-3">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-5">
+                                                <small class="text-primary fw-bold">
+                                                    <i class="bi bi-info-circle me-1"></i> Información importante
+                                                </small>
+                                                <small class="d-block text-muted">
+                                                    Cada tarjeta representa una aplicación independiente a un programa.
+                                                    Un participante puede tener múltiples aplicaciones activas o completadas a lo largo del tiempo.
+                                                </small>
+                                            </div>
+                                            <div class="col-md-7">
+                                                <small class="fw-bold d-block mb-1">Etapas del Proceso</small>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <small><span class="badge bg-warning">●</span> Admisión</small>
+                                                    <small><span class="badge bg-info">●</span> Aplicación</small>
+                                                    <small><span class="badge bg-primary">●</span> Visa</small>
+                                                    <small><span class="badge bg-success">●</span> Participante (en programa)</small>
+                                                    <small><span class="badge bg-secondary">●</span> Completado</small>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <h6 class="mb-3">Pasos Completados</h6>
-                                <ul class="list-group">
-                                    {{-- Common visa steps for all programs --}}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Documentación Completa
-                                        @if($participant->visaProcess->documentation_complete)
-                                            <span class="badge bg-success"><i class="fas fa-check"></i> Completado</span>
-                                        @else
-                                            <span class="badge bg-secondary">Pendiente</span>
-                                        @endif
-                                    </li>
-
-                                    {{-- Módulo 4 fix: Show Sponsor/Job Interview steps only for Work & Travel and Internship --}}
-                                    {{-- Módulo 6 fix: Removed null from condition — these steps should NOT show for Au Pair or unknown programs --}}
-                                    @if(in_array($programSubcat, ['Work and Travel', 'Intern/Trainee']))
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            Sponsor Interview
-                                            @if($participant->visaProcess->sponsor_interview_status == 'approved')
-                                                <span class="badge bg-success"><i class="fas fa-check"></i> Aprobado</span>
-                                            @else
-                                                <span class="badge bg-warning">{{ ucfirst($participant->visaProcess->sponsor_interview_status ?? 'pending') }}</span>
-                                            @endif
-                                        </li>
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            Job Interview
-                                            @if($participant->visaProcess->job_interview_status == 'approved')
-                                                <span class="badge bg-success"><i class="fas fa-check"></i> Aprobado</span>
-                                            @else
-                                                <span class="badge bg-warning">{{ ucfirst($participant->visaProcess->job_interview_status ?? 'pending') }}</span>
-                                            @endif
-                                        </li>
-                                    @endif
-
-                                    {{-- Au Pair specific steps --}}
-                                    @if($programSubcat === 'Au Pair')
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            Match con Familia
-                                            @if($participant->visaProcess->match_completed ?? false)
-                                                <span class="badge bg-success"><i class="fas fa-check"></i> Completado</span>
-                                            @else
-                                                <span class="badge bg-secondary">Pendiente</span>
-                                            @endif
-                                        </li>
-                                    @endif
-
-                                    {{-- Common steps for all J1 visa programs --}}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        DS-160 Completado
-                                        @if($participant->visaProcess->ds160_completed)
-                                            <span class="badge bg-success"><i class="fas fa-check"></i> Completado</span>
-                                        @else
-                                            <span class="badge bg-secondary">Pendiente</span>
-                                        @endif
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        DS-2019 Recibido
-                                        @if($participant->visaProcess->ds2019_received)
-                                            <span class="badge bg-success"><i class="fas fa-check"></i> Recibido</span>
-                                        @else
-                                            <span class="badge bg-secondary">Pendiente</span>
-                                        @endif
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        SEVIS Pagado
-                                        @if($participant->visaProcess->sevis_paid)
-                                            <span class="badge bg-success"><i class="fas fa-check"></i> Pagado</span>
-                                        @else
-                                            <span class="badge bg-secondary">Pendiente</span>
-                                        @endif
-                                    </li>
-                                </ul>
-                            @else
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i> No se ha iniciado el proceso de visa para este participante.
-                                </div>
                             @endif
                         </div>
 
-                        <!-- Tab 9: Comunicaciones -->
-                        <div class="tab-pane fade" id="communications" role="tabpanel">
-                            <h5 class="mb-3">Mensajes y Comunicaciones</h5>
-                            
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <i class="fas fa-plus"></i> Enviar Nuevo Mensaje
-                                </div>
-                                <div class="card-body">
-                                    <form action="#" method="POST">
-                                        @csrf
-                                        <div class="form-group">
-                                            <label for="subject">Asunto</label>
-                                            <input type="text" class="form-control" id="subject" name="subject" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="message">Mensaje</label>
-                                            <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <div class="form-check">
-                                                <input type="checkbox" class="form-check-input" id="send_email" name="send_email" checked>
-                                                <label class="form-check-label" for="send_email">
-                                                    Enviar también por correo electrónico
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-paper-plane"></i> Enviar Mensaje
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <h6 class="mb-3">Historial de Mensajes</h6>
-                            @if($participant->notifications && $participant->notifications->count() > 0)
-                                <div class="list-group">
-                                    @foreach($participant->notifications->sortByDesc('created_at')->take(10) as $notification)
-                                        <div class="list-group-item">
-                                            <div class="d-flex w-100 justify-content-between">
-                                                <h6 class="mb-1">{{ $notification->title ?? 'Notificación' }}</h6>
-                                                <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
-                                            </div>
-                                            <p class="mb-1">{{ $notification->message ?? 'Sin mensaje' }}</p>
-                                            <small class="text-muted">
-                                                @if($notification->read_at)
-                                                    <i class="fas fa-check-double text-success"></i> Leído
-                                                @else
-                                                    <i class="fas fa-check text-muted"></i> No leído
-                                                @endif
-                                            </small>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i> No hay mensajes registrados.
-                                </div>
-                            @endif
-                        </div>
+                        {{-- Rediseño Fase 1: Tab Pagos eliminado. Costo/saldo ahora se ven dentro de cada tarjeta de Aplicación; los pagos completos en Gestión de Pagos. --}}
+                        {{-- Rediseño Fase 1: Tab Inglés eliminado. Las evaluaciones ahora se ven dentro de cada tarjeta de Aplicación. --}}
+                        {{-- Rediseño Fase 1: Tab Visa eliminado. El estado de visa ahora se muestra en cada tarjeta de Aplicación. --}}
+                        {{-- Rediseño Fase 1: Tab Comunicaciones eliminado. Los mensajes pasan a vivir dentro de cada Aplicación (Fase 2). --}}
                     </div>
                 </div>
             </div>
@@ -1050,148 +674,7 @@
     </div>
 </div>
 
-{{-- Modal: Nuevo Pago --}}
-<div class="modal fade" id="newPaymentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-cash-coin"></i> Registrar Nuevo Pago
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="paymentForm" action="{{ route('admin.payments.store') }}" method="POST">
-                @csrf
-                <input type="hidden" name="application_id" value="{{ optional($firstApp)->id }}">
-                <input type="hidden" name="user_id" value="{{ $participant->id }}">
-                <input type="hidden" name="program_id" value="{{ optional($firstApp)->program_id }}">
-                <input type="hidden" name="created_by" value="{{ auth()->id() }}">
-                
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="concept" class="form-label">
-                                Concepto de Pago <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select" id="concept" name="concept" onchange="toggleOtherConcept()" required>
-                                <option value="">Seleccionar concepto</option>
-                                <option value="Inscripción">Inscripción</option>
-                                <option value="Primera Cuota">Primera Cuota</option>
-                                <option value="Segunda Cuota">Segunda Cuota</option>
-                                <option value="Tercera Cuota">Tercera Cuota</option>
-                                <option value="Cuota Mensual">Cuota Mensual</option>
-                                <option value="Pago Final">Pago Final</option>
-                                <option value="Depósito de Garantía">Depósito de Garantía</option>
-                                <option value="Visa J1">Visa J1</option>
-                                <option value="SEVIS">SEVIS</option>
-                                <option value="Seguro Médico">Seguro Médico</option>
-                                <option value="Vuelos">Vuelos</option>
-                                <option value="Documentación">Documentación</option>
-                                <option value="Otros Servicios">Otros Servicios</option>
-                                <option value="Otro">Otro</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="amount" class="form-label">
-                                Monto <span class="text-danger">*</span>
-                            </label>
-                            <input type="number" 
-                                   class="form-control" 
-                                   id="amount" 
-                                   name="amount" 
-                                   step="0.01" 
-                                   min="0" 
-                                   placeholder="0.00"
-                                   required>
-                        </div>
-                    </div>
-
-                    <div class="mb-3" id="otherConceptField" style="display: none;">
-                        <label for="other_concept" class="form-label">
-                            Especificar Concepto <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="other_concept" 
-                               name="other_concept" 
-                               placeholder="Escriba el concepto del pago...">
-                        <small class="text-muted">Este concepto se usará en lugar de "Otro"</small>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="payment_method" class="form-label">
-                                Método de Pago <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select" id="payment_method" name="payment_method" required>
-                                <option value="">Seleccionar método</option>
-                                <option value="Transferencia bancaria">Transferencia bancaria</option>
-                                <option value="Tarjeta de crédito">Tarjeta de crédito</option>
-                                <option value="PayPal">PayPal</option>
-                                <option value="Efectivo">Efectivo</option>
-                                <option value="Otro">Otro</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="reference_number" class="form-label">
-                                Referencia <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="reference_number" 
-                                   name="reference_number" 
-                                   placeholder="Número de transferencia, recibo, etc."
-                                   required>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="currency_id" class="form-label">
-                                Moneda <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select" id="currency_id" name="currency_id" required>
-                                <option value="">Seleccionar moneda</option>
-                                @foreach($currencies as $currency)
-                                    <option value="{{ $currency->id }}" {{ $currency->code === 'USD' ? 'selected' : '' }}>
-                                        {{ $currency->code }} - {{ $currency->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="payment_status" class="form-label">
-                                Estado del Pago <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select" id="payment_status" name="status" required>
-                                <option value="verified">Realizado</option>
-                                <option value="pending" selected>Pendiente</option>
-                            </select>
-                            <small class="text-muted">
-                                <strong>Realizado:</strong> Confirmado, se suma al total.<br>
-                                <strong>Pendiente:</strong> En proceso de verificación.
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="notes" class="form-label">Notas</label>
-                        <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Observaciones adicionales..."></textarea>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Registrar Pago
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+{{-- Rediseño Fase 1: Modal "Registrar Nuevo Pago" eliminado del perfil general. Se registra desde el Perfil Financiero de cada Aplicación. --}}
 
 {{-- Modal: Nueva Solicitud --}}
 <div class="modal fade" id="newApplicationModal" tabindex="-1" aria-labelledby="newApplicationModalLabel" aria-hidden="true">
@@ -1664,134 +1147,7 @@ function toggleOtherConcept() {
     </div>
 </div>
 
-{{-- Modal: Registrar Evaluación de Inglés (general) --}}
-<div class="modal fade" id="registerEnglishEvalModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form method="POST" action="{{ route('admin.english-evaluations.store') }}">
-                @csrf
-                <input type="hidden" name="user_id" value="{{ $participant->id }}">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-language me-1"></i> Registrar Evaluación de Inglés</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Puntaje (0-100) <span class="text-danger">*</span></label>
-                            <input type="number" name="score" min="0" max="100" class="form-control" required>
-                            <small class="text-muted">CEFR y clasificación se calculan automáticamente.</small>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Oral</label>
-                            <select name="oral_score" class="form-select">
-                                <option value="">— Sin evaluar —</option>
-                                <option value="Good">Good</option>
-                                <option value="Great">Great</option>
-                                <option value="Excellent">Excellent</option>
-                            </select>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Programa / Aplicación</label>
-                            <select name="application_id" class="form-select">
-                                <option value="">— General (sin programa específico) —</option>
-                                @foreach($allApplications as $app)
-                                    <option value="{{ $app->id }}">
-                                        {{ optional($app->program)->name ?? 'Sin programa' }}
-                                        ({{ $app->created_at->format('Y') }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Evaluador</label>
-                            <input type="text" name="evaluated_by" class="form-control" value="{{ Auth::user()->name }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Fecha de Evaluación</label>
-                            <input type="date" name="evaluated_at" class="form-control" value="{{ now()->toDateString() }}">
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Notas / Observaciones</label>
-                            <textarea name="notes" rows="3" class="form-control"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Registrar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-{{-- Modal: Editar Evaluación de Inglés (uno por evaluación) --}}
-@foreach($participant->englishEvaluations as $eval)
-<div class="modal fade" id="editEnglishEvalModal{{ $eval->id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form method="POST" action="{{ route('admin.english-evaluations.update', $eval->id) }}">
-                @csrf @method('PUT')
-                <input type="hidden" name="redirect_to" value="{{ url()->current() }}#english">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-edit me-1"></i> Editar Evaluación #{{ $eval->attempt_number }} — {{ $eval->evaluated_at->format('d/m/Y') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Puntaje (0-100) <span class="text-danger">*</span></label>
-                            <input type="number" name="score" min="0" max="100" class="form-control" value="{{ $eval->score }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Oral</label>
-                            <select name="oral_score" class="form-select">
-                                <option value="">— Sin evaluar —</option>
-                                @foreach(['Good', 'Great', 'Excellent'] as $opt)
-                                    <option value="{{ $opt }}" {{ $eval->oral_score == $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Programa / Aplicación</label>
-                            <select name="application_id" class="form-select">
-                                <option value="">— General (sin programa específico) —</option>
-                                @foreach($allApplications as $app)
-                                    <option value="{{ $app->id }}" {{ $eval->application_id == $app->id ? 'selected' : '' }}>
-                                        {{ optional($app->program)->name ?? 'Sin programa' }}
-                                        ({{ $app->created_at->format('Y') }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Evaluador</label>
-                            <input type="text" name="evaluated_by" class="form-control" value="{{ $eval->evaluated_by }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Fecha de Evaluación</label>
-                            <input type="date" name="evaluated_at" class="form-control" value="{{ $eval->evaluated_at->format('Y-m-d') }}">
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Notas / Observaciones</label>
-                            <textarea name="notes" rows="3" class="form-control">{{ $eval->notes }}</textarea>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="alert alert-info py-2 px-3 mb-0">
-                                <small><i class="fas fa-info-circle me-1"></i> Nivel CEFR actual: <strong>{{ $eval->cefr_level }}</strong> — se recalcula al guardar.</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Guardar Cambios</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endforeach
+{{-- Rediseño Fase 1: Modales de Evaluación de Inglés (registrar/editar) eliminados del perfil general.
+     Se gestionan ahora desde el perfil específico de cada programa (ej. tab "Aplicación → Test de Inglés" en Au Pair). --}}
 
 @endsection

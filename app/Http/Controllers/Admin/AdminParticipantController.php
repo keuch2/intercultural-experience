@@ -255,8 +255,13 @@ class AdminParticipantController extends Controller
         
         // Cargar todas las relaciones necesarias incluyendo las nuevas
         // Módulo 3 fix: Added englishEvaluations loading
+        // Fase 1 rediseño: cada Application ahora carga inglés (último), visa y pagos verificados para la tarjeta.
         $participant->load([
             'applications.program',
+            'applications.latestEnglishEvaluation',
+            'applications.englishEvaluations',
+            'applications.visaProcess',
+            'applications.payments',
             'points',
             'supportTickets',
             'emergencyContacts',
