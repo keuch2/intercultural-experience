@@ -224,7 +224,8 @@
                         {{-- Módulo 9 fix: Support multi-file document types --}}
                         @foreach($p1DocDefs as $docKey => $docDef)
                         @php
-                            $isMulti = isset($docDef['min_count']) && $docDef['min_count'] > 1;
+                            $hasMinCount = isset($docDef['min_count']) && $docDef['min_count'] > 1;
+                            $isMulti = $hasMinCount || !empty($docDef['allow_multiple']);
                             $allDocs = $p1Docs->where('document_type', $docKey);
                             $doc = $allDocs->first();
                         @endphp
@@ -233,7 +234,9 @@
                                 <i class="fas fa-file text-muted me-1"></i>
                                 {{ $docDef['label'] }}
                                 @if($isMulti)
-                                    <small class="text-muted">(mín. {{ $docDef['min_count'] }})</small>
+                                    @if($hasMinCount)
+                                        <small class="text-muted">(mín. {{ $docDef['min_count'] }})</small>
+                                    @endif
                                     @if($allDocs->count() > 0)
                                         <span class="badge bg-info ms-1">{{ $allDocs->count() }} subidos</span>
                                     @endif
@@ -285,10 +288,19 @@
                                             @endif
                                         </div>
                                         @endforeach
-                                        <div class="d-flex gap-1 mt-1">
+                                        @php $pendingCount = $allDocs->where('status', 'pending')->count(); @endphp
+                                        <div class="d-flex gap-1 mt-1 flex-wrap">
                                             <button class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#uploadP1Modal{{ $docKey }}"><i class="fas fa-plus me-1"></i>Agregar más</button>
                                             {{-- Módulo B4: zip download of all files for this doctype --}}
                                             <a href="{{ route('admin.aupair.profiles.download-doc-bundle', [$user->id, $docKey]) }}" class="btn btn-sm btn-outline-success py-0" title="Descargar todos como .zip"><i class="fas fa-file-archive me-1"></i>Descargar todo (.zip)</a>
+                                            @if($pendingCount > 0)
+                                                <form method="POST" action="{{ route('admin.aupair.profiles.bulk-approve-docs', [$user->id, $docKey]) }}" class="d-inline" onsubmit="return confirm('¿Aprobar {{ $pendingCount }} documento(s) pendiente(s) de {{ $docDef['label'] }}?');">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-success py-0" title="Aprobar todas las pendientes">
+                                                        <i class="fas fa-check-double me-1"></i>Aprobar todas ({{ $pendingCount }})
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </div>
                                 @elseif($doc)
@@ -358,7 +370,8 @@
                         {{-- Módulo 9 fix: Support multi-file document types for P2 --}}
                         @foreach($p2DocDefs as $docKey => $docDef)
                         @php
-                            $isMulti = isset($docDef['min_count']) && $docDef['min_count'] > 1;
+                            $hasMinCount = isset($docDef['min_count']) && $docDef['min_count'] > 1;
+                            $isMulti = $hasMinCount || !empty($docDef['allow_multiple']);
                             $allDocs = $p2Docs->where('document_type', $docKey);
                             $doc = $allDocs->first();
                         @endphp
@@ -367,7 +380,9 @@
                                 <i class="fas fa-file text-muted me-1"></i>
                                 {{ $docDef['label'] }}
                                 @if($isMulti)
-                                    <small class="text-muted">(mín. {{ $docDef['min_count'] }})</small>
+                                    @if($hasMinCount)
+                                        <small class="text-muted">(mín. {{ $docDef['min_count'] }})</small>
+                                    @endif
                                     @if($allDocs->count() > 0)
                                         <span class="badge bg-info ms-1">{{ $allDocs->count() }} subidos</span>
                                     @endif
@@ -418,9 +433,18 @@
                                             @endif
                                         </div>
                                         @endforeach
-                                        <div class="d-flex gap-1 mt-1">
+                                        @php $pendingCount = $allDocs->where('status', 'pending')->count(); @endphp
+                                        <div class="d-flex gap-1 mt-1 flex-wrap">
                                             <button class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#uploadP2Modal{{ $docKey }}"><i class="fas fa-plus me-1"></i>Agregar más</button>
                                             <a href="{{ route('admin.aupair.profiles.download-doc-bundle', [$user->id, $docKey]) }}" class="btn btn-sm btn-outline-success py-0" title="Descargar todos como .zip"><i class="fas fa-file-archive me-1"></i>Descargar todo (.zip)</a>
+                                            @if($pendingCount > 0)
+                                                <form method="POST" action="{{ route('admin.aupair.profiles.bulk-approve-docs', [$user->id, $docKey]) }}" class="d-inline" onsubmit="return confirm('¿Aprobar {{ $pendingCount }} documento(s) pendiente(s) de {{ $docDef['label'] }}?');">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-success py-0" title="Aprobar todas las pendientes">
+                                                        <i class="fas fa-check-double me-1"></i>Aprobar todas ({{ $pendingCount }})
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </div>
                                 @elseif($doc)
@@ -548,12 +572,16 @@
             <div class="mt-3 p-3 border rounded bg-light">
                 <h6 class="small fw-bold text-muted mb-2"><i class="fas fa-file-contract me-1"></i> Archivo del Contrato Firmado</h6>
                 @if($proc && $proc->contract_file_path)
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
                         {{-- Módulo B1 fix: Use dedicated download route to avoid blank pages when storage symlink is missing or path is invalid --}}
-                        <a href="{{ route('admin.aupair.profiles.download-contract', $user->id) }}" class="btn btn-sm btn-outline-primary me-2">
+                        <a href="{{ route('admin.aupair.profiles.download-contract', $user->id) }}" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-file-pdf me-1"></i> {{ $proc->contract_original_filename ?? 'Ver Contrato' }}
                         </a>
                         <small class="text-success"><i class="fas fa-check-circle"></i> Archivo cargado</small>
+                        {{-- Eliminar contrato: abre modal fuera del form del checklist --}}
+                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto" data-bs-toggle="modal" data-bs-target="#deleteContractModal">
+                            <i class="fas fa-trash me-1"></i> Eliminar contrato
+                        </button>
                     </div>
                     @if($proc->contract_signed)
                         {{-- Módulo 9 fix: Once signed, contract cannot be replaced directly.
@@ -583,6 +611,56 @@
         </form>
     </div>
 </div>
+
+{{-- Gate: avance a Match / Visa J1 --}}
+@if($proc)
+    @php
+        $appStageCurrent = $proc->current_stage === 'application';
+        $appAlreadyAdvanced = in_array($proc->current_stage, ['match_visa', 'support', 'completed']);
+        $missingReasons = [];
+        if ($proc->application_status !== 'approved') {
+            $missingReasons[] = 'Estado de Aplicación no aprobado';
+        }
+        if (!$proc->payment_1_verified) {
+            $missingReasons[] = 'Pago 1 no verificado';
+        }
+        if (!$proc->contract_signed) {
+            $missingReasons[] = 'Contrato no firmado';
+        }
+        $canAdvanceToMatch = empty($missingReasons);
+    @endphp
+
+    @if($appAlreadyAdvanced)
+        <div class="mt-4 p-3 rounded bg-success bg-opacity-10 border border-success">
+            <i class="fas fa-check-circle text-success me-2"></i>
+            <strong>Etapa de Aplicación completada.</strong>
+            El proceso se encuentra en: <span class="badge bg-primary">{{ ucfirst(str_replace('_', ' ', $proc->current_stage)) }}</span>
+        </div>
+    @elseif($appStageCurrent)
+        <div class="mt-4 p-3 rounded {{ $canAdvanceToMatch ? 'bg-success bg-opacity-10 border border-success' : 'bg-warning bg-opacity-10 border border-warning' }}">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    @if($canAdvanceToMatch)
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Requisitos completos.</strong> Se puede avanzar a la etapa de Match / Visa J1.
+                    @else
+                        <i class="fas fa-lock text-warning me-2"></i>
+                        <strong>Requisitos pendientes para avanzar:</strong>
+                        {{ implode(' · ', $missingReasons) }}
+                    @endif
+                </div>
+                @if($canAdvanceToMatch)
+                <form method="POST" action="{{ route('admin.aupair.profiles.advance-stage', $user->id) }}">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-success">
+                        Avanzar a Match / Visa J1 <i class="fas fa-arrow-right ms-1"></i>
+                    </button>
+                </form>
+                @endif
+            </div>
+        </div>
+    @endif
+@endif
 
 {{-- Upload Modals - Payment 1 --}}
 {{-- Módulo 9 fix: Always show upload modal for multi-file types --}}
@@ -700,3 +778,39 @@
     </div>
 </div>
 @endforeach
+
+{{-- Modal: Eliminar contrato (con motivo obligatorio) --}}
+@if($proc && $proc->contract_file_path)
+<div class="modal fade" id="deleteContractModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.aupair.profiles.delete-contract', $user->id) }}">
+                @csrf @method('DELETE')
+                <div class="modal-header">
+                    <h6 class="modal-title"><i class="fas fa-trash me-1 text-danger"></i> Eliminar contrato</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning py-2 px-3 mb-3">
+                        <small>
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Esta acción borra el archivo del contrato y desmarca la firma. Quedará registrada en el log de auditoría con el motivo indicado.
+                        </small>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label small">Motivo de eliminación <span class="text-danger">*</span></label>
+                        <textarea name="deletion_reason" class="form-control form-control-sm" rows="3" required maxlength="500"
+                                  placeholder="Ej: contrato cargado por error, datos incorrectos, versión obsoleta..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash me-1"></i> Confirmar eliminación
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif

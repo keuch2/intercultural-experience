@@ -74,6 +74,7 @@ export interface AuPairDocumentEntry {
   stage: DocStage;
   required: boolean;
   min_count: number | null;
+  allow_multiple?: boolean;
   uploaded_by: 'participant' | 'staff';
   count: number;
   status: DocStatus;

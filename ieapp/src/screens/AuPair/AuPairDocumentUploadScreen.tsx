@@ -30,7 +30,7 @@ const AuPairDocumentUploadScreen: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const allowMultiple = !!entry.min_count && entry.min_count > 1;
+  const allowMultiple = entry.allow_multiple === true || (!!entry.min_count && entry.min_count > 1);
 
   const pick = async () => {
     try {

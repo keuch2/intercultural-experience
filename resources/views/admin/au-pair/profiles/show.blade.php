@@ -60,9 +60,12 @@
                         $globalColor = 'success';
                     }
                 @endphp
-                <span class="badge bg-{{ $globalColor }} fs-6 px-3 py-2">
-                    {{ $globalStatus }}
-                </span>
+                <div class="d-inline-flex align-items-center px-3 py-2 rounded border border-{{ $globalColor }} bg-{{ $globalColor }} bg-opacity-10"
+                     title="Etapa actual del proceso (no es un botón)">
+                    <i class="fas fa-flag text-{{ $globalColor }} me-2"></i>
+                    <span class="text-muted small me-1">Etapa actual:</span>
+                    <strong class="text-{{ $globalColor }}">{{ $globalStatus }}</strong>
+                </div>
                 <div class="mt-2">
                     @php
                         $userApp = \App\Models\Application::where('user_id', $user->id)->latest()->first();

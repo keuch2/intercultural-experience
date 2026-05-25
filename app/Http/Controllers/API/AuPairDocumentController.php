@@ -168,12 +168,14 @@ class AuPairDocumentController extends Controller
         $items = [];
         foreach ($cfgs as $type => $cfg) {
             $forType = $docs->where('document_type', $type)->values();
+            $minCount = $cfg['min_count'] ?? null;
             $items[] = [
                 'document_type' => $type,
                 'label' => $cfg['label'],
                 'stage' => $stage,
                 'required' => (bool) ($cfg['required'] ?? false),
-                'min_count' => $cfg['min_count'] ?? null,
+                'min_count' => $minCount,
+                'allow_multiple' => ($minCount !== null && $minCount > 1) || !empty($cfg['allow_multiple']),
                 'uploaded_by' => $cfg['uploaded_by'] ?? 'participant',
                 'count' => $forType->count(),
                 'status' => $this->aggregateStatus($forType),

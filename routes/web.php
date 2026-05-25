@@ -442,8 +442,10 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             Route::get('/perfiles/{id}/documents/{docId}/download', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'downloadDocument'])->name('profiles.download-doc');
             Route::get('/perfiles/{id}/documents/{documentType}/download-all', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'downloadDocumentsBundle'])->name('profiles.download-doc-bundle');
             Route::put('/perfiles/{id}/documents/{docId}/review', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'reviewDocument'])->name('profiles.review-doc');
+            Route::post('/perfiles/{id}/documents/{documentType}/bulk-approve', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'bulkApproveDocuments'])->name('profiles.bulk-approve-docs');
             Route::delete('/perfiles/{id}/documents/{docId}', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'deleteDocument'])->name('profiles.delete-doc');
             Route::get('/perfiles/{id}/contract/download', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'downloadContract'])->name('profiles.download-contract');
+            Route::delete('/perfiles/{id}/contract', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'deleteContract'])->name('profiles.delete-contract');
             // Actions: English Tests
             Route::post('/perfiles/{id}/english-tests', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'storeEnglishTest'])->name('profiles.store-english-test');
             Route::get('/perfiles/{id}/english-tests/{testId}/pdf', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'downloadEnglishTestPdf'])->name('profiles.download-english-pdf');

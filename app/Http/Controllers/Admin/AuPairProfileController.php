@@ -409,6 +409,99 @@ class AuPairProfileController extends Controller
     }
 
     /**
+     * Delete the signed contract file for an Au Pair profile.
+     * Requires a deletion_reason; clears contract_signed flags and audits the action.
+     */
+    public function deleteContract(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $process = $user->auPairProcess;
+        abort_unless($process && $process->contract_file_path, 404, 'No hay contrato cargado.');
+
+        $request->validate([
+            'deletion_reason' => 'required|string|max:500',
+        ], [
+            'deletion_reason.required' => 'Debe indicar un motivo para eliminar el contrato.',
+        ]);
+
+        $previousPath = $process->contract_file_path;
+        $previousFilename = $process->contract_original_filename;
+        $wasSigned = (bool) $process->contract_signed;
+
+        if (Storage::disk('public')->exists($previousPath)) {
+            Storage::disk('public')->delete($previousPath);
+        }
+
+        $process->update([
+            'contract_file_path' => null,
+            'contract_original_filename' => null,
+            'contract_signed' => false,
+            'contract_signed_at' => null,
+        ]);
+
+        ActivityLog::log('au_pair')
+            ->performedOn($user)
+            ->causedBy(auth()->user())
+            ->withAction('contract_delete')
+            ->withProperties([
+                'previous_filename' => $previousFilename,
+                'was_signed' => $wasSigned,
+                'deletion_reason' => $request->deletion_reason,
+            ])
+            ->log('Contrato eliminado'.($wasSigned ? ' (estaba firmado)' : ''));
+
+        return redirect()
+            ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'application'])
+            ->with('success', 'Contrato eliminado.');
+    }
+
+    /**
+     * Bulk-approve all pending documents of a given document_type for a user.
+     * Used for multi-file types where one-by-one approval is tedious (e.g. child_photos with 12+ files).
+     */
+    public function bulkApproveDocuments(Request $request, $id, $documentType)
+    {
+        $user = User::findOrFail($id);
+        $process = $user->auPairProcess;
+        abort_unless($process, 404, 'Proceso Au Pair no encontrado.');
+
+        $pending = AuPairDocument::where('au_pair_process_id', $process->id)
+            ->where('document_type', $documentType)
+            ->where('status', 'pending')
+            ->get();
+
+        if ($pending->isEmpty()) {
+            return back()->with('info', 'No hay documentos pendientes para aprobar.');
+        }
+
+        $reviewerId = Auth::id();
+        $stage = $pending->first()->stage;
+        $count = $pending->count();
+        $ids = $pending->pluck('id')->toArray();
+
+        DB::transaction(function () use ($pending, $reviewerId) {
+            foreach ($pending as $doc) {
+                $doc->approve($reviewerId);
+            }
+        });
+
+        ActivityLog::log('au_pair')
+            ->performedOn($user)
+            ->causedBy(auth()->user())
+            ->withAction('documents_bulk_approve')
+            ->withProperties([
+                'document_type' => $documentType,
+                'count' => $count,
+                'document_ids' => $ids,
+            ])
+            ->log("Aprobación masiva de '{$documentType}': {$count} documento(s)");
+
+        return redirect()
+            ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => $this->stageToTab($stage)])
+            ->with('success', "{$count} documento(s) aprobado(s).");
+    }
+
+    /**
      * Delete a document
      * Approved documents require a deletion_reason (admin only).
      */

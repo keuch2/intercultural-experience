@@ -146,8 +146,8 @@ class AuPairDocument extends Model
             'presentation_video' => ['label' => 'Video de Presentación', 'stage' => 'application_payment1', 'required' => true, 'sort' => 12],
             'cover_letter' => ['label' => 'Carta de Presentación', 'stage' => 'application_payment1', 'required' => true, 'sort' => 13],
             'vaccination_card' => ['label' => 'Libreta de Vacunas', 'stage' => 'application_payment1', 'required' => false, 'sort' => 14], // Módulo 9 fix: Changed to optional
-            // Módulo 11 fix: Allow multiple file uploads for certifications
-            'certifications' => ['label' => 'Certificaciones/Especializaciones/Talleres', 'stage' => 'application_payment1', 'required' => false, 'sort' => 15, 'min_count' => 5],
+            // Módulo 11 fix: Allow multiple file uploads for certifications (sin mínimo obligatorio).
+            'certifications' => ['label' => 'Certificaciones/Especializaciones/Talleres', 'stage' => 'application_payment1', 'required' => false, 'sort' => 15, 'allow_multiple' => true],
             'police_record' => ['label' => 'Antecedentes Policiales', 'stage' => 'application_payment1', 'required' => true, 'sort' => 16],
             'bachelor_degree' => ['label' => 'Título de Bachiller', 'stage' => 'application_payment1', 'required' => true, 'sort' => 17],
             'passport_doc' => ['label' => 'Pasaporte', 'stage' => 'application_payment1', 'required' => true, 'sort' => 18],
