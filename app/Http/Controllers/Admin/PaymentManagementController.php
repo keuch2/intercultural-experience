@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Application;
+use App\Models\Currency;
+use App\Models\InstallmentDetail;
 use App\Models\Payment;
 use App\Models\PaymentInstallment;
-use App\Models\InstallmentDetail;
-use App\Models\Currency;
 use App\Models\Program;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PaymentManagementController extends Controller
@@ -21,9 +23,17 @@ class PaymentManagementController extends Controller
     public function index(Request $request)
     {
         $query = Application::query()
-            ->with(['user', 'program'])
-            ->whereNotNull('total_cost')
-            ->where('total_cost', '>', 0);
+            ->with(['user', 'program']);
+
+        // Fase 3: filtro de costo (default 'with_cost' para no romper comportamiento previo)
+        $costFilter = $request->input('cost_filter', 'with_cost');
+        if ($costFilter === 'with_cost') {
+            $query->whereNotNull('total_cost')->where('total_cost', '>', 0);
+        } elseif ($costFilter === 'without_cost') {
+            $query->where(function ($q) {
+                $q->whereNull('total_cost')->orWhere('total_cost', '<=', 0);
+            });
+        }
 
         if ($search = $request->input('search')) {
             $query->whereHas('user', function ($q) use ($search) {
@@ -119,6 +129,8 @@ class PaymentManagementController extends Controller
 
     /**
      * Crear plan de cuotas mensuales para una aplicación.
+     * Fase 3: el total_amount debe coincidir con el total_cost de la Application
+     * (tolerancia ±1 unidad por redondeo).
      */
     public function storeInstallmentPlan(Request $request, $applicationId)
     {
@@ -131,6 +143,15 @@ class PaymentManagementController extends Controller
             'first_due_date' => 'required|date',
             'currency_id' => 'required|exists:currencies,id',
         ]);
+
+        // Validar coherencia con costo de la aplicación.
+        if ($application->total_cost && abs($validated['total_amount'] - $application->total_cost) > 1) {
+            return back()->withInput()->with('error', sprintf(
+                'El total del plan (%s) debe coincidir con el costo del programa (%s).',
+                number_format($validated['total_amount'], 2),
+                number_format($application->total_cost, 2)
+            ));
+        }
 
         $existing = PaymentInstallment::where('application_id', $applicationId)
             ->where('status', '!=', 'cancelled')
@@ -169,5 +190,95 @@ class PaymentManagementController extends Controller
         return redirect()
             ->route('admin.payment-management.show', $application->id)
             ->with('success', 'Plan de cuotas creado.');
+    }
+
+    /**
+     * Marcar una cuota como pagada, vinculándola a un Payment verificado existente.
+     * Fase 3: cierra el gap entre Plan de Cuotas y los Payments reales.
+     */
+    public function markInstallmentPaid(Request $request, $detailId)
+    {
+        $detail = InstallmentDetail::with('paymentInstallment')->findOrFail($detailId);
+
+        $validated = $request->validate([
+            'payment_id' => 'required|integer|exists:payments,id',
+        ]);
+
+        $payment = Payment::findOrFail($validated['payment_id']);
+
+        if ($payment->application_id !== $detail->paymentInstallment->application_id) {
+            return back()->with('error', 'El pago no pertenece a la misma aplicación que esta cuota.');
+        }
+
+        if ($payment->status !== 'verified') {
+            return back()->with('error', 'Solo pagos verificados pueden marcar una cuota como pagada.');
+        }
+
+        $detail->markAsPaid(null, $payment);
+
+        ActivityLog::log('payment_management')
+            ->performedOn($payment)
+            ->causedBy(auth()->user())
+            ->withAction('installment_marked_paid')
+            ->withProperties([
+                'installment_detail_id' => $detail->id,
+                'installment_number' => $detail->installment_number,
+                'payment_id' => $payment->id,
+                'amount' => $detail->amount,
+            ])
+            ->log("Cuota #{$detail->installment_number} marcada como pagada con Payment #{$payment->id}");
+
+        return back()->with('success', "Cuota #{$detail->installment_number} marcada como pagada.");
+    }
+
+    /**
+     * Asignar el mismo costo de programa a múltiples aplicaciones a la vez.
+     * Fase 3: reemplaza el flujo uno-a-uno del Perfil Financiero por una herramienta masiva.
+     */
+    public function bulkAssignCost(Request $request)
+    {
+        $validated = $request->validate([
+            'application_ids' => 'required|array|min:1',
+            'application_ids.*' => 'integer|exists:applications,id',
+            'total_cost' => 'required|numeric|min:0',
+            'cost_currency' => 'required|in:USD,PYG',
+            'payment_deadline' => 'nullable|date',
+            'exchange_rate' => 'nullable|numeric|min:0',
+        ]);
+
+        $applications = Application::whereIn('id', $validated['application_ids'])->get();
+
+        // Bloquear si alguna tiene cost_locked_at (costo ya inmutable).
+        $locked = $applications->filter(fn ($a) => $a->cost_locked_at !== null && $a->total_cost > 0);
+        if ($locked->isNotEmpty()) {
+            return back()->with('error', sprintf(
+                'No se puede sobrescribir el costo: %d aplicación(es) ya tienen costo bloqueado (IDs: %s).',
+                $locked->count(),
+                $locked->pluck('id')->implode(', ')
+            ));
+        }
+
+        $updates = [
+            'total_cost' => $validated['total_cost'],
+            'cost_currency' => $validated['cost_currency'],
+            'payment_deadline' => $validated['payment_deadline'] ?? null,
+            'exchange_rate' => $validated['exchange_rate'] ?? null,
+            'cost_manual_date' => now(),
+            'cost_locked_at' => now(),
+        ];
+
+        DB::transaction(function () use ($applications, $updates) {
+            foreach ($applications as $app) {
+                $app->update($updates);
+                ActivityLog::log('payment_management')
+                    ->performedOn($app)
+                    ->causedBy(auth()->user())
+                    ->withAction('cost_bulk_assigned')
+                    ->withProperties($updates)
+                    ->log("Costo de programa asignado masivamente: {$updates['cost_currency']} ".number_format($updates['total_cost'], 2));
+            }
+        });
+
+        return back()->with('success', "Costo asignado a {$applications->count()} aplicación(es).");
     }
 }

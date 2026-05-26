@@ -177,6 +177,9 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::get('/payment-management/{application}', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'show'])->name('admin.payment-management.show');
         Route::put('/payment-management/{application}/cost', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'updateCost'])->name('admin.payment-management.update-cost');
         Route::post('/payment-management/{application}/installment-plan', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'storeInstallmentPlan'])->name('admin.payment-management.installment-plan');
+        // Fase 3: marcar cuota como pagada con un Payment existente + asignar costo masivo
+        Route::post('/payment-management/installments/{detail}/mark-paid', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'markInstallmentPaid'])->name('admin.payment-management.mark-installment-paid');
+        Route::post('/payment-management/bulk-assign-cost', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'bulkAssignCost'])->name('admin.payment-management.bulk-assign-cost');
 
         // Payments Management
         Route::post('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'store'])->name('admin.payments.store');

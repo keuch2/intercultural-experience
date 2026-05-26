@@ -115,17 +115,68 @@
                 <div class="col-md-3"><small class="text-muted">Cuotas:</small> {{ $installmentPlan->total_installments }}</div>
                 <div class="col-md-3"><small class="text-muted">Estado:</small> <span class="badge bg-{{ $installmentPlan->status == 'active' ? 'primary' : ($installmentPlan->status == 'completed' ? 'success' : 'danger') }}">{{ ucfirst($installmentPlan->status) }}</span></div>
             </div>
+            @php
+                // Fase 3: pagos verificados aún no vinculados a ninguna cuota — disponibles para link manual.
+                $linkedPaymentIds = $installmentPlan->installmentDetails->pluck('payment_id')->filter()->all();
+                $availablePayments = $payments
+                    ->where('status', 'verified')
+                    ->whereNotIn('id', $linkedPaymentIds);
+            @endphp
             <div class="table-responsive">
                 <table class="table table-sm align-middle">
-                    <thead class="table-light"><tr><th>#</th><th>Vencimiento</th><th>Monto</th><th>Pagado el</th><th>Estado</th></tr></thead>
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th><th>Vencimiento</th><th>Monto</th><th>Pagado el</th><th>Estado</th><th>Acción</th>
+                        </tr>
+                    </thead>
                     <tbody>
                     @foreach($installmentPlan->installmentDetails->sortBy('installment_number') as $d)
                         <tr>
                             <td>{{ $d->installment_number }}</td>
                             <td>{{ optional($d->due_date)->format('d/m/Y') ?? '—' }}</td>
                             <td>{{ number_format($d->amount, 2) }}</td>
-                            <td>{{ optional($d->paid_date)->format('d/m/Y') ?? '—' }}</td>
-                            <td><span class="badge bg-{{ $d->status == 'paid' ? 'success' : ($d->status == 'overdue' ? 'danger' : 'warning') }}">{{ ucfirst($d->status) }}</span></td>
+                            <td>
+                                @if($d->paid_date)
+                                    {{ $d->paid_date->format('d/m/Y') }}
+                                    @if($d->payment_id)
+                                        <small class="text-muted d-block">Pago #{{ $d->payment_id }}</small>
+                                    @endif
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ $d->status == 'paid' ? 'success' : ($d->status == 'overdue' ? 'danger' : 'warning') }}">
+                                    {{ ucfirst($d->status) }}
+                                </span>
+                            </td>
+                            <td>
+                                @if($d->status !== 'paid' && $availablePayments->isNotEmpty())
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-success py-0 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-link me-1"></i>Marcar pagada
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><h6 class="dropdown-header small">Vincular con pago verificado</h6></li>
+                                            @foreach($availablePayments as $p)
+                                                <li>
+                                                    <form method="POST" action="{{ route('admin.payment-management.mark-installment-paid', $d->id) }}" class="d-inline">
+                                                        @csrf
+                                                        <input type="hidden" name="payment_id" value="{{ $p->id }}">
+                                                        <button type="submit" class="dropdown-item small">
+                                                            <strong>{{ number_format($p->amount, 2) }} {{ optional($p->currency)->code ?? '' }}</strong>
+                                                            <span class="text-muted">— {{ $p->payment_date->format('d/m/Y') }}</span>
+                                                            <small class="d-block text-muted">{{ $p->concept }} · ref: {{ $p->reference_number }}</small>
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @elseif($d->status !== 'paid')
+                                    <small class="text-muted">Sin pagos disponibles</small>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                     </tbody>

@@ -3,7 +3,15 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
     <h1 class="h3 mb-0"><i class="fas fa-users-cog me-2"></i> Gestión de Pagos</h1>
-    <small class="text-muted">Aplicaciones con costo de programa creado</small>
+    <div class="d-flex gap-2 align-items-center">
+        @if(request('cost_filter') === 'without_cost')
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#bulkAssignCostModal" id="bulkAssignCostBtn" disabled>
+                <i class="fas fa-money-check-alt me-1"></i> Registrar Costo de Programa
+                <span class="badge bg-light text-primary ms-1" id="bulkSelectionCount">0</span>
+            </button>
+        @endif
+        <small class="text-muted">{{ request('cost_filter') === 'without_cost' ? 'Aplicaciones sin costo' : 'Aplicaciones con costo de programa' }}</small>
+    </div>
 </div>
 
 @if(session('success'))
@@ -39,9 +47,17 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <label class="form-label small mb-0">Costo</label>
+                <select name="cost_filter" class="form-select form-select-sm">
+                    <option value="with_cost" {{ request('cost_filter', 'with_cost') === 'with_cost' ? 'selected' : '' }}>Con costo</option>
+                    <option value="without_cost" {{ request('cost_filter') === 'without_cost' ? 'selected' : '' }}>Sin costo</option>
+                    <option value="all" {{ request('cost_filter') === 'all' ? 'selected' : '' }}>Todas</option>
+                </select>
+            </div>
+            <div class="col-md-1">
                 <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-search me-1"></i>Filtrar</button>
-                <a href="{{ route('admin.payment-management.index') }}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+                <a href="{{ route('admin.payment-management.index') }}" class="btn btn-sm btn-outline-secondary mt-1">Limpiar</a>
             </div>
         </form>
     </div>
@@ -55,10 +71,16 @@
                 Para crear un costo, ingresa al perfil del participante y configurarlo desde la sección de Pagos del programa.
             </div>
         @else
+        @php $bulkMode = request('cost_filter') === 'without_cost'; @endphp
         <div class="table-responsive">
             <table class="table table-sm table-hover align-middle">
                 <thead class="table-light">
                     <tr>
+                        @if($bulkMode)
+                            <th style="width:30px;">
+                                <input type="checkbox" id="bulkSelectAll" class="form-check-input">
+                            </th>
+                        @endif
                         <th>Participante</th>
                         <th>Programa</th>
                         <th>Año</th>
@@ -80,6 +102,11 @@
                         $isPaid = $cost > 0 && $balance <= 0;
                     @endphp
                     <tr>
+                        @if($bulkMode)
+                            <td>
+                                <input type="checkbox" name="bulk_application_ids[]" value="{{ $app->id }}" class="form-check-input bulk-app-checkbox">
+                            </td>
+                        @endif
                         <td>
                             <strong>{{ optional($app->user)->name ?? '—' }}</strong>
                             <br><small class="text-muted">{{ optional($app->user)->email }}</small>
@@ -89,11 +116,19 @@
                             {{ optional($app->program)->subcategory ?? optional($app->program)->name }}
                         </td>
                         <td><small>{{ $appDate ? \Illuminate\Support\Carbon::parse($appDate)->format('Y') : '—' }}</small></td>
-                        <td class="text-end"><strong>{{ $costCurrency }} {{ number_format($cost, 2) }}</strong></td>
+                        <td class="text-end">
+                            @if($cost > 0)
+                                <strong>{{ $costCurrency }} {{ number_format($cost, 2) }}</strong>
+                            @else
+                                <span class="text-muted small">Sin asignar</span>
+                            @endif
+                        </td>
                         <td class="text-end text-success">{{ $costCurrency }} {{ number_format($paid, 2) }}</td>
                         <td class="text-end text-{{ $balance > 0 ? 'warning' : 'success' }}">{{ $costCurrency }} {{ number_format(max($balance, 0), 2) }}</td>
                         <td class="text-center">
-                            @if($isPaid)
+                            @if($cost <= 0)
+                                <span class="badge bg-secondary">Sin costo</span>
+                            @elseif($isPaid)
                                 <span class="badge bg-success">Pagado</span>
                             @elseif($paid > 0)
                                 <span class="badge bg-warning text-dark">Parcial</span>
@@ -115,4 +150,96 @@
         @endif
     </div>
 </div>
+
+@if(request('cost_filter') === 'without_cost')
+{{-- Modal: Registrar Costo de Programa masivamente --}}
+<div class="modal fade" id="bulkAssignCostModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.payment-management.bulk-assign-cost') }}" id="bulkAssignCostForm">
+                @csrf
+                <div class="modal-header">
+                    <h6 class="modal-title">
+                        <i class="fas fa-money-check-alt me-1"></i> Registrar Costo de Programa
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info py-2 px-3 mb-3">
+                        <small>
+                            <i class="fas fa-info-circle me-1"></i>
+                            Se asignará el mismo costo a <strong id="bulkSelectionCountModal">0</strong> aplicación(es) seleccionada(s).
+                            Las aplicaciones con costo bloqueado serán rechazadas.
+                        </small>
+                    </div>
+                    <div id="bulkSelectedAppIds"></div>
+                    <div class="row g-3">
+                        <div class="col-md-7">
+                            <label class="form-label small">Costo Total <span class="text-danger">*</span></label>
+                            <input type="number" name="total_cost" step="0.01" min="0" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small">Moneda <span class="text-danger">*</span></label>
+                            <select name="cost_currency" class="form-select form-select-sm" required>
+                                <option value="USD">USD - Dólar</option>
+                                <option value="PYG">PYG - Guaraní</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Fecha límite de pago</label>
+                            <input type="date" name="payment_deadline" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Tipo de cambio</label>
+                            <input type="number" name="exchange_rate" step="0.01" min="0" class="form-control form-control-sm" placeholder="Ej: 7300">
+                            <small class="text-muted">Si moneda ≠ del pago</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="fas fa-save me-1"></i> Asignar Costo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+(function() {
+    const checkboxes = document.querySelectorAll('.bulk-app-checkbox');
+    const selectAll = document.getElementById('bulkSelectAll');
+    const btn = document.getElementById('bulkAssignCostBtn');
+    const countBadge = document.getElementById('bulkSelectionCount');
+    const countModal = document.getElementById('bulkSelectionCountModal');
+    const hiddenIds = document.getElementById('bulkSelectedAppIds');
+
+    const refresh = () => {
+        const checked = Array.from(checkboxes).filter(c => c.checked);
+        const count = checked.length;
+        if (countBadge) countBadge.textContent = count;
+        if (countModal) countModal.textContent = count;
+        if (btn) btn.disabled = count === 0;
+        if (hiddenIds) {
+            hiddenIds.innerHTML = checked.map(c =>
+                `<input type="hidden" name="application_ids[]" value="${c.value}">`
+            ).join('');
+        }
+    };
+
+    checkboxes.forEach(c => c.addEventListener('change', refresh));
+    if (selectAll) {
+        selectAll.addEventListener('change', () => {
+            checkboxes.forEach(c => { c.checked = selectAll.checked; });
+            refresh();
+        });
+    }
+    refresh();
+})();
+</script>
+@endpush
+@endif
 @endsection

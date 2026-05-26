@@ -19,6 +19,7 @@ class InstallmentDetail extends Model
         'status',
         'user_program_requisite_id',
         'invoice_id',
+        'payment_id',
         'late_fee',
     ];
 
@@ -43,6 +44,11 @@ class InstallmentDetail extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    public function payment(): BelongsTo
+    {
+        return $this->belongsTo(Payment::class);
     }
 
     // Scopes
@@ -99,14 +105,15 @@ class InstallmentDetail extends Model
         return now()->diffInDays($this->due_date);
     }
 
-    public function markAsPaid(?Invoice $invoice = null): void
+    public function markAsPaid(?Invoice $invoice = null, ?Payment $payment = null): void
     {
         $this->update([
             'status' => 'paid',
-            'paid_date' => now(),
+            'paid_date' => $payment?->payment_date ?? now(),
             'invoice_id' => $invoice?->id,
+            'payment_id' => $payment?->id,
         ]);
-        
+
         // Verificar si el plan completo está pagado
         $this->paymentInstallment->checkCompletion();
     }
