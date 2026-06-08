@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import CheckBox from '@react-native-community/checkbox';
+import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { FormField } from '../types/forms';
 
@@ -173,9 +173,10 @@ const DynamicField: React.FC<DynamicFieldProps> = ({
                     }
                   }}
                 >
-                  <CheckBox
-                    value={isChecked}
-                    onValueChange={() => {}} // Handled by TouchableOpacity
+                  <Ionicons
+                    name={isChecked ? 'checkbox' : 'square-outline'}
+                    size={24}
+                    color={isChecked ? '#c0392b' : '#999'}
                     style={styles.checkbox}
                   />
                   <Text style={styles.checkboxLabel}>{option}</Text>
@@ -187,14 +188,18 @@ const DynamicField: React.FC<DynamicFieldProps> = ({
 
       case 'boolean':
         return (
-          <View style={styles.switchContainer}>
-            <CheckBox
-              value={value || false}
-              onValueChange={onChange}
+          <TouchableOpacity
+            style={styles.switchContainer}
+            onPress={() => onChange(!value)}
+          >
+            <Ionicons
+              name={value ? 'checkbox' : 'square-outline'}
+              size={24}
+              color={value ? '#c0392b' : '#999'}
               style={styles.switch}
             />
             <Text style={styles.switchLabel}>Sí</Text>
-          </View>
+          </TouchableOpacity>
         );
 
       case 'file':
