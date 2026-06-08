@@ -102,7 +102,10 @@ const programService = {
       program_id: programId,
       ...applicationData
     });
-    return response.data;
+    // El backend responde { success, message, data: { id, ... } }.
+    // Desenvolvemos `data` para que los consumidores reciban la aplicación
+    // directamente (chequean `result.id`). Toleramos respuesta plana por si cambia.
+    return response.data?.data ?? response.data;
   },
 
   /**

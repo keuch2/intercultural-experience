@@ -124,22 +124,42 @@ const ApplicationConfirmScreen: React.FC = () => {
       
       if (result && result.id) {
         Alert.alert(
-          'Postulación Exitosa', 
+          'Postulación Exitosa',
           'Tu postulación ha sido recibida. Ahora debes completar los requisitos para avanzar en el proceso.',
           [
-            { 
-              text: 'Ver Requisitos', 
-              onPress: () => navigation.navigate('ApplicationDetail', { applicationId: result.id }) 
+            {
+              text: 'Ver Requisitos',
+              onPress: () => navigation.navigate('ApplicationDetail', { applicationId: result.id })
             }
           ]
         );
+      } else {
+        console.error('applyForProgram: respuesta sin id', result);
+        Alert.alert('Error', 'No se pudo procesar tu postulación. Por favor intenta nuevamente.');
       }
     } catch (err: any) {
-      console.error('Error applying to program:', err);
-      Alert.alert(
-        'Error', 
-        'No se pudo procesar tu postulación. Por favor intenta nuevamente.'
-      );
+      console.error('Error applying to program:', err?.response?.data || err);
+      // Si ya existe una postulación activa (409), llevemos al usuario a verla
+      // en lugar de mostrar un error sin salida.
+      const existing = err?.response?.data;
+      const alreadyApplied =
+        err?.response?.status === 409 || existing?.code === 'already_applied';
+      if (alreadyApplied && existing?.data?.id) {
+        Alert.alert(
+          'Ya tienes una postulación',
+          'Ya tienes una solicitud activa para este programa.',
+          [
+            {
+              text: 'Ver Postulación',
+              onPress: () =>
+                navigation.navigate('ApplicationDetail', { applicationId: existing.data.id }),
+            },
+          ]
+        );
+        return;
+      }
+      const msg = existing?.message || 'No se pudo procesar tu postulación. Por favor intenta nuevamente.';
+      Alert.alert('Error', msg);
     } finally {
       setIsApplying(false);
     }

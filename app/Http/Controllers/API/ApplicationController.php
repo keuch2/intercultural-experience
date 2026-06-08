@@ -79,8 +79,10 @@ class ApplicationController extends Controller
         if ($existingApplication) {
             return response()->json([
                 'success' => false,
-                'message' => 'Ya tienes una solicitud activa para este programa.'
-            ], 422);
+                'message' => 'Ya tienes una solicitud activa para este programa.',
+                'code' => 'already_applied',
+                'data' => $existingApplication->load('program'),
+            ], 409);
         }
         
         // Crear la solicitud

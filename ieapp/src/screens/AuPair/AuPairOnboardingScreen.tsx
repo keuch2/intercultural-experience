@@ -70,6 +70,13 @@ const AuPairOnboardingScreen: React.FC = () => {
     if (step < 3) setStep((step + 1) as 1 | 2 | 3);
   };
 
+  const goToDashboard = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'AuPairDashboard' as any }],
+    });
+  };
+
   const finish = async () => {
     if (!programId) {
       Alert.alert(
@@ -83,13 +90,28 @@ const AuPairOnboardingScreen: React.FC = () => {
       const app = await programService.applyForProgram(programId, {});
       clearAuthRequest();
       if (app?.id) {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'AuPairDashboard' as any }],
-        });
+        goToDashboard();
+      } else {
+        // No debería ocurrir: la postulación se creó pero la respuesta no trae id.
+        console.error('applyForProgram: respuesta sin id', app);
+        Alert.alert(
+          'Postulación registrada',
+          'Tu postulación se creó pero no pudimos abrir tu panel. Volvé a ingresar a la app.',
+        );
       }
     } catch (e: any) {
-      const msg = e?.response?.data?.message || e?.message || 'No pudimos crear tu postulación.';
+      console.error('Error al crear la postulación:', e?.response?.data || e);
+      // Si ya existe una postulación activa (409), no es un error para el usuario:
+      // llevémoslo a su dashboard en lugar de dejarlo atrapado en el onboarding.
+      const alreadyApplied =
+        e?.response?.status === 409 || e?.response?.data?.code === 'already_applied';
+      if (alreadyApplied) {
+        clearAuthRequest();
+        goToDashboard();
+        return;
+      }
+      const msg =
+        e?.response?.data?.message || e?.message || 'No pudimos crear tu postulación.';
       Alert.alert('Error', msg);
     } finally {
       setSubmitting(false);
