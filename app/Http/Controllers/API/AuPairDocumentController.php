@@ -108,7 +108,9 @@ class AuPairDocumentController extends Controller
                 'file_size' => $file->getSize(),
                 'status' => 'pending',
                 'is_required' => (bool) ($cfg['required'] ?? false),
-                'min_count' => $cfg['min_count'] ?? null,
+                // La columna es NOT NULL con default 1; los tipos de un solo
+                // archivo (cedula, pasaporte, etc.) no definen min_count.
+                'min_count' => $cfg['min_count'] ?? 1,
                 'sort_order' => $cfg['sort'] ?? 0,
             ]);
             $created[] = $this->serializeDocRecord($doc);
