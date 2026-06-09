@@ -93,6 +93,8 @@ const AuPairDashboardScreen: React.FC = () => {
     );
   }
 
+  const approved = process.application_approved;
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView
@@ -109,11 +111,26 @@ const AuPairDashboardScreen: React.FC = () => {
           </View>
         </View>
 
-        <NextActionCard
-          action={process.next_action}
-          stage={process.current_stage}
-          onPress={handleNextAction}
-        />
+        {!approved && (
+          <View style={styles.pendingBanner}>
+            <Ionicons name="time-outline" size={22} color="#92400E" />
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.pendingTitle}>Aprobación Pendiente</Text>
+              <Text style={styles.pendingText}>
+                El equipo de IE está revisando tu postulación. Cuando sea aprobada vas a poder
+                cargar tus documentos y continuar con el proceso.
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {approved && (
+          <NextActionCard
+            action={process.next_action}
+            stage={process.current_stage}
+            onPress={handleNextAction}
+          />
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Tu recorrido</Text>
@@ -125,11 +142,13 @@ const AuPairDashboardScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Accesos rápidos</Text>
           <View style={styles.grid}>
-            <Shortcut
-              icon="document-text-outline"
-              label="Documentos"
-              onPress={() => (navigation as any).navigate('AuPairDocuments', { stage: 'admission' })}
-            />
+            {approved && (
+              <Shortcut
+                icon="document-text-outline"
+                label="Documentos"
+                onPress={() => (navigation as any).navigate('AuPairDocuments', { stage: 'admission' })}
+              />
+            )}
             <Shortcut
               icon="card-outline"
               label="Pagos"
@@ -201,6 +220,19 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   progressNumber: { color: '#E52224', fontWeight: '800', fontSize: 14 },
+  pendingBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF3C7',
+    borderColor: '#F59E0B',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    marginHorizontal: 18,
+    marginTop: 12,
+  },
+  pendingTitle: { fontWeight: '800', color: '#92400E', fontSize: 15, marginBottom: 2 },
+  pendingText: { color: '#92400E', fontSize: 13, lineHeight: 18 },
   section: { paddingHorizontal: 18, marginTop: 18 },
   sectionTitle: { fontSize: 14, fontWeight: '700', color: '#555', marginBottom: 8 },
   stagesWrap: { backgroundColor: '#fff', borderRadius: 12, padding: 12 },

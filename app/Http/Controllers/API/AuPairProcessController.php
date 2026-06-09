@@ -56,6 +56,8 @@ class AuPairProcessController extends Controller
             ]
         );
 
+        $process->loadMissing('application');
+
         return response()->json([
             'status' => 'success',
             'data' => $this->transform($process),
@@ -68,6 +70,10 @@ class AuPairProcessController extends Controller
             'id' => $p->id,
             'application_id' => $p->application_id,
             'current_stage' => $p->current_stage,
+            // Gate de aprobación: el Staff IE debe aprobar la postulación antes de
+            // habilitar el flujo de documentos en la app.
+            'application_approved' => optional($p->application)->status === 'approved',
+            'application_review_status' => optional($p->application)->status,
             'enrollment_date' => optional($p->enrollment_date)->toDateString(),
             'statuses' => [
                 'admission' => $p->admission_status,

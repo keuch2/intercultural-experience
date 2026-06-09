@@ -263,6 +263,7 @@ class AdminParticipantController extends Controller
             'applications.visaProcess',
             'applications.payments',
             'applications.notes.admin',
+            'auPairProcess.englishTests',
             'points',
             'supportTickets',
             'emergencyContacts',

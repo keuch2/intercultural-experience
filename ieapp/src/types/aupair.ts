@@ -36,6 +36,8 @@ export interface AuPairProcess {
   id: number;
   application_id: number;
   current_stage: AuPairStage;
+  application_approved: boolean;
+  application_review_status: string | null;
   enrollment_date: string | null;
   statuses: {
     admission: string;

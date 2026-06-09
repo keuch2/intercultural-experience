@@ -469,11 +469,19 @@
                                     @php
                                         $stageKey = $application->current_stage ?? 'registration';
                                         [$stageColor, $stageLabel] = $stageColors[$stageKey] ?? ['secondary', ucfirst(str_replace('_', ' ', $stageKey))];
-                                        $progress = (int) ($application->progress_percentage ?? 0);
+
+                                        // Para Au Pair, preferir las fuentes del AuPairProcess (mismo valor que el perfil Au Pair).
+                                        $isAuPair = optional($application->program)->subcategory === 'Au Pair';
+                                        $progress = $isAuPair
+                                            ? \App\Support\AuPairResolver::progressPercentage($application, $participant)
+                                            : (int) ($application->progress_percentage ?? 0);
                                         $progressColor = $progress >= 90 ? 'success' : ($progress >= 50 ? 'info' : 'warning');
 
                                         $eng = $application->latestEnglishEvaluation;
                                         $engCount = $application->englishEvaluations->count();
+                                        $engLevelResolved = $isAuPair
+                                            ? \App\Support\AuPairResolver::bestEnglishLevel($application, $participant)
+                                            : ($eng->cefr_level ?? null);
 
                                         $visa = $application->visaProcess;
                                         $requiresVisa = optional($application->program)->requires_visa ?? true;
@@ -575,7 +583,14 @@
                                                 {{-- Inglés --}}
                                                 <div class="col-md-2">
                                                     <small class="text-muted d-block">Inglés (Último test)</small>
-                                                    @if($eng)
+                                                    @if($isAuPair)
+                                                        @if($engLevelResolved)
+                                                            <span class="badge bg-success">{{ $engLevelResolved }}</span>
+                                                            <small class="text-muted d-block mt-1">Resultado cargado por IE</small>
+                                                        @else
+                                                            <span class="badge bg-light text-dark">Sin evaluar</span>
+                                                        @endif
+                                                    @elseif($eng)
                                                         <span class="badge bg-success">{{ $eng->cefr_level }}</span>
                                                         <small class="text-muted d-block mt-1">
                                                             Último test: {{ $eng->evaluated_at->format('d/m/Y') }}

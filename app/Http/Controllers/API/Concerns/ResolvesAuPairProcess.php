@@ -49,4 +49,13 @@ trait ResolvesAuPairProcess
 
         return [$process, null];
     }
+
+    /**
+     * El postulante debe estar aprobado por el Staff IE (application.status === 'approved')
+     * antes de poder ver/subir documentos. Hasta entonces el flujo queda bloqueado.
+     */
+    protected function applicantApproved(AuPairProcess $process): bool
+    {
+        return optional($process->application)->status === 'approved';
+    }
 }

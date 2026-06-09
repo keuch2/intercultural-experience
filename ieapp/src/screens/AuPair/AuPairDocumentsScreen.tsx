@@ -17,8 +17,8 @@ type RouteP = RouteProp<{ AuPairDocuments: { stage?: DocStage } }, 'AuPairDocume
 
 const STAGE_TABS: { key: DocStage; label: string }[] = [
   { key: 'admission', label: 'Admisión' },
-  { key: 'application_payment1', label: 'Pago 1' },
-  { key: 'application_payment2', label: 'Pago 2' },
+  { key: 'application_payment1', label: 'Docs 1' },
+  { key: 'application_payment2', label: 'Docs 2' },
   { key: 'visa', label: 'Visa' },
 ];
 
@@ -30,10 +30,19 @@ const AuPairDocumentsScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [approved, setApproved] = useState<boolean | null>(null);
 
   const load = useCallback(async (s: DocStage) => {
     try {
       setError(null);
+      // Gate: confirmar que el Staff IE aprobó la postulación antes de mostrar docs.
+      const proc = await auPairService.getProcess();
+      const isApproved = !!proc?.application_approved;
+      setApproved(isApproved);
+      if (!isApproved) {
+        setEntries([]);
+        return;
+      }
       const data = await auPairService.getDocuments(s);
       setEntries(data);
     } catch (e: any) {
@@ -68,6 +77,14 @@ const AuPairDocumentsScreen: React.FC = () => {
         <View style={{ width: 24 }} />
       </View>
 
+      {!loading && approved === false ? (
+        <EmptyState
+          icon="lock-closed-outline"
+          title="Aprobación pendiente"
+          message="El equipo de IE debe aprobar tu postulación antes de habilitar la carga de documentos. Te avisaremos cuando esté lista."
+        />
+      ) : (
+      <>
       <View style={styles.tabRow}>
         {STAGE_TABS.map(t => (
           <TouchableOpacity
@@ -114,6 +131,8 @@ const AuPairDocumentsScreen: React.FC = () => {
             ))
           )}
         </ScrollView>
+      )}
+      </>
       )}
     </SafeAreaView>
   );

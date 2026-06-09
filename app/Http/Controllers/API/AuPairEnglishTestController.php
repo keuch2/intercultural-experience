@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\API\Concerns\ResolvesAuPairProcess;
 use App\Models\AuPairEnglishTest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 /**
  * GET  /api/au-pair/english-tests
@@ -36,49 +35,17 @@ class AuPairEnglishTestController extends Controller
         ]);
     }
 
+    /**
+     * El test de inglés se rinde físicamente en oficinas de IE; los resultados los
+     * carga el Staff IE desde el admin. El participante NO puede registrar/editar
+     * su nivel desde la app — solo visualizarlo (GET index).
+     */
     public function store(Request $request)
     {
-        [$process, $err] = $this->resolveProcess($request);
-        if ($err) return $err;
-
-        $used = $process->englishTests()->count();
-        if ($used >= AuPairEnglishTest::maxAttempts()) {
-            return response()->json(['status' => 'error', 'message' => 'Alcanzaste el máximo de intentos.'], 403);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'exam_name' => 'required|string|max:80',
-            'oral_score' => 'nullable|in:Good,Great,Excellent',
-            'listening_score' => 'nullable|integer|min:0|max:100',
-            'reading_score' => 'nullable|integer|min:0|max:100',
-            'final_score' => 'required|integer|min:0|max:100',
-            'observations' => 'nullable|string|max:600',
-            'pdf' => 'nullable|file|mimes:pdf|max:10240',
-        ]);
-        if ($validator->fails()) {
-            return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
-        }
-
-        $pdfPath = null;
-        if ($request->hasFile('pdf')) {
-            $pdfPath = $request->file('pdf')->store("au_pair/{$process->id}/english_tests", 'public');
-        }
-
-        $finalScore = (int) $request->input('final_score');
-        $test = AuPairEnglishTest::create([
-            'au_pair_process_id' => $process->id,
-            'exam_name' => $request->input('exam_name'),
-            'oral_score' => $request->input('oral_score'),
-            'listening_score' => $request->input('listening_score'),
-            'reading_score' => $request->input('reading_score'),
-            'final_score' => $finalScore,
-            'cefr_level' => AuPairEnglishTest::scoreToLevel($finalScore),
-            'observations' => $request->input('observations'),
-            'test_pdf_path' => $pdfPath,
-            'attempt_number' => $used + 1,
-        ]);
-
-        return response()->json(['status' => 'success', 'data' => $this->serialize($test)], 201);
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Los resultados de inglés los registra el equipo de IE en la oficina.',
+        ], 403);
     }
 
     private function serialize(AuPairEnglishTest $t): array

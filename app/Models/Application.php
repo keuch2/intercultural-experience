@@ -225,7 +225,17 @@ class Application extends Model
             return round(($completedRequisites / $totalRequisites) * 100);
         }
 
-        // Fallback: calculate from current_stage. Mapea etapas legacy + Au Pair + W&T.
+        // Fallback: calculate from current_stage.
+        $stage = $this->attributes['current_stage'] ?? 'registration';
+        return self::stageToProgress($stage);
+    }
+
+    /**
+     * Mapa etapa -> progreso (legacy + Au Pair + W&T). Fuente única de verdad,
+     * reusada por getProgressPercentage() y por AuPairResolver.
+     */
+    public static function stageToProgress(string $stage): int
+    {
         $stageProgress = [
             'registration' => 5,
             'admission' => 20,
@@ -241,7 +251,6 @@ class Application extends Model
             'rejected' => 0,
         ];
 
-        $stage = $this->attributes['current_stage'] ?? 'registration';
         return $stageProgress[$stage] ?? 0;
     }
 

@@ -128,6 +128,46 @@ class PaymentManagementController extends Controller
     }
 
     /**
+     * A8: Crear el perfil de Gestión de Pagos de un usuario directamente —
+     * buscar/seleccionar usuario + programa, crear (o encontrar) su Application
+     * y asignarle el costo. Punto de entrada directo desde el listado.
+     */
+    public function storeUserCost(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'program_id' => 'required|exists:programs,id',
+            'total_cost' => 'required|numeric|min:0',
+            'cost_currency' => 'required|in:USD,PYG',
+            'payment_deadline' => 'nullable|date',
+        ]);
+
+        $application = Application::firstOrCreate(
+            ['user_id' => $validated['user_id'], 'program_id' => $validated['program_id']],
+            ['status' => 'pending', 'applied_at' => now()]
+        );
+
+        // No sobrescribir un costo ya bloqueado (mismo criterio que bulkAssignCost).
+        if ($application->cost_locked_at && $application->total_cost > 0) {
+            return redirect()
+                ->route('admin.payment-management.show', $application->id)
+                ->with('error', 'Este participante ya tiene un costo de programa asignado.');
+        }
+
+        $application->fill([
+            'total_cost' => $validated['total_cost'],
+            'cost_currency' => $validated['cost_currency'],
+            'payment_deadline' => $validated['payment_deadline'] ?? null,
+            'cost_manual_date' => now(),
+            'cost_locked_at' => now(),
+        ])->save();
+
+        return redirect()
+            ->route('admin.payment-management.show', $application->id)
+            ->with('success', 'Perfil de pagos creado y costo asignado.');
+    }
+
+    /**
      * Crear plan de cuotas mensuales para una aplicación.
      * Fase 3: el total_amount debe coincidir con el total_cost de la Application
      * (tolerancia ±1 unidad por redondeo).

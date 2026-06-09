@@ -45,16 +45,19 @@
             <div class="col-auto text-end">
                 {{-- Estado global --}}
                 @php
-                    $globalStatus = 'Admisión';
-                    $globalColor = 'warning';
-                    if ($stages['admission']['status'] === 'complete' && $stages['application']['status'] !== 'locked') {
-                        $globalStatus = 'Aplicación';
-                        $globalColor = 'info';
-                    }
-                    if ($stages['match_visa']['status'] !== 'locked') {
-                        $globalStatus = 'Match / Visa';
-                        $globalColor = 'primary';
-                    }
+                    // Estado global = etapa real del proceso (current_stage), no derivado
+                    // de los status visuales (que nunca son 'locked').
+                    $stageMap = [
+                        'admission'   => ['Admisión',        'warning'],
+                        'application' => ['Aplicación',       'info'],
+                        'match_visa'  => ['Match / Visa J1',  'primary'],
+                        'support'     => ['Support',          'success'],
+                        'completed'   => ['Completado',       'dark'],
+                        'cancelled'   => ['Cancelado',        'danger'],
+                    ];
+                    $cs = $stages['_meta']['current_stage'] ?? 'admission';
+                    [$globalStatus, $globalColor] = $stageMap[$cs] ?? [ucfirst(str_replace('_', ' ', $cs)), 'secondary'];
+
                     if ($profile && $profile->profile_status === 'matched') {
                         $globalStatus = 'Matched';
                         $globalColor = 'success';
@@ -66,6 +69,34 @@
                     <span class="text-muted small me-1">Etapa actual:</span>
                     <strong class="text-{{ $globalColor }}">{{ $globalStatus }}</strong>
                 </div>
+
+                {{-- M1: Gate de aprobación — el postulante necesita ser aprobado para subir docs en la app --}}
+                @if($application)
+                    @php $isApproved = $application->status === 'approved'; @endphp
+                    <div class="mt-2">
+                        @if($isApproved)
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success">
+                                <i class="fas fa-check-circle me-1"></i> Postulante aprobado
+                            </span>
+                            <form method="POST" action="{{ route('admin.aupair.profiles.approve-applicant', $user->id) }}" class="d-inline ms-1"
+                                  onsubmit="return confirm('¿Revocar la aprobación? El postulante dejará de poder subir documentos desde la app.')">
+                                @csrf
+                                <input type="hidden" name="action" value="revoke">
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-0">Revocar</button>
+                            </form>
+                        @else
+                            <span class="badge bg-warning bg-opacity-25 text-warning border border-warning">
+                                <i class="fas fa-clock me-1"></i> Aprobación pendiente
+                            </span>
+                            <form method="POST" action="{{ route('admin.aupair.profiles.approve-applicant', $user->id) }}" class="d-inline ms-1">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-success py-0">
+                                    <i class="fas fa-user-check me-1"></i> Aprobar postulante
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                @endif
                 <div class="mt-2">
                     @php
                         $userApp = \App\Models\Application::where('user_id', $user->id)->latest()->first();
@@ -207,8 +238,19 @@
                 @endif
             </div>
         </div>
-        {{-- Notes widget (Módulo C9: reused via shared partial — same routes resolve to admin.participants.notes.*) --}}
+        {{-- Notas legacy (display-only, solo si existen notas huérfanas pre-rediseño) --}}
         @include('admin.partials._participant_notes_widget', ['user' => $user, 'notes' => $notes])
+        {{-- Notas por aplicación — form funcional para escribir notas desde el perfil Au Pair --}}
+        @if($application)
+        <div class="card shadow-sm mt-3">
+            <div class="card-body py-3">
+                <h6 class="card-title small text-muted text-uppercase mb-1">
+                    <i class="fas fa-sticky-note me-1"></i> Notas de la Postulación
+                </h6>
+                @include('admin.applications._notes_widget', ['user' => $user, 'application' => $application])
+            </div>
+        </div>
+        @endif
     </div>
 
     {{-- Contenido del tab activo --}}

@@ -4,15 +4,120 @@
 <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
     <h1 class="h3 mb-0"><i class="fas fa-users-cog me-2"></i> Gestión de Pagos</h1>
     <div class="d-flex gap-2 align-items-center">
+        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#createUserCostModal">
+            <i class="fas fa-plus me-1"></i> Crear Costo de Programa
+        </button>
         @if(request('cost_filter') === 'without_cost')
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#bulkAssignCostModal" id="bulkAssignCostBtn" disabled>
-                <i class="fas fa-money-check-alt me-1"></i> Registrar Costo de Programa
+                <i class="fas fa-money-check-alt me-1"></i> Asignar Costo (selección)
                 <span class="badge bg-light text-primary ms-1" id="bulkSelectionCount">0</span>
             </button>
         @endif
         <small class="text-muted">{{ request('cost_filter') === 'without_cost' ? 'Aplicaciones sin costo' : 'Aplicaciones con costo de programa' }}</small>
     </div>
 </div>
+
+{{-- A8: Modal Crear Costo de Programa (buscar usuario + programa + costo) --}}
+<div class="modal fade" id="createUserCostModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.payment-management.store-user-cost') }}">
+                @csrf
+                <div class="modal-header">
+                    <h6 class="modal-title"><i class="fas fa-money-check-alt me-1"></i> Crear Costo de Programa</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 position-relative">
+                        <label class="form-label small">Participante <span class="text-danger">*</span></label>
+                        <input type="text" id="cost_user_search" class="form-control form-control-sm" autocomplete="off" placeholder="Buscar por nombre o email (mín. 2)">
+                        <input type="hidden" name="user_id" id="cost_user_id">
+                        <div id="cost_user_results" class="position-absolute bg-white border rounded shadow-sm w-100" style="z-index:1080; display:none; max-height:220px; overflow-y:auto;"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small">Programa <span class="text-danger">*</span></label>
+                        <select name="program_id" class="form-select form-select-sm" required>
+                            <option value="">Seleccionar...</option>
+                            @foreach($programs as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-7">
+                            <label class="form-label small">Costo total <span class="text-danger">*</span></label>
+                            <input type="number" name="total_cost" step="0.01" min="0" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label small">Moneda <span class="text-danger">*</span></label>
+                            <select name="cost_currency" class="form-select form-select-sm" required>
+                                <option value="USD">USD</option>
+                                <option value="PYG">PYG</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small">Fecha límite de pago</label>
+                            <input type="date" name="payment_deadline" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-save me-1"></i>Crear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    (function () {
+        const search = document.getElementById('cost_user_search');
+        const idInput = document.getElementById('cost_user_id');
+        const results = document.getElementById('cost_user_results');
+        if (!search) return;
+        let t = null;
+        search.addEventListener('input', function () {
+            clearTimeout(t);
+            const q = this.value.trim();
+            idInput.value = '';
+            if (q.length < 2) { results.style.display = 'none'; results.innerHTML = ''; return; }
+            t = setTimeout(() => {
+                fetch(`{{ route('admin.finance.search-participants') }}?q=${encodeURIComponent(q)}`)
+                    .then(r => r.json())
+                    .then(users => {
+                        results.innerHTML = '';
+                        if (!users.length) {
+                            results.innerHTML = '<div class="px-3 py-2 text-muted small">Sin resultados</div>';
+                        } else {
+                            users.forEach(u => {
+                                const item = document.createElement('div');
+                                item.className = 'px-3 py-2 border-bottom';
+                                item.style.cursor = 'pointer';
+                                item.innerHTML = `<strong>${u.name}</strong> <small class="text-muted">${u.email}</small>`;
+                                item.addEventListener('click', () => {
+                                    idInput.value = u.id;
+                                    search.value = `${u.name} (${u.email})`;
+                                    search.classList.add('border-success');
+                                    results.style.display = 'none';
+                                });
+                                item.addEventListener('mouseenter', () => item.classList.add('bg-light'));
+                                item.addEventListener('mouseleave', () => item.classList.remove('bg-light'));
+                                results.appendChild(item);
+                            });
+                        }
+                        results.style.display = 'block';
+                    })
+                    .catch(() => { results.innerHTML = '<div class="px-3 py-2 text-danger small">Error</div>'; results.style.display = 'block'; });
+            }, 300);
+        });
+        document.addEventListener('click', function (e) {
+            if (!search.contains(e.target) && !results.contains(e.target)) results.style.display = 'none';
+        });
+    })();
+</script>
+@endpush
 
 @if(session('success'))
 <div class="alert alert-success py-2 px-3">{{ session('success') }}</div>

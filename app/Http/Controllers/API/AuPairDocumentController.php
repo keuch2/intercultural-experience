@@ -40,6 +40,16 @@ class AuPairDocumentController extends Controller
         [$process, $err] = $this->resolveProcess($request);
         if ($err) return $err;
 
+        // Gate: hasta que el Staff IE apruebe la postulación, no se exponen requisitos.
+        if (! $this->applicantApproved($process)) {
+            return response()->json([
+                'status' => 'success',
+                'data' => [],
+                'locked' => true,
+                'reason' => 'pending_approval',
+            ]);
+        }
+
         $stage = $request->query('stage');
         $allStages = ['admission', 'application_payment1', 'application_payment2', 'visa'];
         if ($stage && ! in_array($stage, $allStages, true)) {
@@ -59,6 +69,14 @@ class AuPairDocumentController extends Controller
     {
         [$process, $err] = $this->resolveProcess($request);
         if ($err) return $err;
+
+        // Gate: no se permite subir documentos hasta que el Staff IE apruebe la postulación.
+        if (! $this->applicantApproved($process)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Tu postulación está pendiente de aprobación. El equipo IE debe aprobarla antes de subir documentos.',
+            ], 403);
+        }
 
         $allStages = ['admission', 'application_payment1', 'application_payment2', 'visa'];
         $types = array_keys(AuPairDocument::documentTypes());

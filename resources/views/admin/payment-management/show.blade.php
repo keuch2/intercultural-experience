@@ -151,30 +151,35 @@
                                 </span>
                             </td>
                             <td>
-                                @if($d->status !== 'paid' && $availablePayments->isNotEmpty())
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-success py-0 dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-link me-1"></i>Marcar pagada
+                                @if($d->status !== 'paid')
+                                    <div class="d-flex gap-1 align-items-center">
+                                        <button type="button" class="btn btn-sm btn-success py-0" data-bs-toggle="modal" data-bs-target="#payInstallment{{ $d->id }}">
+                                            <i class="fas fa-money-bill-wave me-1"></i>Pagar cuota
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><h6 class="dropdown-header small">Vincular con pago verificado</h6></li>
-                                            @foreach($availablePayments as $p)
-                                                <li>
-                                                    <form method="POST" action="{{ route('admin.payment-management.mark-installment-paid', $d->id) }}" class="d-inline">
-                                                        @csrf
-                                                        <input type="hidden" name="payment_id" value="{{ $p->id }}">
-                                                        <button type="submit" class="dropdown-item small">
-                                                            <strong>{{ number_format($p->amount, 2) }} {{ optional($p->currency)->code ?? '' }}</strong>
-                                                            <span class="text-muted">— {{ $p->payment_date->format('d/m/Y') }}</span>
-                                                            <small class="d-block text-muted">{{ $p->concept }} · ref: {{ $p->reference_number }}</small>
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                            @endforeach
-                                        </ul>
+                                        @if($availablePayments->isNotEmpty())
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-success py-0 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-link me-1"></i>Vincular
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><h6 class="dropdown-header small">Vincular con pago verificado</h6></li>
+                                                    @foreach($availablePayments as $p)
+                                                        <li>
+                                                            <form method="POST" action="{{ route('admin.payment-management.mark-installment-paid', $d->id) }}" class="d-inline">
+                                                                @csrf
+                                                                <input type="hidden" name="payment_id" value="{{ $p->id }}">
+                                                                <button type="submit" class="dropdown-item small">
+                                                                    <strong>{{ number_format($p->amount, 2) }} {{ optional($p->currency)->code ?? '' }}</strong>
+                                                                    <span class="text-muted">— {{ $p->payment_date->format('d/m/Y') }}</span>
+                                                                    <small class="d-block text-muted">{{ $p->concept }} · ref: {{ $p->reference_number }}</small>
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
                                     </div>
-                                @elseif($d->status !== 'paid')
-                                    <small class="text-muted">Sin pagos disponibles</small>
                                 @endif
                             </td>
                         </tr>
@@ -182,6 +187,20 @@
                     </tbody>
                 </table>
             </div>
+            {{-- A7: un modal de pago por cada cuota no pagada (prefilled monto + concepto Cuota) --}}
+            @foreach($installmentPlan->installmentDetails->where('status', '!=', 'paid') as $d)
+                @include('admin.payments._form', [
+                    'application' => $application,
+                    'currencies' => $currencies,
+                    'modalId' => 'payInstallment' . $d->id,
+                    'title' => 'Pagar cuota #' . $d->installment_number,
+                    'prefill' => [
+                        'amount' => $d->amount,
+                        'concept' => 'Cuota',
+                        'installment_detail_id' => $d->id,
+                    ],
+                ])
+            @endforeach
         @else
             <p class="text-muted small mb-0">No hay un plan de cuotas activo.</p>
         @endif

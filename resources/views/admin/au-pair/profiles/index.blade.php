@@ -141,7 +141,11 @@
                     $app = $user->applications->first();
                     $prof = $user->auPairProfile;
                     $proc = $user->auPairProcess;
-                    $bestEnglish = $user->englishEvaluations->sortByDesc('score')->first();
+                    // Prefiere los tests del proceso Au Pair (englishTests) sobre los legacy.
+                    $bestEnglishLevel = \App\Support\AuPairResolver::bestEnglishLevel(
+                        $app ?? new \App\Models\Application(['user_id' => $user->id]),
+                        $user
+                    );
                     // Módulo 16: Calculate payment percentage instead of simple count
                     $paymentPct = 0;
                     if ($app && $app->total_cost > 0) {
@@ -213,9 +217,9 @@
                         </span>
                     </td>
                     <td class="text-center">
-                        @if($bestEnglish)
-                            <span class="badge {{ in_array($bestEnglish->cefr_level, ['B1','B2','C1','C2']) ? 'bg-success' : 'bg-warning text-dark' }}">
-                                {{ $bestEnglish->cefr_level }}
+                        @if($bestEnglishLevel)
+                            <span class="badge {{ in_array($bestEnglishLevel, ['B1','B2','C1','C2']) ? 'bg-success' : 'bg-warning text-dark' }}">
+                                {{ $bestEnglishLevel }}
                             </span>
                         @else
                             <span class="text-muted">-</span>

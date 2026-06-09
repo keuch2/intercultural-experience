@@ -18,7 +18,7 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'application_id' => 'nullable|exists:applications,id',
             'user_id' => 'required|exists:users,id',
-            'program_id' => 'nullable|exists:programs,id',
+            'program_id' => 'required_without:application_id|nullable|exists:programs,id',
             'currency_id' => 'required|exists:currencies,id',
             'amount' => 'required|numeric|min:0',
             'exchange_rate' => 'nullable|numeric|min:0',
@@ -31,7 +31,18 @@ class PaymentController extends Controller
             'status' => 'required|in:pending,verified',
             'created_by' => 'nullable|exists:users,id',
             'redirect_to' => 'nullable|string',
+            'installment_detail_id' => 'nullable|exists:installment_details,id',
         ]);
+
+        // Si no viene application_id pero sí user+program (flujo Finanzas/búsqueda),
+        // crear o encontrar la Application para ese usuario+programa.
+        if (empty($validated['application_id']) && !empty($validated['program_id'])) {
+            $application = Application::firstOrCreate(
+                ['user_id' => $validated['user_id'], 'program_id' => $validated['program_id']],
+                ['status' => 'pending', 'applied_at' => now()]
+            );
+            $validated['application_id'] = $application->id;
+        }
 
         // Fase 4 F4.7: exchange_rate es obligatorio cuando la moneda del pago ≠ moneda del costo del programa.
         if (!empty($validated['application_id'])) {
@@ -57,6 +68,8 @@ class PaymentController extends Controller
         unset($validated['other_concept']);
         $redirectTo = $validated['redirect_to'] ?? null;
         unset($validated['redirect_to']);
+        $installmentDetailId = $validated['installment_detail_id'] ?? null;
+        unset($validated['installment_detail_id']);
 
         // Establecer valores por defecto
         $validated['payment_date'] = $validated['payment_date'] ?? now()->toDateString();
@@ -88,7 +101,18 @@ class PaymentController extends Controller
             $validated['verified_at'] = now();
         }
 
-        Payment::create($validated);
+        $payment = Payment::create($validated);
+
+        // A7: si el pago se registró para una cuota específica y está verificado,
+        // vincularlo y marcar la cuota como pagada en un solo paso.
+        if ($installmentDetailId && $payment->status === 'verified') {
+            $detail = \App\Models\InstallmentDetail::with('paymentInstallment')->find($installmentDetailId);
+            if ($detail
+                && $detail->paymentInstallment
+                && $detail->paymentInstallment->application_id === $payment->application_id) {
+                $detail->markAsPaid(null, $payment);
+            }
+        }
 
         $message = $validated['status'] === 'verified'
             ? 'Pago registrado como REALIZADO exitosamente.'

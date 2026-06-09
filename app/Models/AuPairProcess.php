@@ -151,13 +151,24 @@ class AuPairProcess extends Model
     }
 
     /**
+     * Requisitos de la etapa de Aplicación cumplidos.
+     * "Aplicación aprobada" se deriva automáticamente: docs de admisión aprobados
+     * + Pago 1 verificado + Contrato firmado. No depende del enum application_status
+     * (que solo se setea como registro al avanzar de etapa).
+     */
+    public function applicationRequirementsMet(): bool
+    {
+        return $this->admissionDocsApproved()
+            && (bool) $this->payment_1_verified
+            && (bool) $this->contract_signed;
+    }
+
+    /**
      * Check if process can advance from application to match/visa
      */
     public function canAdvanceToMatchVisa(): bool
     {
-        return $this->application_status === 'approved'
-            && $this->payment_1_verified
-            && $this->contract_signed;
+        return $this->applicationRequirementsMet();
     }
 
     /**

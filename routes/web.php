@@ -180,6 +180,7 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         // Fase 3: marcar cuota como pagada con un Payment existente + asignar costo masivo
         Route::post('/payment-management/installments/{detail}/mark-paid', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'markInstallmentPaid'])->name('admin.payment-management.mark-installment-paid');
         Route::post('/payment-management/bulk-assign-cost', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'bulkAssignCost'])->name('admin.payment-management.bulk-assign-cost');
+        Route::post('/payment-management/user-cost', [\App\Http\Controllers\Admin\PaymentManagementController::class, 'storeUserCost'])->name('admin.payment-management.store-user-cost');
 
         // Payments Management
         Route::post('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'store'])->name('admin.payments.store');
@@ -456,6 +457,7 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             // Actions: Checklist & Stage
             Route::put('/perfiles/{id}/checklist', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updateChecklist'])->name('profiles.update-checklist');
             Route::post('/perfiles/{id}/advance-stage', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'advanceStage'])->name('profiles.advance-stage');
+            Route::post('/perfiles/{id}/approve-applicant', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'approveApplicant'])->name('profiles.approve-applicant');
             // Actions: Visa Process
             Route::put('/perfiles/{id}/visa-process', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updateVisaProcess'])->name('profiles.update-visa');
             Route::put('/perfiles/{id}/finalization', [\App\Http\Controllers\Admin\AuPairProfileController::class, 'updateFinalization'])->name('profiles.update-finalization');

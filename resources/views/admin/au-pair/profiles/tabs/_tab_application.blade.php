@@ -618,8 +618,8 @@
         $appStageCurrent = $proc->current_stage === 'application';
         $appAlreadyAdvanced = in_array($proc->current_stage, ['match_visa', 'support', 'completed']);
         $missingReasons = [];
-        if ($proc->application_status !== 'approved') {
-            $missingReasons[] = 'Estado de Aplicación no aprobado';
+        if (!$proc->admissionDocsApproved()) {
+            $missingReasons[] = 'Documentos de admisión no aprobados';
         }
         if (!$proc->payment_1_verified) {
             $missingReasons[] = 'Pago 1 no verificado';
@@ -627,7 +627,7 @@
         if (!$proc->contract_signed) {
             $missingReasons[] = 'Contrato no firmado';
         }
-        $canAdvanceToMatch = empty($missingReasons);
+        $canAdvanceToMatch = empty($missingReasons); // == $proc->applicationRequirementsMet()
     @endphp
 
     @if($appAlreadyAdvanced)

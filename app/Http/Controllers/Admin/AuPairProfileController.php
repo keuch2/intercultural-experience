@@ -39,6 +39,7 @@ class AuPairProfileController extends Controller
                 'applications.payments',
                 'auPairProfile',
                 'auPairProcess.documents',
+                'auPairProcess.englishTests',
                 'englishEvaluations',
             ]);
 
@@ -113,7 +114,7 @@ class AuPairProfileController extends Controller
         $user = User::with([
             'applications' => function ($q) {
                 $q->whereHas('program', fn($pq) => $pq->where('subcategory', 'Au Pair'))
-                  ->with(['program', 'payments', 'documents'])
+                  ->with(['program', 'payments', 'documents', 'notes.admin'])
                   ->latest();
             },
             'auPairProfile.matches.familyProfile',
@@ -778,6 +779,31 @@ class AuPairProfileController extends Controller
         }
 
         return back()->with('error', 'No se puede avanzar. Verifique que se cumplan todos los requisitos.');
+    }
+
+    /**
+     * Aprobar al postulante: habilita el flujo de documentos en la app.
+     * Setea application.status = 'approved'. Hasta entonces, el participante
+     * ve un banner "Aprobación Pendiente" y no puede ver/subir documentos.
+     */
+    public function approveApplicant(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $application = $user->applications()
+            ->whereHas('program', fn ($q) => $q->where('subcategory', 'Au Pair'))
+            ->latest('id')
+            ->first();
+
+        if (! $application) {
+            return back()->with('error', 'No se encontró la postulación Au Pair.');
+        }
+
+        $approve = $request->input('action', 'approve') !== 'revoke';
+        $application->update(['status' => $approve ? 'approved' : 'pending']);
+
+        return back()->with('success', $approve
+            ? 'Postulante aprobado. Ya puede subir documentos desde la app.'
+            : 'Aprobación revocada. El postulante ya no puede subir documentos.');
     }
 
     // =========================================================================

@@ -181,8 +181,9 @@ class AdminFinanceController extends Controller
     {
         $programs = Program::with('currency')->orderBy('name')->get();
         $requisites = [];
-        
-        return view('admin.finance.create_payment', compact('programs', 'requisites'));
+        $currencies = Currency::orderBy('name')->get();
+
+        return view('admin.finance.create_payment', compact('programs', 'requisites', 'currencies'));
     }
 
     /**
