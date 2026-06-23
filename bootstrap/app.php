@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'agent' => \App\Http\Middleware\AgentMiddleware::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'activity.log' => \App\Http\Middleware\ActivityLogger::class,
+            // Override 'throttle' para desactivar el rate limiting de forma reversible
+            // vía env (API_RATE_LIMIT_DISABLED=true). Respeta los mismos parámetros
+            // (throttle:5,1, etc.) cuando el flag está apagado.
+            'throttle' => \App\Http\Middleware\ConditionalThrottle::class,
         ]);
         
         // CORS is handled in Kernel.php for API routes

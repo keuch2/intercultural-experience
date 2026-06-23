@@ -155,6 +155,25 @@
                         </div>
                     </div>
 
+                    {{-- Cambio de contraseña (opcional) --}}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">Nueva Contraseña</label>
+                            <input type="password" class="form-control @error('password') is-invalid @enderror"
+                                   id="password" name="password" autocomplete="new-password"
+                                   placeholder="Dejar vacío para no cambiar">
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label for="password_confirmation" class="form-label">Confirmar Contraseña</label>
+                            <input type="password" class="form-control"
+                                   id="password_confirmation" name="password_confirmation" autocomplete="new-password"
+                                   placeholder="Repetir la nueva contraseña">
+                        </div>
+                    </div>
+
                     {{-- Módulo 5: "Etapa Actual" and "Progreso" removed from edit form.
                          These values are calculated automatically from the application workflow.
                          "Costo del Programa" and "Tipo de Cambio" removed — managed from the Payments module. --}}
