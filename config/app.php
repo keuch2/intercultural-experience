@@ -43,6 +43,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | API Rate Limiting Toggle
+    |--------------------------------------------------------------------------
+    | Si está en true, el middleware ConditionalThrottle deja pasar las
+    | requests sin aplicar rate limiting (útil para pruebas). Leído vía config
+    | (no env() directo) para que funcione con config:cache en producción.
+    */
+
+    'api_rate_limit_disabled' => (bool) env('API_RATE_LIMIT_DISABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application URL
     |--------------------------------------------------------------------------
     |
