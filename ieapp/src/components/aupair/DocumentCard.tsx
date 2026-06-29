@@ -8,12 +8,19 @@ interface Props {
   entry: AuPairDocumentEntry;
   onUpload?: (entry: AuPairDocumentEntry) => void;
   onViewFiles?: (entry: AuPairDocumentEntry) => void;
+  onDelete?: (fileId: number, entry: AuPairDocumentEntry) => void;
 }
 
-const DocumentCard: React.FC<Props> = ({ entry, onUpload, onViewFiles }) => {
+const DocumentCard: React.FC<Props> = ({ entry, onUpload, onViewFiles, onDelete }) => {
   const isStaff = entry.uploaded_by === 'staff';
+  const isMulti = (entry.min_count != null && entry.min_count > 1) || !!entry.allow_multiple;
   const needsMore = entry.min_count && entry.count < entry.min_count;
   const rejected = entry.files.find(f => f.status === 'rejected');
+  // Para tipos de un solo archivo: el pendiente del participante se puede eliminar
+  // y volver a subir; el aprobado no se toca (solo IE).
+  const pendingFile = entry.files.find(f => f.status === 'pending');
+  const isApprovedSingle = !isMulti && entry.status === 'approved';
+  const isPendingSingle = !isMulti && entry.status === 'pending' && !!pendingFile;
 
   return (
     <View style={styles.card}>
@@ -42,6 +49,21 @@ const DocumentCard: React.FC<Props> = ({ entry, onUpload, onViewFiles }) => {
         <Text style={styles.staffNote}>
           <Ionicons name="lock-closed" size={11} color="#6B7280" /> Este documento lo carga el equipo IE.
         </Text>
+      ) : isApprovedSingle ? (
+        <Text style={styles.staffNote}>
+          <Ionicons name="lock-closed" size={11} color="#6B7280" /> Aprobado — solo el equipo IE puede modificarlo.
+        </Text>
+      ) : isPendingSingle ? (
+        // Single-file en revisión: solo permitir eliminar el archivo subido para
+        // corregirlo (no acumular). Tras eliminar, vuelve a "Falta" y puede subir.
+        <View style={styles.actions}>
+          {onDelete && pendingFile && (
+            <TouchableOpacity style={styles.btnDanger} onPress={() => onDelete(pendingFile.id, entry)}>
+              <Ionicons name="trash-outline" size={14} color="#fff" />
+              <Text style={styles.btnPrimaryText}>Eliminar</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       ) : (
         <View style={styles.actions}>
           {entry.count > 0 && onViewFiles && (
@@ -103,6 +125,15 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   btnPrimaryText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  btnDanger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
   btnSecondary: {
     flexDirection: 'row',
     alignItems: 'center',

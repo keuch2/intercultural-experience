@@ -103,6 +103,33 @@ class AuPairDocumentController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Este documento lo carga el equipo IE, no se puede subir desde la app.'], 403);
         }
 
+        // Para tipos de un solo archivo: evitar acumular documentos en cola.
+        // Si ya hay uno aprobado → solo IE puede cambiarlo. Si hay uno pendiente
+        // → el participante debe eliminarlo antes de subir otro.
+        $minCount = $cfg['min_count'] ?? null;
+        $isMulti = ($minCount !== null && $minCount > 1) || ! empty($cfg['allow_multiple']);
+        if (! $isMulti) {
+            $existing = $process->documents()
+                ->where('document_type', $type)
+                ->get();
+
+            if ($existing->contains(fn ($d) => $d->status === 'approved')) {
+                return response()->json([
+                    'status' => 'error',
+                    'code' => 'already_approved',
+                    'message' => 'Este documento ya fue aprobado. Para cambiarlo, contactá al equipo IE.',
+                ], 403);
+            }
+
+            if ($existing->contains(fn ($d) => $d->status === 'pending')) {
+                return response()->json([
+                    'status' => 'error',
+                    'code' => 'pending_exists',
+                    'message' => 'Ya tenés un archivo en revisión para este documento. Eliminalo antes de subir otro.',
+                ], 409);
+            }
+        }
+
         $created = [];
         foreach ($request->file('files') as $file) {
             // Validar tamaño según tipo

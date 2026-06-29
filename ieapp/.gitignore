@@ -38,3 +38,4 @@ yarn-error.*
 # Artefactos locales de QR/preview para Expo Go
 qr-cliente.html
 qr-expo-go.svg
+qr-apk.png

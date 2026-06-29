@@ -228,71 +228,75 @@
                     @foreach($admissionDocDefs as $docKey => $docDef)
                     @if($docKey === 'enrollment_form') @continue @endif
                     @php
-                        $doc = $docs->where('document_type', $docKey)->first();
+                        // Mostrar TODOS los archivos subidos de este tipo (no solo el primero),
+                        // para poder revisar/limpiar duplicados que el participante haya encolado.
+                        $typeDocs = $docs->where('document_type', $docKey)->sortBy('created_at')->values();
                     @endphp
                     <tr>
                         <td>
                             <i class="fas fa-file me-1 text-muted"></i>
                             {{ $docDef['label'] }}
-                            @if($doc && $doc->original_filename)
-                                <br><small class="text-muted"><i class="fas fa-paperclip"></i> {{ $doc->original_filename }} ({{ $doc->file_size_formatted }})</small>
-                            @endif
-                            @if($doc && $doc->rejection_reason)
-                                <br><small class="text-danger"><i class="fas fa-comment-alt"></i> {{ $doc->rejection_reason }}</small>
+                            @if($typeDocs->count() > 1)
+                                <span class="badge bg-warning text-dark ms-1" title="Archivos subidos para este tipo">{{ $typeDocs->count() }} subidos</span>
                             @endif
                         </td>
                         <td class="text-center">
                             <span class="badge bg-{{ $docDef['required'] ? 'danger' : 'secondary' }}">{{ $docDef['required'] ? 'Sí' : 'No' }}</span>
                         </td>
                         <td class="text-center">
-                            @if($doc)
-                                <span class="badge bg-{{ $doc->status_color }}">
-                                    @if($doc->status === 'approved') <i class="fas fa-check-circle"></i>
-                                    @elseif($doc->status === 'rejected') <i class="fas fa-times-circle"></i>
-                                    @else <i class="fas fa-clock"></i>
-                                    @endif
-                                    {{ $doc->status_label }}
-                                </span>
+                            @if($typeDocs->where('status', 'approved')->count())
+                                <span class="badge bg-success"><i class="fas fa-check-circle"></i> Aprobado</span>
+                            @elseif($typeDocs->where('status', 'pending')->count())
+                                <span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> En revisión</span>
+                            @elseif($typeDocs->count())
+                                <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Rechazado</span>
                             @else
                                 <span class="badge bg-light text-dark"><i class="fas fa-minus-circle"></i> Sin subir</span>
                             @endif
                         </td>
                         <td>
-                            @if($doc)
-                                <div class="d-flex gap-1 flex-wrap">
-                                    <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $doc->id]) }}" class="btn btn-sm btn-outline-primary" title="Descargar">
+                            @forelse($typeDocs as $doc)
+                                <div class="d-flex gap-1 flex-wrap align-items-center mb-1">
+                                    <span class="badge bg-{{ $doc->status_color }}">{{ $doc->status_label }}</span>
+                                    @if($doc->original_filename)
+                                        <small class="text-muted"><i class="fas fa-paperclip"></i> {{ $doc->original_filename }} ({{ $doc->file_size_formatted }})</small>
+                                    @endif
+                                    @if($doc->rejection_reason)
+                                        <small class="text-danger"><i class="fas fa-comment-alt"></i> {{ $doc->rejection_reason }}</small>
+                                    @endif
+                                    <a href="{{ route('admin.aupair.profiles.download-doc', [$user->id, $doc->id]) }}" class="btn btn-sm btn-outline-primary py-0" title="Descargar">
                                         <i class="fas fa-download"></i>
                                     </a>
                                     @if($doc->status !== 'approved')
                                         <form method="POST" action="{{ route('admin.aupair.profiles.review-doc', [$user->id, $doc->id]) }}" class="d-inline">
                                             @csrf @method('PUT')
                                             <input type="hidden" name="action" value="approve">
-                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Aprobar">
+                                            <button type="submit" class="btn btn-sm btn-outline-success py-0" title="Aprobar">
                                                 <i class="fas fa-check"></i>
                                             </button>
                                         </form>
-                                        <button class="btn btn-sm btn-outline-danger" title="Rechazar" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $doc->id }}">
+                                        <button class="btn btn-sm btn-outline-danger py-0" title="Rechazar" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $doc->id }}">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     @endif
                                     @if($doc->isApproved())
-                                        <button class="btn btn-sm btn-outline-danger" title="Eliminar (requiere motivo)" data-bs-toggle="modal" data-bs-target="#deleteApprovedDocModal{{ $doc->id }}">
+                                        <button class="btn btn-sm btn-outline-danger py-0" title="Eliminar (requiere motivo)" data-bs-toggle="modal" data-bs-target="#deleteApprovedDocModal{{ $doc->id }}">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     @else
                                         <form method="POST" action="{{ route('admin.aupair.profiles.delete-doc', [$user->id, $doc->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar este documento?')">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Eliminar">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary py-0" title="Eliminar">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                     @endif
                                 </div>
-                            @else
+                            @empty
                                 <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#uploadModal{{ $docKey }}">
                                     <i class="fas fa-upload"></i> Subir
                                 </button>
-                            @endif
+                            @endforelse
                         </td>
                     </tr>
                     @endforeach

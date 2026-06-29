@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  TouchableOpacity, SafeAreaView, RefreshControl,
+  TouchableOpacity, SafeAreaView, RefreshControl, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -67,6 +67,28 @@ const AuPairDocumentsScreen: React.FC = () => {
     (navigation as any).navigate('AuPairDocumentUpload', { entry });
   };
 
+  const handleDelete = (fileId: number, entry: AuPairDocumentEntry) => {
+    Alert.alert(
+      'Eliminar documento',
+      `¿Eliminar el archivo subido de "${entry.label}"? Podrás volver a subir otro.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await auPairService.deleteDocument(fileId);
+              load(stage);
+            } catch (e: any) {
+              Alert.alert('Error', e?.response?.data?.message || 'No pudimos eliminar el documento.');
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.headerBar}>
@@ -127,7 +149,7 @@ const AuPairDocumentsScreen: React.FC = () => {
             <EmptyState icon="folder-open-outline" title="Sin documentos en esta etapa" />
           ) : (
             entries.map(e => (
-              <DocumentCard key={e.document_type} entry={e} onUpload={handleUpload} />
+              <DocumentCard key={e.document_type} entry={e} onUpload={handleUpload} onDelete={handleDelete} />
             ))
           )}
         </ScrollView>
