@@ -1,0 +1,26 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "info": {
+      "es-ES": {
+        "title": "ie - intercultural experience",
+        "subtitle": "Programas de intercambio cultural",
+        "description": "ie - intercultural experience es la app oficial para participantes de nuestros programas de intercambio cultural internacional: Au Pair, Work & Travel, Teachers, Intern/Trainee, Higher Education, Work & Study y Language Program.\n\nDesde la app podés:\n- Seguir el estado de tu proceso de admisión paso a paso.\n- Completar los datos y requisitos específicos de tu programa.\n- Subir la documentación requerida de forma segura.\n- Registrar y dar seguimiento a tus pagos.\n- Recibir novedades sobre tu postulación.\n\nDiseñada para acompañarte durante toda tu experiencia intercultural, desde la postulación hasta tu viaje.",
+        "keywords": [
+          "intercambio",
+          "cultural",
+          "au pair",
+          "work and travel",
+          "estudiar",
+          "extranjero",
+          "programas",
+          "viajar"
+        ],
+        "marketingUrl": "https://ie.org.py",
+        "supportUrl": "https://ie.org.py",
+        "privacyPolicyUrl": "https://ie.org.py/privacidad"
+      }
+    },
+    "categories": ["EDUCATION", "TRAVEL"]
+  }
+}

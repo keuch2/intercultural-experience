@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ieapp",
+    "name": "ie - intercultural experience",
     "slug": "ieapp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,9 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.keuch2.ieapp",
+      "bundleIdentifier": "com.intercultural.experience",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Usamos tu galería para que puedas seleccionar y subir tu foto de perfil y los documentos requeridos en tu proceso de admisión."
       }
     },
     "android": {
@@ -24,7 +25,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.keuch2.ieapp"
+      "package": "com.intercultural.experience"
     },
     "web": {
       "favicon": "./assets/favicon.png"

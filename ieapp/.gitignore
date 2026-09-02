@@ -17,6 +17,10 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+# Credenciales de submit a tiendas (NUNCA commitear)
+credentials/
+google-play-service-account.json
+
 # Metro
 .metro-health-check*
 
@@ -39,3 +43,5 @@ yarn-error.*
 qr-cliente.html
 qr-expo-go.svg
 qr-apk.png
+qr-devserver.png
+qr-devserver.html

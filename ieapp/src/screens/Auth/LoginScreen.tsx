@@ -256,13 +256,15 @@ const LoginScreen: React.FC = () => {
                 />
               </TouchableOpacity>
               
-              {/* API Test Button */}
-              <TouchableOpacity 
-                style={styles.apiTestButton} 
-                onPress={goToApiTest}
-              >
-                <Text style={styles.apiTestButtonText}>API Test Screen</Text>
-              </TouchableOpacity>
+              {/* API Test Button — solo en desarrollo, nunca en builds de tienda */}
+              {__DEV__ && (
+                <TouchableOpacity
+                  style={styles.apiTestButton}
+                  onPress={goToApiTest}
+                >
+                  <Text style={styles.apiTestButtonText}>API Test Screen</Text>
+                </TouchableOpacity>
+              )}
             </View>
             </View>
           </ScrollView>

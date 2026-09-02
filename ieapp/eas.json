@@ -18,10 +18,23 @@
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "android": {
+        "buildType": "app-bundle"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "boris@mistercorporation.net",
+        "ascAppId": "REEMPLAZAR_app_store_connect_app_id",
+        "appleTeamId": "889Q6N2WS5"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./credentials/google-play-service-account.json",
+        "track": "internal"
+      }
+    }
   }
 }
