@@ -147,3 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
         </form>
     </div>
 </div>
+
+@if(!empty($tabData['stage']))
+    @include('admin.program-process.tabs.partials._stage_gate')
+@endif

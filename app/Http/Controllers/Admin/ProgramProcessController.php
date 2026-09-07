@@ -131,10 +131,18 @@ class ProgramProcessController extends Controller
             if (! $meta['implemented'] || $module === ModuleCatalog::ENGLISH_TEST || $module === ModuleCatalog::RESOURCES) {
                 continue; // inglés se renderiza dentro de su etapa; recursos es tab fija
             }
-            if (isset($tabs[$tab]) || ! view()->exists("admin.program-process.tabs._tab_{$tab}")) {
-                continue; // una etapa homónima ya cubre el módulo, o el módulo aún no tiene vista (fases siguientes)
+            if (! view()->exists("admin.program-process.tabs._tab_{$tab}")) {
+                continue; // el módulo aún no tiene vista de admin
             }
-            $tabs[$tab] = ['label' => $meta['label'], 'type' => 'module', 'key' => $module, 'icon' => $meta['icon']];
+            // Si existe una etapa homónima, la vista del módulo la reemplaza y hereda su stage_key
+            // para mostrar también documentos/gate de avance de esa etapa.
+            $tabs[$tab] = [
+                'label' => $tabs[$tab]['label'] ?? $meta['label'],
+                'type' => 'module',
+                'key' => $module,
+                'icon' => $meta['icon'],
+                'stage_key' => isset($tabs[$tab]) ? $tab : null,
+            ];
         }
         foreach (self::FIXED_TABS as $key => $label) {
             $tabs[$key] = ['label' => $label, 'type' => 'fixed', 'key' => $key, 'icon' => ['payments' => 'fa-money-bill-wave', 'resources' => 'fa-folder-open', 'reports' => 'fa-chart-bar'][$key]];
@@ -146,24 +154,41 @@ class ProgramProcessController extends Controller
     private function tabData(string $tab, array $meta, Program $program, ProgramProcess $process, ProgramDefinition $definition, $entries): array
     {
         if ($meta['type'] === 'stage') {
-            $stage = $definition->stage($meta['key']);
-
-            return [
-                'stage' => $stage,
-                'groups' => $definition->groups($stage->key),
-                'entries' => $entries->where('stage_key', $stage->key)->values(),
-                'checklist' => $definition->checklist($stage->key),
-                'gates' => collect((array) $stage->guardValue('require_gates', []))->map(fn ($k) => $definition->gate($k))->filter(),
-                'showEnglish' => $definition->hasModule(ModuleCatalog::ENGLISH_TEST) && ($stage->guardValue('require_english_min_level', false) || $stage->key === 'application'),
-                'englishTests' => $process->englishTests,
-                'englishRemaining' => $this->english->remainingAttempts($process),
-                'englishBest' => $this->english->bestLevel($process),
-                'blockingReasons' => $this->evaluator->blockingReasons($process),
-                'isCurrent' => $process->current_stage_key === $stage->key,
-                'isPast' => $definition->stageIndex($stage->key) < $definition->stageIndex($process->current_stage_key),
-            ];
+            return $this->stageData($meta['key'], $process, $definition, $entries);
         }
 
+        $data = $this->moduleData($tab, $program, $process, $definition, $entries);
+        if (! empty($meta['stage_key'])) {
+            $data = array_merge($this->stageData($meta['stage_key'], $process, $definition, $entries), $data);
+        }
+
+        return $data;
+    }
+
+    private function stageData(string $stageKey, ProgramProcess $process, ProgramDefinition $definition, $entries): array
+    {
+
+        $stage = $definition->stage($stageKey);
+
+        return [
+            'stage' => $stage,
+            'groups' => $definition->groups($stage->key),
+            'entries' => $entries->where('stage_key', $stage->key)->values(),
+            'checklist' => $definition->checklist($stage->key),
+            'gates' => collect((array) $stage->guardValue('require_gates', []))->map(fn ($k) => $definition->gate($k))->filter(),
+            'showEnglish' => $definition->hasModule(ModuleCatalog::ENGLISH_TEST) && ($stage->guardValue('require_english_min_level', false) || $stage->key === 'application'),
+            'englishTests' => $process->englishTests,
+            'englishRemaining' => $this->english->remainingAttempts($process),
+            'englishBest' => $this->english->bestLevel($process),
+            'blockingReasons' => $this->evaluator->blockingReasons($process),
+            'isCurrent' => $process->current_stage_key === $stage->key,
+            'isPast' => $definition->stageIndex($stage->key) < $definition->stageIndex($process->current_stage_key),
+        ];
+
+    }
+
+    private function moduleData(string $tab, Program $program, ProgramProcess $process, ProgramDefinition $definition, $entries): array
+    {
         return match ($tab) {
             'visa' => [
                 'visa' => $process->visaProcess ?? $process->visaProcess()->create([]),
@@ -180,7 +205,21 @@ class ProgramProcessController extends Controller
             ]),
             'resources' => ['resources' => $program->resources()->get()],
             'reports' => ['logs' => ActivityLog::where('log_name', $program->slug)->where('subject_id', $process->user_id)->latest()->limit(100)->get()],
-            default => app()->bound("program-engine.tab.{$tab}") ? app("program-engine.tab.{$tab}")($process, $definition) : [],
+            'job_pool' => [
+                'access' => $process->moduleAccess(ModuleCatalog::JOB_POOL),
+                'assignment' => $process->activeJobAssignment()->with('offer')->first(),
+                'history' => $process->jobAssignments()->with(['offer', 'assignedBy', 'releasedBy'])->get(),
+                'events' => \App\Models\JobPoolEvent::where('program_process_id', $process->id)->with(['offer', 'actor'])->orderByDesc('created_at')->limit(50)->get(),
+                'offers' => app(\App\Services\ProgramEngine\JobPoolService::class)->availableFor($process),
+            ],
+            'placement' => [
+                'placement' => app(\App\Services\ProgramEngine\PlacementService::class)->ensure($process),
+                'assignment' => $process->activeJobAssignment()->with('offer')->first(),
+                'sponsors' => \App\Models\Sponsor::where('is_active', true)->orderBy('name')->get(),
+                'entries' => $entries->where('stage_key', 'placement')->values(),
+                'documentsComplete' => app(\App\Services\ProgramEngine\PlacementService::class)->documentsComplete($process),
+            ],
+            default => [],
         };
     }
 
@@ -530,6 +569,26 @@ class ProgramProcessController extends Controller
         $log->delete();
 
         return $this->toTab($program, $process, 'support', 'Registro eliminado.');
+    }
+
+    // ── Acciones: Job Placement ────────────────────────────────────────
+    public function updatePlacement(Request $request, Program $program, ProgramProcess $process, \App\Services\ProgramEngine\PlacementService $placements)
+    {
+        $this->assertOwned($program, $process);
+        $data = $request->validate([
+            'sponsor_id' => 'nullable|exists:sponsors,id',
+            'status' => ['nullable', Rule::in(array_keys(\App\Models\JobPlacement::STATUSES))],
+            'acceptance_date' => 'nullable|date', 'program_start_date' => 'nullable|date', 'program_end_date' => 'nullable|date|after_or_equal:program_start_date',
+            'terms_accepted' => 'nullable|boolean',
+            'sevis_number' => 'nullable|string|max:30', 'ds2019_number' => 'nullable|string|max:30',
+            'ds_tracking_carrier' => 'nullable|string|max:50', 'ds_tracking_number' => 'nullable|string|max:80', 'ds_received_at' => 'nullable|date',
+            'notes' => 'nullable|string|max:2000',
+        ]);
+        $data['terms_accepted'] = $request->boolean('terms_accepted');
+        $placements->update($process, $data, $request->user());
+        $this->log($program, $process, 'placement_updated', 'Job Placement actualizado');
+
+        return $this->toTab($program, $process, 'placement', 'Job Placement actualizado.');
     }
 
     // ── Acciones: acceso a módulos ─────────────────────────────────────

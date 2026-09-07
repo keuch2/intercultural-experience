@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminProgramRequisiteController;
 use App\Http\Controllers\Admin\ProgramConfigController;
 use App\Http\Controllers\Admin\ProgramProcessController;
+use App\Http\Controllers\Admin\JobPoolOfferController;
 use App\Http\Controllers\Admin\AdminUserProgramRequisiteController;
 use App\Http\Controllers\Admin\AdminCurrencyController;
 use App\Http\Controllers\Admin\AdminAgentController;
@@ -498,6 +499,23 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             Route::put('/participantes/{process}/notes', [ProgramProcessController::class, 'updateNotes'])->name('notes.update');
             Route::post('/participantes/{process}/participant-notes', [ProgramProcessController::class, 'storeParticipantNote'])->name('participant-notes.store');
             Route::delete('/participantes/{process}/participant-notes/{note}', [ProgramProcessController::class, 'deleteParticipantNote'])->name('participant-notes.delete');
+            // Job Placement
+            Route::put('/participantes/{process}/placement', [ProgramProcessController::class, 'updatePlacement'])->name('placement.update');
+            // Pool de Ofertas Laborales
+            Route::get('/ofertas', [JobPoolOfferController::class, 'index'])->name('job-pool.index');
+            Route::get('/ofertas/nueva', [JobPoolOfferController::class, 'create'])->name('job-pool.create');
+            Route::post('/ofertas', [JobPoolOfferController::class, 'store'])->name('job-pool.store');
+            Route::get('/ofertas/{offer}', [JobPoolOfferController::class, 'show'])->name('job-pool.show');
+            Route::get('/ofertas/{offer}/editar', [JobPoolOfferController::class, 'edit'])->name('job-pool.edit');
+            Route::put('/ofertas/{offer}', [JobPoolOfferController::class, 'update'])->name('job-pool.update');
+            Route::delete('/ofertas/{offer}', [JobPoolOfferController::class, 'destroy'])->name('job-pool.destroy');
+            Route::get('/ofertas/{offer}/pdf', [JobPoolOfferController::class, 'pdf'])->name('job-pool.pdf');
+            Route::post('/ofertas/{offer}/pause', [JobPoolOfferController::class, 'pause'])->name('job-pool.pause');
+            Route::post('/ofertas/{offer}/reactivate', [JobPoolOfferController::class, 'reactivate'])->name('job-pool.reactivate');
+            Route::post('/ofertas/{offer}/close', [JobPoolOfferController::class, 'close'])->name('job-pool.close');
+            Route::post('/ofertas/{offer}/assign', [JobPoolOfferController::class, 'assign'])->name('job-pool.assign');
+            Route::post('/ofertas/{offer}/assignments/{assignment}/release', [JobPoolOfferController::class, 'release'])->name('job-pool.release');
+            Route::post('/ofertas/{offer}/assignments/{assignment}/reassign', [JobPoolOfferController::class, 'reassign'])->name('job-pool.reassign');
             // Recursos del programa → tab de configuración
             Route::get('/recursos', fn (\App\Models\Program $program) => redirect()->route('admin.program-config.show', ['program' => $program->id, 'tab' => 'resources']))->name('resources.index');
         });

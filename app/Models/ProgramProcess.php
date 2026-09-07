@@ -96,6 +96,21 @@ class ProgramProcess extends Model
         return $this->hasMany(ProgramSupportLog::class)->orderByDesc('log_date');
     }
 
+    public function jobAssignments(): HasMany
+    {
+        return $this->hasMany(JobPoolAssignment::class)->orderByDesc('selected_at');
+    }
+
+    public function activeJobAssignment(): HasOne
+    {
+        return $this->hasOne(JobPoolAssignment::class, 'active_process_id');
+    }
+
+    public function placement(): HasOne
+    {
+        return $this->hasOne(JobPlacement::class);
+    }
+
     // Helpers de estado
     public function stageState(string $stageKey): array
     {

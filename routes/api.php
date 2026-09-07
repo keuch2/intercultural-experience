@@ -179,6 +179,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['throttle:3,1'])->group(function () {
         Route::apiResource('support-tickets', SupportTicketController::class)->names('api.support-tickets');
     });
+    // Notificaciones in-app (rutas específicas antes del apiResource para que no las capture {notification})
+    Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('api.notifications.unread-count');
+    Route::patch('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('api.notifications.mark-all-read');
+    Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('api.notifications.read');
+    Route::delete('notifications/{id}', [NotificationController::class, 'destroy'])->name('api.notifications.destroy');
     Route::apiResource('notifications', NotificationController::class)->only(['index', 'show', 'update'])->names(['index' => 'api.notifications.index', 'show' => 'api.notifications.show', 'update' => 'api.notifications.update']);
 
     // Forms - with rate limiting for submissions
@@ -277,6 +282,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/support-logs', [\App\Http\Controllers\API\ProgramEngine\SupportLogController::class, 'index'])->name('support-logs');
         Route::get('/resources', [\App\Http\Controllers\API\ProgramEngine\ResourceController::class, 'index'])->name('resources.index');
         Route::get('/resources/{id}/download', [\App\Http\Controllers\API\ProgramEngine\ResourceController::class, 'download'])->name('resources.download');
+        // Pool de Ofertas Laborales y Job Placement
+        Route::get('/job-pool/offers', [\App\Http\Controllers\API\ProgramEngine\JobPoolController::class, 'index'])->name('job-pool.offers');
+        Route::get('/job-pool/offers/{id}/pdf', [\App\Http\Controllers\API\ProgramEngine\JobPoolController::class, 'pdf'])->name('job-pool.pdf');
+        Route::middleware('throttle:10,1')->post('/job-pool/offers/{id}/select', [\App\Http\Controllers\API\ProgramEngine\JobPoolController::class, 'select'])->name('job-pool.select');
+        Route::get('/job-pool/assignment', [\App\Http\Controllers\API\ProgramEngine\JobPoolController::class, 'assignment'])->name('job-pool.assignment');
+        Route::get('/placement', [\App\Http\Controllers\API\ProgramEngine\PlacementController::class, 'show'])->name('placement');
     });
     // ========================================
     // AU PAIR — Mobile App V1 (Sprint 0 stubs)
