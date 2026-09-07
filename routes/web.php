@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\AdminProgramRequisiteController;
 use App\Http\Controllers\Admin\ProgramConfigController;
 use App\Http\Controllers\Admin\ProgramProcessController;
 use App\Http\Controllers\Admin\JobPoolOfferController;
+use App\Http\Controllers\Admin\ProgramReportController;
 use App\Http\Controllers\Admin\AdminUserProgramRequisiteController;
 use App\Http\Controllers\Admin\AdminCurrencyController;
 use App\Http\Controllers\Admin\AdminAgentController;
@@ -516,6 +517,9 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             Route::post('/ofertas/{offer}/assign', [JobPoolOfferController::class, 'assign'])->name('job-pool.assign');
             Route::post('/ofertas/{offer}/assignments/{assignment}/release', [JobPoolOfferController::class, 'release'])->name('job-pool.release');
             Route::post('/ofertas/{offer}/assignments/{assignment}/reassign', [JobPoolOfferController::class, 'reassign'])->name('job-pool.reassign');
+            // Informes y planillas
+            Route::get('/informes', [ProgramReportController::class, 'index'])->name('reports.index');
+            Route::get('/informes/export', [ProgramReportController::class, 'export'])->name('reports.export');
             // Recursos del programa → tab de configuración
             Route::get('/recursos', fn (\App\Models\Program $program) => redirect()->route('admin.program-config.show', ['program' => $program->id, 'tab' => 'resources']))->name('resources.index');
         });
@@ -610,31 +614,30 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::get('/au-pair/families', fn () => redirect()->route('admin.aupair.profiles.index'));
         Route::get('/au-pair/matching', fn () => redirect()->route('admin.aupair.profiles.index'));
         
-        // Work & Travel Management
+        // ========================================
+        // WORK & TRAVEL LEGACY → redirige al hub del motor de programas
+        // (mismos nombres de ruta para no romper enlaces existentes; el módulo
+        // legacy de validaciones/empleadores/contratos quedó reemplazado por
+        // /admin/programas/work-travel/*). Controller y vistas legacy se eliminan
+        // en un commit de limpieza posterior.
+        // ========================================
         Route::prefix('work-travel')->name('admin.work-travel.')->group(function () {
-            Route::get('/dashboard', [\App\Http\Controllers\Admin\WorkTravelController::class, 'dashboard'])->name('dashboard');
-            
-            // Validations
-            Route::get('/validations', [\App\Http\Controllers\Admin\WorkTravelController::class, 'validations'])->name('validations');
-            Route::get('/validations/{id}', [\App\Http\Controllers\Admin\WorkTravelController::class, 'showValidation'])->name('validation.show');
-            Route::post('/validations/{id}/validate', [\App\Http\Controllers\Admin\WorkTravelController::class, 'validateStudent'])->name('validation.validate');
-            
-            // Employers
-            Route::get('/employers', [\App\Http\Controllers\Admin\WorkTravelController::class, 'employers'])->name('employers');
-            Route::get('/employers/create', [\App\Http\Controllers\Admin\WorkTravelController::class, 'createEmployer'])->name('employer.create');
-            Route::post('/employers', [\App\Http\Controllers\Admin\WorkTravelController::class, 'storeEmployer'])->name('employer.store');
-            Route::get('/employers/{id}', [\App\Http\Controllers\Admin\WorkTravelController::class, 'showEmployer'])->name('employer.show');
-            Route::post('/employers/{id}/verify', [\App\Http\Controllers\Admin\WorkTravelController::class, 'verifyEmployer'])->name('employer.verify');
-            
-            // Contracts
-            Route::get('/contracts', [\App\Http\Controllers\Admin\WorkTravelController::class, 'contracts'])->name('contracts');
-            Route::get('/contracts/{id}', [\App\Http\Controllers\Admin\WorkTravelController::class, 'showContract'])->name('contract.show');
-            Route::post('/contracts/{id}/verify', [\App\Http\Controllers\Admin\WorkTravelController::class, 'verifyContract'])->name('contract.verify');
-            
-            // Matching
-            Route::get('/matching', [\App\Http\Controllers\Admin\WorkTravelController::class, 'matching'])->name('matching');
+            $toHub = fn () => redirect()->route('admin.program.participants.index', 'work-travel');
+            $toPool = fn () => redirect()->route('admin.program.job-pool.index', 'work-travel');
+            Route::get('/dashboard', $toHub)->name('dashboard');
+            Route::get('/validations', $toHub)->name('validations');
+            Route::get('/validations/{id}', $toHub)->name('validation.show');
+            Route::post('/validations/{id}/validate', $toHub)->name('validation.validate');
+            Route::get('/employers', $toPool)->name('employers');
+            Route::get('/employers/create', $toPool)->name('employer.create');
+            Route::post('/employers', $toPool)->name('employer.store');
+            Route::get('/employers/{id}', $toPool)->name('employer.show');
+            Route::post('/employers/{id}/verify', $toPool)->name('employer.verify');
+            Route::get('/contracts', $toHub)->name('contracts');
+            Route::get('/contracts/{id}', $toHub)->name('contract.show');
+            Route::post('/contracts/{id}/verify', $toHub)->name('contract.verify');
+            Route::get('/matching', $toPool)->name('matching');
         });
-        
         // Teachers Program Management
         Route::prefix('teachers')->name('admin.teachers.')->group(function () {
             Route::get('/dashboard', [\App\Http\Controllers\Admin\TeacherController::class, 'dashboard'])->name('dashboard');
