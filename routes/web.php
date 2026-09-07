@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\AdminRedemptionController;
 use App\Http\Controllers\Admin\AdminSupportTicketController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminProgramRequisiteController;
+use App\Http\Controllers\Admin\ProgramConfigController;
 use App\Http\Controllers\Admin\AdminUserProgramRequisiteController;
 use App\Http\Controllers\Admin\AdminCurrencyController;
 use App\Http\Controllers\Admin\AdminAgentController;
@@ -129,6 +130,30 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::put('/programs/{program}/requisites/{requisite}', [AdminProgramRequisiteController::class, 'update'])->name('admin.programs.requisites.update');
         Route::delete('/programs/{program}/requisites/{requisite}', [AdminProgramRequisiteController::class, 'destroy'])->name('admin.programs.requisites.destroy');
         Route::post('/programs/{program}/requisites/order', [AdminProgramRequisiteController::class, 'updateOrder'])->name('admin.programs.requisites.updateOrder');
+
+        // Motor de programas: configuración (etapas, documentos, checklist, gates, módulos, reglas, recursos)
+        Route::prefix('/ie-programs/{program}/config')->name('admin.program-config.')->group(function () {
+            Route::get('/', [ProgramConfigController::class, 'show'])->name('show');
+            Route::post('/stages', [ProgramConfigController::class, 'storeStage'])->name('stages.store');
+            Route::put('/stages/{stage}', [ProgramConfigController::class, 'updateStage'])->name('stages.update');
+            Route::delete('/stages/{stage}', [ProgramConfigController::class, 'destroyStage'])->name('stages.destroy');
+            Route::post('/documents', [ProgramConfigController::class, 'storeRequirement'])->name('documents.store');
+            Route::put('/documents/{requirement}', [ProgramConfigController::class, 'updateRequirement'])->name('documents.update');
+            Route::delete('/documents/{requirement}', [ProgramConfigController::class, 'destroyRequirement'])->name('documents.destroy');
+            Route::post('/checklist', [ProgramConfigController::class, 'storeChecklistItem'])->name('checklist.store');
+            Route::put('/checklist/{item}', [ProgramConfigController::class, 'updateChecklistItem'])->name('checklist.update');
+            Route::delete('/checklist/{item}', [ProgramConfigController::class, 'destroyChecklistItem'])->name('checklist.destroy');
+            Route::post('/gates', [ProgramConfigController::class, 'storeGate'])->name('gates.store');
+            Route::put('/gates/{gate}', [ProgramConfigController::class, 'updateGate'])->name('gates.update');
+            Route::delete('/gates/{gate}', [ProgramConfigController::class, 'destroyGate'])->name('gates.destroy');
+            Route::put('/modules', [ProgramConfigController::class, 'updateModules'])->name('modules.update');
+            Route::put('/rules', [ProgramConfigController::class, 'updateRules'])->name('rules.update');
+            Route::put('/onboarding', [ProgramConfigController::class, 'updateOnboarding'])->name('onboarding.update');
+            Route::post('/resources', [ProgramConfigController::class, 'storeResource'])->name('resources.store');
+            Route::put('/resources/{resource}', [ProgramConfigController::class, 'updateResource'])->name('resources.update');
+            Route::delete('/resources/{resource}', [ProgramConfigController::class, 'destroyResource'])->name('resources.destroy');
+            Route::get('/resources/{resource}/download', [ProgramConfigController::class, 'downloadResource'])->name('resources.download');
+        });
         
         // Applications Management
         Route::get('/applications', [AdminApplicationController::class, 'index'])->name('admin.applications.index');

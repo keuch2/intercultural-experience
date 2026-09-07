@@ -17,6 +17,7 @@
                             </p>
                         </div>
                         <div class="btn-group">
+                            <a href="{{ route('admin.program-config.show', $program) }}" class="btn btn-warning"><i class="fas fa-cogs"></i> Configurar motor</a>
                             <a href="{{ route('admin.ie-programs.edit', $program) }}" class="btn btn-primary">
                                 <i class="fas fa-edit"></i> Editar
                             </a>

@@ -214,8 +214,21 @@ class Application extends Model
      *
      * @return int
      */
+    public function programProcess()
+    {
+        return $this->hasOne(ProgramProcess::class);
+    }
+
     public function getProgressPercentage()
     {
+        // Programas del motor: el progreso lo calcula el ProgramEngine.
+        if ($this->relationLoaded('program') ? $this->program?->engine_enabled : optional($this->program)->engine_enabled) {
+            $process = $this->programProcess()->first();
+            if ($process) {
+                return app(\App\Services\ProgramEngine\ProgressCalculator::class)->percent($process);
+            }
+        }
+
         $totalRequisites = $this->requisites()->count();
 
         if ($totalRequisites > 0) {

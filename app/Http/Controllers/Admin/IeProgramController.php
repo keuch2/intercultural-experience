@@ -82,10 +82,16 @@ class IeProgramController extends Controller
             'currency_id' => 'nullable|exists:currencies,id',
             'institution_id' => 'nullable|exists:institutions,id',
             'is_active' => 'required|in:0,1',
+            'slug' => ['nullable', 'string', 'max:60', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', 'unique:programs,slug'],
+            'is_available_in_app' => 'nullable|boolean',
+            'engine_enabled' => 'nullable|boolean',
         ]);
         
-        $data = $request->all();
+        $data = $request->except(['is_available_in_app', 'engine_enabled']);
         $data['main_category'] = 'IE';
+        $data['slug'] = $this->resolveSlug($request->input('slug'), $request->input('name'));
+        $data['is_available_in_app'] = $request->boolean('is_available_in_app');
+        $data['engine_enabled'] = $request->boolean('engine_enabled');
         
         // Asignar valores por defecto si son nulos
         $data['capacity'] = $data['capacity'] ?? 0;
@@ -174,7 +180,14 @@ class IeProgramController extends Controller
             'currency_id' => 'nullable|exists:currencies,id',
             'institution_id' => 'nullable|exists:institutions,id',
             'is_active' => 'required|in:0,1',
+            'slug' => ['nullable', 'string', 'max:60', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', 'unique:programs,slug,' . $program->id],
+            'is_available_in_app' => 'nullable|boolean',
+            'engine_enabled' => 'nullable|boolean',
         ]);
+
+        $validatedData['slug'] = $this->resolveSlug($validatedData['slug'] ?? null, $validatedData['name'], $program);
+        $validatedData['is_available_in_app'] = $request->boolean('is_available_in_app');
+        $validatedData['engine_enabled'] = $request->boolean('engine_enabled');
         
         // Manejar subida de imagen
         if ($request->hasFile('image')) {
@@ -277,6 +290,22 @@ class IeProgramController extends Controller
         
         return redirect()->route('admin.ie-programs.index')
             ->with('success', 'Programa IE eliminado correctamente.');
+    }
+
+    /**
+     * Slug estable del programa (identificador del motor). Si viene vacío se deriva
+     * del nombre garantizando unicidad.
+     */
+    private function resolveSlug(?string $slug, string $name, ?Program $current = null): string
+    {
+        $base = $slug ?: (\Illuminate\Support\Str::slug($name) ?: 'programa');
+        $candidate = $base;
+        $i = 2;
+        while (Program::where('slug', $candidate)->when($current, fn ($q) => $q->where('id', '!=', $current->id))->exists()) {
+            $candidate = $base . '-' . $i++;
+        }
+
+        return $candidate;
     }
 
     /**

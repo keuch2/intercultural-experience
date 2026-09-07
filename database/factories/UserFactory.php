@@ -33,10 +33,7 @@ class UserFactory extends Factory
             'nationality' => fake()->country(),
             'birth_date' => fake()->date(),
             'address' => fake()->address(),
-            'bank_info' => json_encode([
-                'account_number' => fake()->bankAccountNumber(),
-                'bank_name' => fake()->company(),
-            ]),
+            'bank_info' => null, // el mutador cifra el valor y la columna es JSON: solo null es válido en MySQL
             'remember_token' => Str::random(10),
         ];
     }

@@ -11,6 +11,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h3 class="card-title">Editar Programa IE: {{ $program->name }}</h3>
                         <div class="btn-group">
+                            <a href="{{ route('admin.program-config.show', $program) }}" class="btn btn-warning">
+                                <i class="fas fa-cogs"></i> Configurar motor
+                            </a>
                             <a href="{{ route('admin.ie-programs.show', $program) }}" class="btn btn-info">
                                 <i class="fas fa-eye"></i> Ver
                             </a>
@@ -229,6 +232,38 @@
                             </div>
                             <div class="card-body">
                                 <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="card border-warning mb-3">
+                                            <div class="card-header bg-warning-subtle py-2"><strong><i class="fas fa-cogs me-1"></i> Motor de programas</strong></div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <div class="mb-3">
+                                                            <label for="slug" class="form-label">Slug (identificador estable)</label>
+                                                            <input type="text" class="form-control @error('slug') is-invalid @enderror" id="slug" name="slug" value="{{ old('slug', $program->slug) }}" placeholder="work-travel">
+                                                            <div class="form-text">Minúsculas y guiones. Se usa en rutas y en la app. Vacío = se deriva del nombre.</div>
+                                                            @error('slug')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch mt-4">
+                                                            <input type="hidden" name="engine_enabled" value="0">
+                                                            <input class="form-check-input" type="checkbox" id="engine_enabled" name="engine_enabled" value="1" {{ old('engine_enabled', $program->engine_enabled) ? 'checked' : '' }}>
+                                                            <label class="form-check-label" for="engine_enabled">Gestionado por el motor (etapas configurables)</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch mt-4">
+                                                            <input type="hidden" name="is_available_in_app" value="0">
+                                                            <input class="form-check-input" type="checkbox" id="is_available_in_app" name="is_available_in_app" value="1" {{ old('is_available_in_app', $program->getAttributes()['is_available_in_app'] ?? false) ? 'checked' : '' }}>
+                                                            <label class="form-check-label" for="is_available_in_app">Disponible para postular desde la app</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <a href="{{ route('admin.program-config.show', $program) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-cogs"></i> Configurar etapas, documentos y módulos</a>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="col-md-12">
                                         <div class="mb-3">
                                             <label for="is_active" class="form-label">Estado *</label>

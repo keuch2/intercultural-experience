@@ -68,7 +68,7 @@ class ProgramsSeeder extends Seeder
                 'name' => 'Work & Study',
                 'description' => 'Combina estudios de idiomas o certificaciones con trabajo a tiempo parcial. Ideal para estudiantes que buscan mejorar su inglés mientras trabajan.',
                 'main_category' => 'IE',
-                'subcategory' => 'Work and Travel',
+                'subcategory' => 'Work and Study',
                 'country' => 'Irlanda, Malta, Australia',
                 'duration' => '6-12 meses',
                 'cost' => 2800.00,

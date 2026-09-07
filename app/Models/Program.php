@@ -30,7 +30,14 @@ class Program extends Model
         'image_url', 
         'cost', 
         'currency_id', 
-        'institution_id'
+        'institution_id',
+        // Motor de programas
+        'slug',
+        'is_available_in_app',
+        'engine_enabled',
+        'modules',
+        'rules',
+        'onboarding',
     ];
 
     protected $casts = [
@@ -39,6 +46,10 @@ class Program extends Model
         'end_date' => 'date', 
         'application_deadline' => 'date',
         'cost' => 'decimal:4',
+        'engine_enabled' => 'boolean',
+        'modules' => 'array',
+        'rules' => 'array',
+        'onboarding' => 'array',
     ];
 
     /**
@@ -50,6 +61,7 @@ class Program extends Model
         'status',
         'available_slots',
         'is_available_in_app',
+        'engine_enabled',
     ];
 
     // Relationships
@@ -136,6 +148,47 @@ class Program extends Model
         return $this->hasMany(ProgramAssignment::class)->active();
     }
 
+    // ── Motor de programas ─────────────────────────────────────────────
+    public function stages()
+    {
+        return $this->hasMany(ProgramStage::class)->orderBy('sort_order');
+    }
+
+    public function documentRequirements()
+    {
+        return $this->hasMany(ProgramDocumentRequirement::class)->orderBy('sort_order');
+    }
+
+    public function checklistItems()
+    {
+        return $this->hasMany(ProgramChecklistItem::class)->orderBy('sort_order');
+    }
+
+    public function paymentGates()
+    {
+        return $this->hasMany(ProgramPaymentGate::class)->orderBy('sort_order');
+    }
+
+    public function resources()
+    {
+        return $this->hasMany(ProgramResource::class)->orderBy('sort_order');
+    }
+
+    public function processes()
+    {
+        return $this->hasMany(ProgramProcess::class);
+    }
+
+    public function scopeEngineEnabled($query)
+    {
+        return $query->where('engine_enabled', true);
+    }
+
+    public function scopeBySlug($query, string $slug)
+    {
+        return $query->where('slug', $slug);
+    }
+
     // Accessors
     public function getFormattedCostAttribute()
     {
@@ -194,12 +247,35 @@ class Program extends Model
 
     /**
      * Flag para mobile: indica si el programa puede postularse desde la app.
-     * V1: solo Au Pair. Los demás programas se muestran como promocionales.
+     * Columna real (habilitable por programa desde el admin) con OR sobre Au Pair,
+     * que históricamente fue el único habilitado y no depende de la columna.
      */
     public function getIsAvailableInAppAttribute(): bool
     {
-        return $this->subcategory === self::SUBCATEGORY_AU_PAIR;
+        return (bool) ($this->attributes['is_available_in_app'] ?? false)
+            || $this->subcategory === self::SUBCATEGORY_AU_PAIR;
     }
+
+    /**
+     * Programa gestionado por el motor genérico (etapas/documentos/gates configurables).
+     */
+    public function getEngineEnabledAttribute(): bool
+    {
+        return (bool) ($this->attributes['engine_enabled'] ?? false);
+    }
+
+    /** Módulos del catálogo habilitados para este programa. */
+    public function hasModule(string $module): bool
+    {
+        return in_array($module, $this->modules ?? [], true);
+    }
+
+    /** Lee una regla de configuración del programa con valor por defecto. */
+    public function rule(string $key, mixed $default = null): mixed
+    {
+        return data_get($this->rules ?? [], $key, $default);
+    }
+
 
     /**
      * Indica si el programa requiere proceso de visa.
