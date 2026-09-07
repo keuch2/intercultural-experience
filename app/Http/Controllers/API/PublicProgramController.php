@@ -9,7 +9,7 @@ use App\Models\Program;
  * Endpoints públicos (sin auth) para que visitantes exploren la oferta
  * promocional de programas desde la app móvil. Cualquier programa activo
  * de la categoría IE se lista; el flag `is_available_in_app` indica si
- * el usuario puede postularse desde la app (V1: solo Au Pair) o si debe
+ * el usuario puede postularse desde la app (Au Pair o programas del motor) o si debe
  * contactar por WhatsApp.
  */
 class PublicProgramController extends Controller
@@ -57,6 +57,10 @@ class PublicProgramController extends Controller
             'image_url' => $program->image_url,
             'duration' => $program->duration,
             'is_available_in_app' => $program->is_available_in_app,
+            // Motor de programas: la app decide el flujo (Au Pair vs genérico) con estos campos.
+            'slug' => $program->slug,
+            'engine_enabled' => $program->engine_enabled,
+            'modules' => $program->engine_enabled ? ($program->modules ?? []) : [],
         ];
 
         if ($withDetail) {
@@ -66,6 +70,7 @@ class PublicProgramController extends Controller
             $base['capacity'] = $program->capacity;
             $base['credits'] = $program->credits;
             $base['cost'] = $program->cost;
+            $base['onboarding'] = $program->engine_enabled ? $program->onboarding : null;
         }
 
         return $base;

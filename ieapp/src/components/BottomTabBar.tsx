@@ -4,6 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { useOptionalProgram } from '../contexts/ProgramContext';
+import { screensFor } from '../navigation/programFlowRegistry';
 
 /**
  * V1 (Au Pair-only): tabs centrados en el flujo Au Pair.
@@ -30,12 +32,13 @@ type TabConfig = {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   iconActive: keyof typeof Ionicons.glyphMap;
-  target: keyof RootStackParamList;
+  target: string;
 };
 
+// `home` y `documents` se resuelven por flujo (Au Pair vs motor) en tiempo de render.
 const TABS: TabConfig[] = [
-  { key: 'home', label: 'Inicio', icon: 'home-outline', iconActive: 'home', target: 'AuPairDashboard' },
-  { key: 'documents', label: 'Documentos', icon: 'document-text-outline', iconActive: 'document-text', target: 'AuPairDocuments' },
+  { key: 'home', label: 'Inicio', icon: 'home-outline', iconActive: 'home', target: 'ProgramDashboard' },
+  { key: 'documents', label: 'Documentos', icon: 'document-text-outline', iconActive: 'document-text', target: 'ProgramDocuments' },
   { key: 'payments', label: 'Pagos', icon: 'card-outline', iconActive: 'card', target: 'Payments' },
   { key: 'notifications', label: 'Avisos', icon: 'notifications-outline', iconActive: 'notifications', target: 'Notifications' },
   { key: 'profile', label: 'Perfil', icon: 'person-outline', iconActive: 'person', target: 'Profile' },
@@ -43,10 +46,18 @@ const TABS: TabConfig[] = [
 
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, setActiveTab }) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const program = useOptionalProgram();
+  const flowScreens = screensFor(program?.flow ?? 'aupair');
+
+  const targetFor = (tab: TabConfig): string => {
+    if (tab.key === 'home') return flowScreens.home;
+    if (tab.key === 'documents') return flowScreens.documents;
+    return tab.target;
+  };
 
   const handlePress = (tab: TabConfig) => {
     setActiveTab(tab.key);
-    navigation.navigate(tab.target as never);
+    navigation.navigate(targetFor(tab) as never);
   };
 
   return (

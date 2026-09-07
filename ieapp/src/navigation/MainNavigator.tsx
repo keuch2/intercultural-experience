@@ -29,6 +29,18 @@ import AuPairSupportScreen from '../screens/AuPair/AuPairSupportScreen';
 import AuPairResourcesScreen from '../screens/AuPair/AuPairResourcesScreen';
 import AuPairOnboardingScreen from '../screens/AuPair/AuPairOnboardingScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
+import ProgramDashboardScreen from '../screens/Program/ProgramDashboardScreen';
+import ProgramDocumentsScreen from '../screens/Program/ProgramDocumentsScreen';
+import ProgramDocumentUploadScreen from '../screens/Program/ProgramDocumentUploadScreen';
+import ProgramEnglishTestScreen from '../screens/Program/ProgramEnglishTestScreen';
+import ProgramVisaScreen from '../screens/Program/ProgramVisaScreen';
+import ProgramSupportScreen from '../screens/Program/ProgramSupportScreen';
+import ProgramResourcesScreen from '../screens/Program/ProgramResourcesScreen';
+import ProgramOnboardingScreen from '../screens/Program/ProgramOnboardingScreen';
+import JobPoolScreen from '../screens/WorkTravel/JobPoolScreen';
+import JobPlacementScreen from '../screens/WorkTravel/JobPlacementScreen';
+import { useProgram } from '../contexts/ProgramContext';
+import { screensFor } from './programFlowRegistry';
 import { usePublicAuth } from '../contexts/PublicAuthContext';
 import { NavigationProvider, useTabNavigation } from '../contexts/NavigationContext';
 import BottomTabBar from '../components/BottomTabBar';
@@ -72,6 +84,17 @@ export type MainStackParamList = {
   AuPairResources: undefined;
   AuPairOnboarding: { programId?: number } | undefined;
   Notifications: undefined;
+  // Motor de programas
+  ProgramDashboard: undefined;
+  ProgramDocuments: { group?: string } | undefined;
+  ProgramDocumentUpload: { entry: any };
+  ProgramEnglishTest: undefined;
+  ProgramVisa: undefined;
+  ProgramSupport: undefined;
+  ProgramResources: undefined;
+  ProgramOnboarding: { programId?: number } | undefined;
+  JobPool: undefined;
+  JobPlacement: undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -114,6 +137,14 @@ const AuPairMatchesWithNav = withTabs(AuPairMatchesScreen);
 const AuPairSupportWithNav = withTabs(AuPairSupportScreen);
 const AuPairResourcesWithNav = withTabs(AuPairResourcesScreen);
 const NotificationsWithNav = withTabs(NotificationsScreen);
+const ProgramDashboardWithNav = withTabs(ProgramDashboardScreen);
+const ProgramDocumentsWithNav = withTabs(ProgramDocumentsScreen);
+const ProgramEnglishTestWithNav = withTabs(ProgramEnglishTestScreen);
+const ProgramVisaWithNav = withTabs(ProgramVisaScreen);
+const ProgramSupportWithNav = withTabs(ProgramSupportScreen);
+const ProgramResourcesWithNav = withTabs(ProgramResourcesScreen);
+const JobPoolWithNav = withTabs(JobPoolScreen);
+const JobPlacementWithNav = withTabs(JobPlacementScreen);
 
 // Sin BottomTabBar (vista detalle "modal-like")
 const NoTabsContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -134,13 +165,35 @@ const MainNavigator: React.FC = () => {
   // Si el visitante llegó desde "Postular Au Pair" y completó login/register,
   // arrancamos en AuPairOnboarding (se le crea la Application). Sino, dashboard.
   const { authRequest } = usePublicAuth();
-  const initial = authRequest?.redirectTo === 'AuPairOnboarding' && authRequest?.programId
-    ? 'AuPairOnboarding'
-    : 'AuPairDashboard';
+  const { flow, loading } = useProgram();
+  // Ruta inicial: onboarding pedido desde el catálogo público (Au Pair o motor) o el
+  // home del flujo resuelto (Au Pair → AuPairDashboard; motor / sin postulación → ProgramDashboard).
+  const onboardingRequested = authRequest?.programId && (authRequest?.redirectTo === 'AuPairOnboarding' || authRequest?.redirectTo === 'ProgramOnboarding');
+  const initial = onboardingRequested ? authRequest!.redirectTo! : screensFor(flow).home;
+
+  if (loading && !onboardingRequested) {
+    return <View style={styles.container} />;
+  }
 
   return (
   <NavigationProvider>
-    <Stack.Navigator initialRouteName={initial as any} screenOptions={{ headerShown: false }}>
+    <Stack.Navigator key={initial} initialRouteName={initial as any} screenOptions={{ headerShown: false }}>
+      {/* Motor de programas (Work & Travel y programas configurables) */}
+      <Stack.Screen name="ProgramDashboard" component={ProgramDashboardWithNav} />
+      <Stack.Screen name="ProgramDocuments" component={ProgramDocumentsWithNav} />
+      <Stack.Screen name="ProgramDocumentUpload" component={ProgramDocumentUploadScreen} />
+      <Stack.Screen name="ProgramEnglishTest" component={ProgramEnglishTestWithNav} />
+      <Stack.Screen name="ProgramVisa" component={ProgramVisaWithNav} />
+      <Stack.Screen name="ProgramSupport" component={ProgramSupportWithNav} />
+      <Stack.Screen name="ProgramResources" component={ProgramResourcesWithNav} />
+      <Stack.Screen name="JobPool" component={JobPoolWithNav} />
+      <Stack.Screen name="JobPlacement" component={JobPlacementWithNav} />
+      <Stack.Screen
+        name="ProgramOnboarding"
+        component={ProgramOnboardingScreen}
+        initialParams={authRequest?.programId ? { programId: authRequest.programId } : undefined}
+      />
+      {/* Au Pair (flujo específico, intacto) */}
       <Stack.Screen name="AuPairDashboard" component={AuPairDashboardWithNav} />
       <Stack.Screen name="AuPairDocuments" component={AuPairDocumentsWithNav} />
       <Stack.Screen name="AuPairDocumentUpload" component={AuPairDocumentUploadScreen} />

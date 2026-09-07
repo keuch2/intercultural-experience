@@ -4,6 +4,7 @@ import { PublicAuthProvider, usePublicAuth } from '../contexts/PublicAuthContext
 import PublicNavigator from './PublicNavigator';
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
+import { ProgramProvider } from '../contexts/ProgramContext';
 
 /**
  * Tipos legacy que algunas pantallas existentes importan. Mantenidos como
@@ -46,6 +47,17 @@ export type RootStackParamList = {
   AuPairResources: undefined;
   AuPairOnboarding: { programId?: number } | undefined;
   Notifications: undefined;
+  // Motor de programas (Work & Travel y programas configurables)
+  ProgramDashboard: undefined;
+  ProgramDocuments: { group?: string } | undefined;
+  ProgramDocumentUpload: { entry: any };
+  ProgramEnglishTest: undefined;
+  ProgramVisa: undefined;
+  ProgramSupport: undefined;
+  ProgramResources: undefined;
+  ProgramOnboarding: { programId?: number } | undefined;
+  JobPool: undefined;
+  JobPlacement: undefined;
 };
 
 /**
@@ -63,7 +75,9 @@ const RootSelector: React.FC = () => {
 
 const AppNavigator: React.FC = () => (
   <PublicAuthProvider>
-    <RootSelector />
+    <ProgramProvider>
+      <RootSelector />
+    </ProgramProvider>
   </PublicAuthProvider>
 );
 

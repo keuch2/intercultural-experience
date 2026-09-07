@@ -12,11 +12,13 @@ import PaymentCard from '../../components/payments/PaymentCard';
 import CurrencyAmount from '../../components/payments/CurrencyAmount';
 import EmptyState from '../../components/EmptyState';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { useOptionalProgram } from '../../contexts/ProgramContext';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 const PaymentsScreen: React.FC = () => {
   const navigation = useNavigation<Nav>();
+  const program = useOptionalProgram();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [plan, setPlan] = useState<InstallmentPlan | null>(null);
   const [applicationId, setApplicationId] = useState<number | null>(null);
@@ -27,18 +29,22 @@ const PaymentsScreen: React.FC = () => {
   const load = useCallback(async () => {
     try {
       setError(null);
-      // Resolver applicationId desde el AuPairProcess del user
-      const process = await auPairService.getProcess();
-      if (!process) {
+      // Resolver applicationId: programas del motor → ProgramContext; Au Pair → AuPairProcess.
+      let appId: number | null = program?.flow === 'engine' ? (program.applicationId ?? null) : null;
+      if (!appId) {
+        const process = await auPairService.getProcess();
+        appId = process?.application_id ?? program?.applicationId ?? null;
+      }
+      if (!appId) {
         setApplicationId(null);
         setPayments([]);
         setPlan(null);
         return;
       }
-      setApplicationId(process.application_id);
+      setApplicationId(appId);
       const [pays, ins] = await Promise.all([
-        paymentService.getPayments(process.application_id),
-        paymentService.getInstallments(process.application_id),
+        paymentService.getPayments(appId),
+        paymentService.getInstallments(appId),
       ]);
       setPayments(pays);
       setPlan(ins);
@@ -48,7 +54,7 @@ const PaymentsScreen: React.FC = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [program?.flow, program?.applicationId]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -89,7 +95,7 @@ const PaymentsScreen: React.FC = () => {
           <EmptyState
             icon="card-outline"
             title="Sin postulación activa"
-            message="Cuando inicies tu postulación Au Pair podrás registrar tus pagos acá."
+            message="Cuando inicies tu postulación podrás registrar tus pagos acá."
           />
         ) : (
           <>

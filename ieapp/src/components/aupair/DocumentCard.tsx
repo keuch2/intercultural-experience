@@ -2,16 +2,20 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AuPairDocumentEntry } from '../../types/aupair';
+import { ProgramDocumentEntry } from '../../types/programEngine';
 import StatusPill from './StatusPill';
 
-interface Props {
-  entry: AuPairDocumentEntry;
-  onUpload?: (entry: AuPairDocumentEntry) => void;
-  onViewFiles?: (entry: AuPairDocumentEntry) => void;
-  onDelete?: (fileId: number, entry: AuPairDocumentEntry) => void;
+/** Acepta entradas Au Pair y del motor genérico (misma forma; stage abierto). */
+type EntryLike = AuPairDocumentEntry | ProgramDocumentEntry;
+
+interface Props<T extends EntryLike> {
+  entry: T;
+  onUpload?: (entry: T) => void;
+  onViewFiles?: (entry: T) => void;
+  onDelete?: (fileId: number, entry: T) => void;
 }
 
-const DocumentCard: React.FC<Props> = ({ entry, onUpload, onViewFiles, onDelete }) => {
+function DocumentCard<T extends EntryLike>({ entry, onUpload, onViewFiles, onDelete }: Props<T>) {
   const isStaff = entry.uploaded_by === 'staff';
   const isMulti = (entry.min_count != null && entry.min_count > 1) || !!entry.allow_multiple;
   const needsMore = entry.min_count && entry.count < entry.min_count;
@@ -88,7 +92,7 @@ const DocumentCard: React.FC<Props> = ({ entry, onUpload, onViewFiles, onDelete 
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   card: {

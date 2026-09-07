@@ -8,6 +8,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { publicService, PublicProgram, settingsService } from '../../services/api';
 import EmptyState from '../../components/EmptyState';
+import { onboardingScreenFor } from '../../navigation/programFlowRegistry';
 import { PublicStackParamList } from '../../navigation/PublicNavigator';
 import { usePublicAuth } from '../../contexts/PublicAuthContext';
 
@@ -63,7 +64,8 @@ const PublicProgramDetailScreen: React.FC = () => {
   const handleApply = () => {
     // V1: postular requiere crear cuenta o iniciar sesión.
     // AppNavigator detecta el authRequest y monta AuthNavigator.
-    requestAuth({ redirectTo: 'AuPairOnboarding', programId: id });
+    // Programas del motor → onboarding genérico; Au Pair → su onboarding propio.
+    requestAuth({ redirectTo: onboardingScreenFor(program ?? {}), programId: id });
   };
 
   if (loading) {

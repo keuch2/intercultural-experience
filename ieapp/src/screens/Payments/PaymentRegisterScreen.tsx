@@ -9,11 +9,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as DocumentPicker from 'expo-document-picker';
 import { paymentService } from '../../services/api';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { useOptionalProgram } from '../../contexts/ProgramContext';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type RouteP = RouteProp<{ PaymentRegister: { applicationId: number } }, 'PaymentRegister'>;
 
-const CONCEPTS = [
+const DEFAULT_CONCEPTS = [
   'Inscripción',
   'Aplicación',
   'Habilitación de perfil',
@@ -33,6 +34,11 @@ const METHODS = [
 const PaymentRegisterScreen: React.FC = () => {
   const navigation = useNavigation<Nav>();
   const { applicationId } = useRoute<RouteP>().params;
+  const program = useOptionalProgram();
+  // Programas del motor: los conceptos salen de sus gates de pago configurados.
+  const CONCEPTS = program?.envelope?.gates?.length
+    ? [...program.envelope.gates.map(g => g.label), 'Otro']
+    : DEFAULT_CONCEPTS;
 
   const [concept, setConcept] = useState(CONCEPTS[0]);
   const [amount, setAmount] = useState('');

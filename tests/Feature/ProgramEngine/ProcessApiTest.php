@@ -42,6 +42,20 @@ class ProcessApiTest extends EngineTestCase
         $this->getJson("/api/programs/{$this->program->id}/process")->assertOk();
     }
 
+    public function test_public_catalog_exposes_engine_fields_for_routing(): void
+    {
+        $list = $this->getJson('/api/public/programs')->assertOk()->json('data');
+        $wt = collect($list)->firstWhere('slug', 'work-travel');
+        $this->assertNotNull($wt);
+        $this->assertTrue($wt['engine_enabled']);
+        $this->assertTrue($wt['is_available_in_app']);
+        $this->assertContains('job_pool', $wt['modules']);
+
+        $detail = $this->getJson("/api/public/programs/{$this->program->id}")->assertOk()->json('data');
+        $this->assertSame('Postulá a Work & Travel USA', $detail['onboarding']['title']);
+        $this->assertTrue($detail['onboarding']['requires_adult']);
+    }
+
     public function test_program_without_engine_is_not_bound(): void
     {
         $plain = Program::create(['name' => 'Plain', 'slug' => 'plain', 'description' => 'x', 'country' => 'USA', 'main_category' => 'IE', 'subcategory' => 'Plain', 'is_active' => true]);

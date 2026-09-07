@@ -2,7 +2,7 @@ import apiClient from './apiClient';
 
 /**
  * Programa promocional para vista pública (sin auth).
- * V1: solo Au Pair tiene `is_available_in_app=true`.
+ * Au Pair y los programas del motor (engine_enabled) tienen `is_available_in_app=true`.
  */
 export interface PublicProgram {
   id: number;
@@ -15,6 +15,9 @@ export interface PublicProgram {
   image_url: string | null;
   duration: string | null;
   is_available_in_app: boolean;
+  slug?: string | null;
+  engine_enabled?: boolean;
+  onboarding?: import('../../types/programEngine').ProgramOnboarding | null;
   // Solo en detalle
   start_date?: string | null;
   end_date?: string | null;

@@ -42,7 +42,8 @@ const AuPairOnboardingScreen: React.FC = () => {
     (async () => {
       try {
         const programs = await publicService.getPublicPrograms();
-        const auPair = programs.find(p => p.is_available_in_app);
+        // is_available_in_app ya no identifica a Au Pair (también lo tienen los programas del motor).
+        const auPair = programs.find(p => p.subcategory === 'Au Pair' && !p.engine_enabled) ?? programs.find(p => p.is_available_in_app && !p.engine_enabled);
         if (!cancelled && auPair) setProgramId(auPair.id);
       } catch {
         // si falla, programId queda en null y el botón Confirmar mostrará error

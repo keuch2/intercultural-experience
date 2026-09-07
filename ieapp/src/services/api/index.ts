@@ -11,6 +11,7 @@ import { publicService } from './publicService';
 export type { PublicProgram } from './publicService';
 import auPairService from './auPairService';
 import paymentService from './paymentService';
+import programEngineService from './programEngineService';
 
 export {
   apiClient,
@@ -25,4 +26,5 @@ export {
   publicService,
   auPairService,
   paymentService,
+  programEngineService,
 };
