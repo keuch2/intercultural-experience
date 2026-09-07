@@ -16,6 +16,14 @@ use App\Http\Controllers\API\PasswordResetController;
 
 // Authentication Routes with Rate Limiting
 // Login: 5 attempts/minute (R4.8)
+// Programas del motor: {engineProgram} acepta slug o id numérico (solo engine_enabled)
+Route::bind('engineProgram', function (string $value) {
+    return \App\Models\Program::query()
+        ->where('engine_enabled', true)
+        ->where(fn ($q) => $q->where('slug', $value)->when(is_numeric($value), fn ($q) => $q->orWhere('id', (int) $value)))
+        ->firstOrFail();
+});
+
 Route::middleware(['throttle:5,1'])->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
@@ -252,6 +260,24 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/documents', [\App\Http\Controllers\API\VisaProcessController::class, 'documents']);
     });
 
+    // ========================================
+    // MOTOR DE PROGRAMAS — API genérica por programa (slug o id) y arranque de la app
+    // ========================================
+    Route::get('/me/process', [\App\Http\Controllers\API\ProgramEngine\MeController::class, 'process'])->name('api.me.process');
+
+    Route::prefix('programs/{engineProgram}')->name('api.programs.')->group(function () {
+        Route::get('/process', [\App\Http\Controllers\API\ProgramEngine\ProcessController::class, 'show'])->name('process');
+        Route::get('/documents', [\App\Http\Controllers\API\ProgramEngine\DocumentController::class, 'index'])->name('documents.index');
+        Route::middleware('throttle:20,1')->post('/documents', [\App\Http\Controllers\API\ProgramEngine\DocumentController::class, 'store'])->name('documents.store');
+        Route::delete('/documents/{id}', [\App\Http\Controllers\API\ProgramEngine\DocumentController::class, 'destroy'])->name('documents.destroy');
+        Route::get('/documents/{id}/download', [\App\Http\Controllers\API\ProgramEngine\DocumentController::class, 'download'])->name('documents.download');
+        Route::get('/english-tests', [\App\Http\Controllers\API\ProgramEngine\EnglishTestController::class, 'index'])->name('english-tests.index');
+        Route::post('/english-tests', [\App\Http\Controllers\API\ProgramEngine\EnglishTestController::class, 'store'])->name('english-tests.store');
+        Route::get('/visa-process', [\App\Http\Controllers\API\ProgramEngine\VisaController::class, 'show'])->name('visa');
+        Route::get('/support-logs', [\App\Http\Controllers\API\ProgramEngine\SupportLogController::class, 'index'])->name('support-logs');
+        Route::get('/resources', [\App\Http\Controllers\API\ProgramEngine\ResourceController::class, 'index'])->name('resources.index');
+        Route::get('/resources/{id}/download', [\App\Http\Controllers\API\ProgramEngine\ResourceController::class, 'download'])->name('resources.download');
+    });
     // ========================================
     // AU PAIR — Mobile App V1 (Sprint 0 stubs)
     // ========================================

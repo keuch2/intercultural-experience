@@ -193,6 +193,31 @@
                                     </ul>
                                 </div>
                             </li>
+                            {{-- Programas gestionados por el motor (Work & Travel y futuros) --}}
+                            @php $engineProgramsNav = \App\Models\Program::engineEnabled()->orderBy('name')->get(['id', 'name', 'slug', 'modules']); @endphp
+                            @foreach($engineProgramsNav as $engineProgram)
+                            @php $engineActive = request()->is('admin/programas/'.$engineProgram->slug.'*') || request()->is('admin/ie-programs/'.$engineProgram->id.'/config*'); @endphp
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center justify-content-between {{ $engineActive ? '' : 'collapsed' }}"
+                                   data-bs-toggle="collapse" href="#sidebar-program-{{ $engineProgram->id }}" role="button" aria-expanded="{{ $engineActive ? 'true' : 'false' }}">
+                                    <span><i class="fas fa-briefcase"></i> {{ $engineProgram->name }}</span>
+                                    <i class="fas fa-chevron-down sidebar-chevron"></i>
+                                </a>
+                                <div class="collapse {{ $engineActive ? 'show' : '' }}" id="sidebar-program-{{ $engineProgram->id }}">
+                                    <ul class="nav flex-column ms-3">
+                                        <li class="nav-item"><a class="nav-link {{ request()->is('admin/programas/'.$engineProgram->slug.'/participantes*') ? 'active' : '' }}" href="{{ route('admin.program.participants.index', $engineProgram->slug) }}"><i class="fas fa-user-circle"></i> Participantes</a></li>
+                                        @if(in_array('job_pool', $engineProgram->modules ?? []) && Route::has('admin.program.job-pool.index'))
+                                        <li class="nav-item"><a class="nav-link {{ request()->is('admin/programas/'.$engineProgram->slug.'/ofertas*') ? 'active' : '' }}" href="{{ route('admin.program.job-pool.index', $engineProgram->slug) }}"><i class="fas fa-briefcase"></i> Pool de Ofertas</a></li>
+                                        @endif
+                                        <li class="nav-item"><a class="nav-link {{ request()->is('admin/ie-programs/'.$engineProgram->id.'/config*') && request('tab') === 'resources' ? 'active' : '' }}" href="{{ route('admin.program-config.show', ['program' => $engineProgram->id, 'tab' => 'resources']) }}"><i class="fas fa-folder-open"></i> Recursos del Programa</a></li>
+                                        @if(Route::has('admin.program.reports.index'))
+                                        <li class="nav-item"><a class="nav-link {{ request()->is('admin/programas/'.$engineProgram->slug.'/informes*') ? 'active' : '' }}" href="{{ route('admin.program.reports.index', $engineProgram->slug) }}"><i class="fas fa-chart-bar"></i> Informes</a></li>
+                                        @endif
+                                        <li class="nav-item"><a class="nav-link {{ request()->is('admin/ie-programs/'.$engineProgram->id.'/config*') && request('tab') !== 'resources' ? 'active' : '' }}" href="{{ route('admin.program-config.show', $engineProgram->id) }}"><i class="fas fa-cogs"></i> Configuración</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            @endforeach
                         </ul>
 
                         <div class="sidebar-heading">

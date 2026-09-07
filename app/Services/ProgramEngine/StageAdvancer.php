@@ -105,15 +105,38 @@ class StageAdvancer
         return $process;
     }
 
+    /**
+     * Registra la finalización y lleva el proceso a la etapa terminal (si existe).
+     */
     public function finalize(ProgramProcess $process, ?User $actor, string $result, ?string $reason = null, ?string $date = null): ProgramProcess
     {
+        $definition = ProgramDefinition::for($process->program);
+        $terminal = $definition->terminalStage();
+        $from = $process->current_stage_key;
+
+        if ($terminal && $process->current_stage_key !== $terminal->key) {
+            $now = now()->toIso8601String();
+            foreach ($definition->stages() as $stage) {
+                if ($stage->key === $terminal->key) {
+                    $process->setStageState($stage->key, ['status' => ProgramProcess::STAGE_IN_PROGRESS, 'entered_at' => $now]);
+                } elseif ($process->stageStatus($stage->key) === ProgramProcess::STAGE_IN_PROGRESS) {
+                    $process->setStageState($stage->key, ['status' => ProgramProcess::STAGE_APPROVED, 'completed_at' => $now]);
+                }
+            }
+            $process->current_stage_key = $terminal->key;
+        }
+        $process->status = ProgramProcess::STATUS_COMPLETED;
         $process->finalization_result = $result;
         $process->finalization_reason = $reason;
         $process->finalization_date = $date ?: now()->toDateString();
         $process->finalized_by = $actor?->id;
         $process->save();
 
+        $this->syncApplication($process);
         $this->log($process, $actor, 'process_finalized', "Finalización registrada: {$result}", ['result' => $result, 'reason' => $reason]);
+        if ($from !== $process->current_stage_key) {
+            event(new ProgramProcessStageChanged($process->fresh(), $from, $process->current_stage_key, $actor));
+        }
 
         return $process;
     }

@@ -95,6 +95,11 @@ class ApplicationController extends Controller
         
         // Crear los requisitos del usuario para esta solicitud
         $this->createUserProgramRequisites($application);
+
+        // Programas del motor: crear el proceso de inmediato para que el admin lo vea.
+        if ($program->engine_enabled) {
+            app(\App\Services\ProgramEngine\ProcessResolver::class)->forApplication($application->setRelation('program', $program));
+        }
         
         return response()->json([
             'success' => true,

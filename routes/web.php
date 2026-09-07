@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\AdminSupportTicketController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminProgramRequisiteController;
 use App\Http\Controllers\Admin\ProgramConfigController;
+use App\Http\Controllers\Admin\ProgramProcessController;
 use App\Http\Controllers\Admin\AdminUserProgramRequisiteController;
 use App\Http\Controllers\Admin\AdminCurrencyController;
 use App\Http\Controllers\Admin\AdminAgentController;
@@ -457,6 +458,49 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             Route::get('/get-recipients', [\App\Http\Controllers\Admin\CommunicationController::class, 'getRecipients'])->name('get-recipients');
         });
         
+        // ========================================
+        // MOTOR DE PROGRAMAS — hub genérico de participantes (Work & Travel y programas futuros)
+        // ========================================
+        Route::prefix('programas/{program:slug}')->name('admin.program.')->group(function () {
+            Route::get('/participantes', [ProgramProcessController::class, 'index'])->name('participants.index');
+            Route::get('/participantes/{process}', [ProgramProcessController::class, 'show'])->name('participants.show');
+            Route::post('/participantes/{process}/approve', [ProgramProcessController::class, 'approveApplicant'])->name('participants.approve');
+            Route::put('/participantes/{process}/personal', [ProgramProcessController::class, 'updatePersonal'])->name('participants.update-personal');
+            // Documentos
+            Route::post('/participantes/{process}/documents', [ProgramProcessController::class, 'uploadDocument'])->name('documents.upload');
+            Route::get('/participantes/{process}/documents/{document}/download', [ProgramProcessController::class, 'downloadDocument'])->name('documents.download');
+            Route::get('/participantes/{process}/documents/{requirementKey}/download-all', [ProgramProcessController::class, 'downloadDocumentsBundle'])->name('documents.download-all');
+            Route::put('/participantes/{process}/documents/{document}/review', [ProgramProcessController::class, 'reviewDocument'])->name('documents.review');
+            Route::post('/participantes/{process}/documents/{requirementKey}/bulk-approve', [ProgramProcessController::class, 'bulkApproveDocuments'])->name('documents.bulk-approve');
+            Route::delete('/participantes/{process}/documents/{document}', [ProgramProcessController::class, 'deleteDocument'])->name('documents.delete');
+            // Checklist y gates
+            Route::put('/participantes/{process}/checklist', [ProgramProcessController::class, 'updateChecklist'])->name('checklist.update');
+            Route::get('/participantes/{process}/checklist/{itemKey}/download', [ProgramProcessController::class, 'downloadChecklistFile'])->name('checklist.download');
+            Route::delete('/participantes/{process}/checklist/{itemKey}/file', [ProgramProcessController::class, 'deleteChecklistFile'])->name('checklist.delete-file');
+            Route::put('/participantes/{process}/gates/{gateKey}', [ProgramProcessController::class, 'updateGate'])->name('gates.update');
+            // Etapas
+            Route::post('/participantes/{process}/advance', [ProgramProcessController::class, 'advanceStage'])->name('stage.advance');
+            Route::post('/participantes/{process}/revert', [ProgramProcessController::class, 'revertStage'])->name('stage.revert');
+            Route::put('/participantes/{process}/finalization', [ProgramProcessController::class, 'updateFinalization'])->name('finalization.update');
+            Route::post('/participantes/{process}/cancel', [ProgramProcessController::class, 'cancelProcess'])->name('process.cancel');
+            // Inglés
+            Route::post('/participantes/{process}/english-tests', [ProgramProcessController::class, 'storeEnglishTest'])->name('english.store');
+            Route::get('/participantes/{process}/english-tests/{test}/pdf', [ProgramProcessController::class, 'downloadEnglishTestPdf'])->name('english.pdf');
+            Route::delete('/participantes/{process}/english-tests/{test}', [ProgramProcessController::class, 'deleteEnglishTest'])->name('english.delete');
+            // Visa / Support / Módulos
+            Route::put('/participantes/{process}/visa', [ProgramProcessController::class, 'updateVisaProcess'])->name('visa.update');
+            Route::post('/participantes/{process}/support-logs', [ProgramProcessController::class, 'storeSupportLog'])->name('support.store');
+            Route::delete('/participantes/{process}/support-logs/{log}', [ProgramProcessController::class, 'deleteSupportLog'])->name('support.delete');
+            Route::put('/participantes/{process}/module-access', [ProgramProcessController::class, 'updateModuleAccess'])->name('module-access.update');
+            // Pagos y notas
+            Route::put('/participantes/{process}/cost', [ProgramProcessController::class, 'updateProgramCost'])->name('payments.cost');
+            Route::post('/participantes/{process}/installment-plan', [ProgramProcessController::class, 'storeInstallmentPlan'])->name('payments.installment-plan');
+            Route::put('/participantes/{process}/notes', [ProgramProcessController::class, 'updateNotes'])->name('notes.update');
+            Route::post('/participantes/{process}/participant-notes', [ProgramProcessController::class, 'storeParticipantNote'])->name('participant-notes.store');
+            Route::delete('/participantes/{process}/participant-notes/{note}', [ProgramProcessController::class, 'deleteParticipantNote'])->name('participant-notes.delete');
+            // Recursos del programa → tab de configuración
+            Route::get('/recursos', fn (\App\Models\Program $program) => redirect()->route('admin.program-config.show', ['program' => $program->id, 'tab' => 'resources']))->name('resources.index');
+        });
         // ========================================
         // AU PAIR PROTOTYPE (New Hub-based approach)
         // ========================================

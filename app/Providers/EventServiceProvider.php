@@ -20,6 +20,9 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
+        \App\Events\ProgramEngine\ProgramProcessStageChanged::class => [
+            \App\Listeners\ProgramEngine\NotifyParticipantOfStageChange::class,
+        ],
         UserCreated::class => [
             SendWelcomeEmail::class,
         ],
