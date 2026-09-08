@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  TouchableOpacity, SafeAreaView, Alert, Switch,
+  TouchableOpacity, Alert, Switch
 } from 'react-native';
+import { SafeAreaView, FULL_EDGES } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -120,7 +121,7 @@ const AuPairOnboardingScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={FULL_EDGES}>
       <View style={styles.headerBar}>
         <Text style={styles.stepIndicator}>Paso {step} de 3</Text>
       </View>

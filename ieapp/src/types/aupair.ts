@@ -79,6 +79,7 @@ export interface AuPairDocumentEntry {
   allow_multiple?: boolean;
   uploaded_by: 'participant' | 'staff';
   count: number;
+  approved_count?: number;
   status: DocStatus;
   files: AuPairDocumentFile[];
 }

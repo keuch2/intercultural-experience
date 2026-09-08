@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator
+} from 'react-native';
+import { SafeAreaView } from '../../components/SafeArea';
 import { programEngineService } from '../../services/api';
 import { useProgram } from '../../contexts/ProgramContext';
 import { EngineEnglishTestsResp } from '../../types/programEngine';

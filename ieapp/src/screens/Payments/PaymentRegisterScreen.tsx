@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  TouchableOpacity, SafeAreaView, Alert, TextInput,
+  TouchableOpacity, Alert, TextInput
 } from 'react-native';
+import { SafeAreaView, FULL_EDGES } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -96,7 +97,7 @@ const PaymentRegisterScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={FULL_EDGES}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="close" size={26} color="#222" />

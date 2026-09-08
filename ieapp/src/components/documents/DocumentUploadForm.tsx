@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, SafeAreaView, Alert,
+  View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert
 } from 'react-native';
+import { SafeAreaView, FULL_EDGES } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as DocumentPicker from 'expo-document-picker';
@@ -65,7 +66,7 @@ const DocumentUploadForm: React.FC<Props> = ({ entry, onUpload, hint }) => {
   const formatSize = (b: number) => (b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : b > 1024 ? `${(b / 1024).toFixed(0)} KB` : `${b} B`);
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={FULL_EDGES}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()}><Ionicons name="close" size={26} color="#222" /></TouchableOpacity>
         <Text style={styles.title} numberOfLines={1}>Subir documento</Text>

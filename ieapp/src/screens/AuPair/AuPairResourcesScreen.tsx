@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  TouchableOpacity, SafeAreaView, Linking, RefreshControl, Alert,
+  TouchableOpacity, Linking, RefreshControl, Alert
 } from 'react-native';
+import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { auPairService } from '../../services/api';
 import { AuPairResource } from '../../types/aupair';
 import EmptyState from '../../components/EmptyState';
+import { openResource } from '../../utils/downloadFile';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -37,14 +39,7 @@ const AuPairResourcesScreen: React.FC = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const open = (r: AuPairResource) => {
-    const url = r.external_url || r.download_url;
-    if (!url) {
-      Alert.alert('Sin archivo', 'Este recurso no tiene archivo disponible.');
-      return;
-    }
-    Linking.openURL(url);
-  };
+  const open = (r: AuPairResource) => openResource({ external_url: r.external_url, download_url: r.download_url, filename: r.title ? `${r.title}.${(r.file_type || 'pdf').toLowerCase()}` : null });
 
   if (loading) {
     return <SafeAreaView style={styles.safe}><ActivityIndicator size="large" color="#E52224" style={{ marginTop: 80 }} /></SafeAreaView>;

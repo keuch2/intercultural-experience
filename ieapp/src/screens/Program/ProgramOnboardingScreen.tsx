@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, SafeAreaView, Alert, Switch,
+  View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert, Switch
 } from 'react-native';
+import { SafeAreaView, FULL_EDGES } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { programService, publicService } from '../../services/api';
@@ -80,13 +81,13 @@ const ProgramOnboardingScreen: React.FC = () => {
   };
 
   if (loadingProgram) {
-    return <SafeAreaView style={styles.safe}><ActivityIndicator size="large" color="#E52224" style={{ marginTop: 80 }} /></SafeAreaView>;
+    return <SafeAreaView style={styles.safe} edges={FULL_EDGES}><ActivityIndicator size="large" color="#E52224" style={{ marginTop: 80 }} /></SafeAreaView>;
   }
 
   const lastStep = step === totalSteps;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={FULL_EDGES}>
       <View style={styles.headerBar}><Text style={styles.stepIndicator}>Paso {step} de {totalSteps}</Text></View>
       <View style={styles.bar}><View style={[styles.barFill, { width: `${(step / totalSteps) * 100}%` }]} /></View>
 

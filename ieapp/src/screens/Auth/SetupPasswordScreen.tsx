@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ActivityIndicator,
-  SafeAreaView, ScrollView, Alert, TextInput,
+  View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Alert, TextInput
 } from 'react-native';
+import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';

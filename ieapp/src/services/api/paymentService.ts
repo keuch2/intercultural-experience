@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { Payment, InstallmentPlan } from '../../types/payment';
+import { Payment, InstallmentPlan, PaymentSummary } from '../../types/payment';
 
 interface ListResp<T> { status: string; data: T[] }
 interface OneResp<T> { status: string; data: T | null }
@@ -65,6 +65,12 @@ class PaymentService {
     const res = await apiClient.get<OneResp<InstallmentPlan>>('/payments/installments', {
       params: { application_id: applicationId },
     });
+    return res.data?.data ?? null;
+  }
+
+  /** Resumen financiero: costo total, pagado (verificados), pendiente, saldo y plan vigente. */
+  async getSummary(applicationId: number): Promise<PaymentSummary | null> {
+    const res = await apiClient.get<{ status: string; data: PaymentSummary }>('/payments/summary', { params: { application_id: applicationId } });
     return res.data?.data ?? null;
   }
 }

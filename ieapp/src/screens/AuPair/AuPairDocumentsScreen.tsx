@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  TouchableOpacity, SafeAreaView, RefreshControl, Alert,
+  TouchableOpacity, RefreshControl, Alert
 } from 'react-native';
+import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,6 +12,7 @@ import { AuPairDocumentEntry, DocStage } from '../../types/aupair';
 import DocumentCard from '../../components/aupair/DocumentCard';
 import EmptyState from '../../components/EmptyState';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { downloadAndOpen } from '../../utils/downloadFile';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type RouteP = RouteProp<{ AuPairDocuments: { stage?: DocStage } }, 'AuPairDocuments'>;
@@ -149,7 +151,7 @@ const AuPairDocumentsScreen: React.FC = () => {
             <EmptyState icon="folder-open-outline" title="Sin documentos en esta etapa" />
           ) : (
             entries.map(e => (
-              <DocumentCard key={e.document_type} entry={e} onUpload={handleUpload} onDelete={handleDelete} />
+              <DocumentCard key={e.document_type} entry={e} onUpload={handleUpload} onDelete={handleDelete} onDownload={f => f.download_url && downloadAndOpen(f.download_url, f.original_filename || undefined)} />
             ))
           )}
         </ScrollView>

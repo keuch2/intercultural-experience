@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, SafeAreaView, RefreshControl, Alert, Linking,
+  View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, Alert, Linking
 } from 'react-native';
+import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { programEngineService } from '../../services/api';
@@ -9,6 +10,7 @@ import { useProgram } from '../../contexts/ProgramContext';
 import { JobPoolOffer, JobPoolOffersResp } from '../../types/programEngine';
 import EmptyState from '../../components/EmptyState';
 import ScreenHeader from '../../components/program/ScreenHeader';
+import { downloadAndOpen } from '../../utils/downloadFile';
 
 /**
  * Pool de Ofertas Laborales (Work & Travel). El participante habilitado por IE ve
@@ -40,7 +42,7 @@ const JobPoolScreen: React.FC = () => {
 
   const openPdf = (offer: JobPoolOffer) => {
     if (!offer.pdf_url) { Alert.alert('Sin PDF', 'Esta oferta todavía no tiene el PDF cargado.'); return; }
-    Linking.openURL(offer.pdf_url);
+    downloadAndOpen(offer.pdf_url, `oferta-${offer.employer_name}.pdf`, 'application/pdf');
   };
 
   const select = (offer: JobPoolOffer) => {

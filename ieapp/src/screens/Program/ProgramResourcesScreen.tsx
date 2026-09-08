@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, SafeAreaView, Linking, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
+import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { programEngineService } from '../../services/api';
 import { useProgram } from '../../contexts/ProgramContext';
 import { AuPairResource } from '../../types/aupair';
 import EmptyState from '../../components/EmptyState';
+import { openResource } from '../../utils/downloadFile';
 import ScreenHeader from '../../components/program/ScreenHeader';
 
 const ICON_BY_TYPE: Record<string, keyof typeof Ionicons.glyphMap> = { PDF: 'document-text-outline', DOC: 'document-outline', VIDEO: 'play-circle-outline', LINK: 'link-outline' };
@@ -22,11 +24,7 @@ const ProgramResourcesScreen: React.FC = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const open = (r: AuPairResource) => {
-    const url = r.external_url || r.download_url;
-    if (!url) { Alert.alert('Sin archivo', 'Este recurso todavía no tiene archivo disponible.'); return; }
-    Linking.openURL(url);
-  };
+  const open = (r: AuPairResource) => openResource({ external_url: r.external_url, download_url: r.download_url, filename: r.title ? `${r.title}.${(r.file_type || 'pdf').toLowerCase()}` : null });
 
   return (
     <SafeAreaView style={styles.safe}>

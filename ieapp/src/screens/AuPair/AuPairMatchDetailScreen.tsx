@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  TouchableOpacity, SafeAreaView, Linking,
+  TouchableOpacity, Linking
 } from 'react-native';
+import { SafeAreaView, FULL_EDGES } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -30,12 +31,12 @@ const AuPairMatchDetailScreen: React.FC = () => {
   }, [id]);
 
   if (loading) {
-    return <SafeAreaView style={styles.safe}><ActivityIndicator size="large" color="#E52224" style={{ marginTop: 80 }} /></SafeAreaView>;
+    return <SafeAreaView style={styles.safe} edges={FULL_EDGES}><ActivityIndicator size="large" color="#E52224" style={{ marginTop: 80 }} /></SafeAreaView>;
   }
 
   if (!match) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={styles.safe} edges={FULL_EDGES}>
         <EmptyState icon="alert-circle-outline" title="Match no encontrado" />
       </SafeAreaView>
     );
@@ -45,7 +46,7 @@ const AuPairMatchDetailScreen: React.FC = () => {
   const openPhone = () => match.host_phone && Linking.openURL(`tel:${match.host_phone}`);
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={FULL_EDGES}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#222" />

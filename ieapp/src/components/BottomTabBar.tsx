@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useOptionalProgram } from '../contexts/ProgramContext';
 import { screensFor } from '../navigation/programFlowRegistry';
@@ -47,6 +48,7 @@ const TABS: TabConfig[] = [
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, setActiveTab }) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const program = useOptionalProgram();
+  const insets = useSafeAreaInsets();
   const flowScreens = screensFor(program?.flow ?? 'aupair');
 
   const targetFor = (tab: TabConfig): string => {
@@ -61,7 +63,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, setActiveTab }) 
   };
 
   return (
-    <View style={styles.bottomNav}>
+    <View style={[styles.bottomNav, { paddingBottom: 10 + Math.max(insets.bottom, 5) }]}>
       {TABS.map(tab => {
         const active = activeTab === tab.key;
         return (

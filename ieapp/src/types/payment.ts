@@ -36,3 +36,28 @@ export interface InstallmentPlan {
   status: string;
   details: InstallmentDetail[];
 }
+
+export interface PaymentSummary {
+  application_id: number;
+  program_name: string | null;
+  currency: string;
+  total_cost: number;
+  amount_paid: number;
+  pending_amount: number;
+  balance: number;
+  progress_pct: number;
+  payment_deadline: string | null;
+  payments_count: number;
+  verified_count: number;
+  pending_count: number;
+  installment_plan: {
+    id: number;
+    plan_name: string | null;
+    total_installments: number;
+    paid_installments: number;
+    total_amount: number;
+    currency: string | null;
+    next_due_date: string | null;
+    next_due_amount: number | null;
+  } | null;
+}

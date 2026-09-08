@@ -145,6 +145,7 @@ export interface ProgramDocumentEntry {
   unlocked?: boolean;
   lock_reason?: string | null;
   count: number;
+  approved_count?: number;
   status: DocStatus;
   files: ProgramDocumentFile[];
 }

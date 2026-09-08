@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, SafeAreaView, RefreshControl, Alert,
+  View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl, Alert
 } from 'react-native';
+import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { programEngineService } from '../../services/api';
@@ -10,6 +11,7 @@ import { ProgramDocumentEntry, EngineDocumentGroup } from '../../types/programEn
 import DocumentCard from '../../components/aupair/DocumentCard';
 import EmptyState from '../../components/EmptyState';
 import ScreenHeader from '../../components/program/ScreenHeader';
+import { downloadAndOpen } from '../../utils/downloadFile';
 
 type RouteP = RouteProp<{ ProgramDocuments: { group?: string } }, 'ProgramDocuments'>;
 
@@ -110,7 +112,7 @@ const ProgramDocumentsScreen: React.FC = () => {
         : (
           <ScrollView contentContainerStyle={styles.list} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(group); refresh(); }} />}>
             {entries.length === 0 ? <EmptyState icon="folder-open-outline" title="Sin documentos en este grupo" /> : entries.map(e => (
-              <DocumentCard key={e.document_type} entry={e} onUpload={current?.unlocked ? handleUpload : undefined} onDelete={handleDelete} />
+              <DocumentCard key={e.document_type} entry={e} onUpload={current?.unlocked ? handleUpload : undefined} onDelete={handleDelete} onDownload={f => f.download_url && downloadAndOpen(f.download_url, f.original_filename || undefined)} />
             ))}
           </ScrollView>
         )}

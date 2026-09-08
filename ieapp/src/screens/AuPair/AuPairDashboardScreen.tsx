@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  TouchableOpacity, SafeAreaView, RefreshControl,
+  TouchableOpacity, RefreshControl
 } from 'react-native';
+import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -163,6 +164,16 @@ const AuPairDashboardScreen: React.FC = () => {
               icon="airplane-outline"
               label="Visa"
               onPress={() => navigation.navigate('AuPairVisa')}
+            />
+            <Shortcut
+              icon="folder-open-outline"
+              label="Recursos"
+              onPress={() => navigation.navigate('AuPairResources')}
+            />
+            <Shortcut
+              icon="headset-outline"
+              label="Soporte"
+              onPress={() => navigation.navigate('AuPairSupport')}
             />
           </View>
         </View>

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, SafeAreaView, RefreshControl, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl, Linking } from 'react-native';
+import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { programEngineService } from '../../services/api';
@@ -7,6 +8,7 @@ import { useProgram } from '../../contexts/ProgramContext';
 import { PlacementData } from '../../types/programEngine';
 import EmptyState from '../../components/EmptyState';
 import ScreenHeader from '../../components/program/ScreenHeader';
+import { downloadAndOpen } from '../../utils/downloadFile';
 import StatusPill from '../../components/aupair/StatusPill';
 
 const STATUS_STEPS = ['pending', 'in_progress', 'documents_complete', 'ds_shipped', 'completed'];
@@ -59,7 +61,7 @@ const JobPlacementScreen: React.FC = () => {
                 <Field label="Fin del programa" value={p?.program_end_date} />
               </View>
               {offer.pdf_url && (
-                <TouchableOpacity style={styles.pdfBtn} onPress={() => Linking.openURL(offer.pdf_url!)}>
+                <TouchableOpacity style={styles.pdfBtn} onPress={() => downloadAndOpen(offer.pdf_url!, `oferta-${offer.employer_name}.pdf`, 'application/pdf')}>
                   <Ionicons name="document-text-outline" size={16} color="#444" /><Text style={styles.pdfBtnText}>Descargar PDF de la oferta</Text>
                 </TouchableOpacity>
               )}

@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  TouchableOpacity, SafeAreaView, Alert, Linking, Image,
+  TouchableOpacity, Alert, Linking, Image
 } from 'react-native';
+import { SafeAreaView, FULL_EDGES } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -58,7 +59,7 @@ const PaymentDetailScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={styles.safe} edges={FULL_EDGES}>
         <ActivityIndicator size="large" color="#E52224" style={{ marginTop: 80 }} />
       </SafeAreaView>
     );
@@ -66,7 +67,7 @@ const PaymentDetailScreen: React.FC = () => {
 
   if (!payment) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={styles.safe} edges={FULL_EDGES}>
         <EmptyState icon="alert-circle-outline" title="Pago no encontrado" />
       </SafeAreaView>
     );
@@ -76,7 +77,7 @@ const PaymentDetailScreen: React.FC = () => {
   const lockedForEdits = payment.status === 'verified';
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={FULL_EDGES}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#222" />
