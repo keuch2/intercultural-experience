@@ -46,9 +46,9 @@ const ProgramDashboardScreen: React.FC = () => {
         <EmptyState
           icon="rocket-outline"
           title="¡Bienvenido!"
-          message="Todavía no tenés una postulación activa. Elegí un programa para comenzar."
+          message="Todavía no postulaste a un programa. Elegí uno del catálogo para comenzar."
           actionLabel="Ver programas"
-          onAction={() => navigation.navigate('Programs')}
+          onAction={() => navigation.navigate('PublicPrograms')}
         />
       </SafeAreaView>
     );

@@ -1,176 +1,76 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-  Image
-} from 'react-native';
-import { SafeAreaView } from '../components/SafeArea';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import programService, { Application } from '../services/api/programService';
-import { useAuth } from '../contexts/AuthContext';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import Header from '../components/Header';
+import { SafeAreaView } from '../components/SafeArea';
+import ScreenHeader from '../components/program/ScreenHeader';
+import EmptyState from '../components/EmptyState';
+import { useProgram, flowForApplication, isApplicationActive } from '../contexts/ProgramContext';
+import { screensFor } from '../navigation/programFlowRegistry';
+import { APPLICATION_STATUS_LABELS, UserApplication } from '../types/applications';
 
+/**
+ * Historial de postulaciones del participante. Abrir una la selecciona como
+ * "Mi proceso" y entra a su dashboard (Au Pair o motor).
+ */
 const MyApplicationsScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user } = useAuth();
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
+  const navigation = useNavigation<any>();
+  const { applications, selectedApplication, loading, refresh, selectApplication } = useProgram();
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [opening, setOpening] = useState<number | null>(null);
 
-  const fetchApplications = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Get user's applications
-      const response = await programService.getUserApplications();
-      if (response && response.data && Array.isArray(response.data.data)) {
-        setApplications(response.data.data);
-      } else {
-        setApplications([]);
-      }
-    } catch (err) {
-      console.error('Error fetching applications:', err);
-      setError('No se pudieron cargar tus postulaciones. Por favor intenta nuevamente.');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+  const open = async (app: UserApplication) => {
+    const flow = flowForApplication(app);
+    if (flow === 'none') { navigation.navigate('PublicProgramDetail', { id: app.program_id }); return; }
+    setOpening(app.id);
+    try { await selectApplication(app.id); } finally { setOpening(null); }
+    navigation.navigate(screensFor(flow).home);
   };
 
-  useEffect(() => {
-    fetchApplications();
-  }, []);
+  const current = applications.filter(isApplicationActive);
+  const past = applications.filter(a => !isApplicationActive(a));
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchApplications();
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Fecha no disponible';
-    try {
-      return format(new Date(dateString), 'dd MMM yyyy', { locale: es });
-    } catch (error) {
-      return 'Fecha inválida';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch(status) {
-      case 'pending': return 'Pendiente';
-      case 'in_progress': return 'En Proceso';
-      case 'approved': return 'Aprobada';
-      case 'rejected': return 'Rechazada';
-      default: return 'Desconocido';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'pending': return '#FFC107';
-      case 'in_progress': return '#2196F3';
-      case 'approved': return '#4CAF50';
-      case 'rejected': return '#F44336';
-      default: return '#9E9E9E';
-    }
-  };
-
-  const renderApplication = (application: Application) => {
+  const Card = ({ app }: { app: UserApplication }) => {
+    const isSelected = selectedApplication?.id === app.id;
+    const status = app.completed_at ? 'completed' : app.status;
+    const color = status === 'approved' ? '#065F46' : status === 'rejected' || status === 'cancelled' ? '#991B1B' : status === 'completed' ? '#374151' : '#92400E';
     return (
-      <TouchableOpacity 
-        key={application.id} 
-        style={styles.applicationCard}
-        onPress={() => navigation.navigate('ApplicationDetail', { applicationId: application.id })}
-      >
-        <View style={styles.applicationHeader}>
-          <Text style={styles.programName}>{application.program?.name || 'Programa'}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(application.status) }]}>
-            <Text style={styles.statusText}>{getStatusLabel(application.status)}</Text>
+      <TouchableOpacity style={[styles.card, isSelected && styles.cardSelected]} onPress={() => open(app)} activeOpacity={0.9}>
+        <View style={styles.cardHead}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.program}>{app.program?.name ?? 'Programa'}</Text>
+            <Text style={styles.meta}>{app.program?.subcategory}{app.applied_at ? ` · postulaste el ${app.applied_at.slice(0, 10)}` : ''}</Text>
           </View>
+          {isSelected && <View style={styles.currentBadge}><Text style={styles.currentBadgeText}>Actual</Text></View>}
         </View>
-        
-        <View style={styles.applicationInfo}>
-          <Text style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Fecha de aplicación:</Text> {formatDate(application.applied_at)}
-          </Text>
-          {application.program?.location && (
-            <Text style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Ubicación:</Text> {application.program.location}
-            </Text>
-          )}
-          {application.program?.start_date && (
-            <Text style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Fecha de inicio:</Text> {formatDate(application.program.start_date)}
-            </Text>
-          )}
+        <View style={styles.row}>
+          <Text style={[styles.status, { color }]}>{APPLICATION_STATUS_LABELS[status] ?? status}</Text>
+          {typeof app.progress_percentage === 'number' && <Text style={styles.meta}>{app.progress_percentage}%</Text>}
         </View>
-        
-        <View style={styles.viewDetailsButton}>
-          <Text style={styles.viewDetailsButtonText}>Ver Detalles →</Text>
+        {typeof app.progress_percentage === 'number' && (
+          <View style={styles.bar}><View style={[styles.barFill, { width: `${Math.min(100, app.progress_percentage)}%` }]} /></View>
+        )}
+        <View style={styles.cta}>
+          {opening === app.id ? <ActivityIndicator size="small" color="#E52224" /> : (<><Text style={styles.ctaText}>{flowForApplication(app) === 'none' ? 'Ver programa' : 'Ver proceso'}</Text><Ionicons name="arrow-forward" size={14} color="#E52224" /></>)}
         </View>
       </TouchableOpacity>
     );
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView 
-        contentContainerStyle={styles.container}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#6C4AA0']}
-          />
-        }
-      >
-        <Header showBackButton={true} title="Mis Postulaciones" />
-        
-        {loading && !refreshing ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#6C4AA0" />
-            <Text style={styles.loadingText}>Cargando tus postulaciones...</Text>
-          </View>
-        ) : error ? (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={fetchApplications}>
-              <Text style={styles.retryButtonText}>Intentar nuevamente</Text>
-            </TouchableOpacity>
-          </View>
-        ) : applications.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Image
-              source={require('../../assets/images/ie-icon.png')}
-              style={styles.emptyImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.emptyTitle}>No tienes postulaciones</Text>
-            <Text style={styles.emptyText}>
-              Aún no has postulado a ningún programa. Explora los programas disponibles para iniciar tu experiencia intercultural.
-            </Text>
-            <TouchableOpacity 
-              style={styles.exploreButton}
-              onPress={() => navigation.navigate('Programs')}
-            >
-              <Text style={styles.exploreButtonText}>Explorar Programas</Text>
-            </TouchableOpacity>
-          </View>
+    <SafeAreaView style={styles.safe}>
+      <ScreenHeader title="Mis postulaciones" />
+      <ScrollView contentContainerStyle={styles.scroll} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await refresh(); setRefreshing(false); }} />}>
+        {loading && applications.length === 0 ? <ActivityIndicator size="large" color="#E52224" style={{ marginTop: 60 }} /> : applications.length === 0 ? (
+          <EmptyState icon="documents-outline" title="Sin postulaciones" message="Cuando postules a un programa vas a poder seguir tu proceso desde acá." actionLabel="Ver programas" onAction={() => navigation.navigate('PublicPrograms')} />
         ) : (
-          <View style={styles.applicationsContainer}>
-            {applications.map(renderApplication)}
-          </View>
+          <>
+            {current.length > 0 && (<><Text style={styles.sectionTitle}>En curso</Text>{current.map(a => <Card key={a.id} app={a} />)}</>)}
+            {past.length > 0 && (<><Text style={styles.sectionTitle}>Anteriores</Text>{past.map(a => <Card key={a.id} app={a} />)}</>)}
+            <TouchableOpacity style={styles.newBtn} onPress={() => navigation.navigate('PublicPrograms')}>
+              <Ionicons name="add-circle-outline" size={18} color="#E52224" /><Text style={styles.newBtnText}>Postular a un nuevo programa</Text>
+            </TouchableOpacity>
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -178,139 +78,24 @@ const MyApplicationsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  container: {
-    flexGrow: 1,
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#6C4AA0',
-    marginBottom: 20,
-  },
-  applicationsContainer: {
-    marginTop: 10,
-  },
-  applicationCard: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    marginBottom: 20,
-    padding: 15,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    borderWidth: 1,
-    borderColor: '#eee',
-  },
-  applicationHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  programName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    flex: 1,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  statusText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-  applicationInfo: {
-    marginVertical: 10,
-  },
-  infoRow: {
-    marginVertical: 3,
-    color: '#555',
-    fontSize: 14,
-  },
-  infoLabel: {
-    fontWeight: 'bold',
-    color: '#6C4AA0',
-  },
-  viewDetailsButton: {
-    alignItems: 'flex-end',
-    marginTop: 10,
-  },
-  viewDetailsButtonText: {
-    color: '#6C4AA0',
-    fontWeight: 'bold',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 50,
-  },
-  loadingText: {
-    marginTop: 10,
-    color: '#666',
-  },
-  errorContainer: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  errorText: {
-    color: '#F44336',
-    textAlign: 'center',
-    marginBottom: 15,
-  },
-  retryButton: {
-    backgroundColor: '#6C4AA0',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  emptyImage: {
-    width: 150,
-    height: 150,
-    marginBottom: 20,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: '#666',
-    marginBottom: 20,
-  },
-  exploreButton: {
-    backgroundColor: '#E52224',
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-  },
-  exploreButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  }
+  safe: { flex: 1, backgroundColor: '#f4f4f5' },
+  scroll: { padding: 16, paddingBottom: 100 },
+  sectionTitle: { fontSize: 13, fontWeight: '700', color: '#555', marginBottom: 8, marginTop: 6 },
+  card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#eee' },
+  cardSelected: { borderColor: '#E52224', borderLeftWidth: 4 },
+  cardHead: { flexDirection: 'row', alignItems: 'flex-start' },
+  program: { fontSize: 15, fontWeight: '800', color: '#222' },
+  meta: { color: '#777', fontSize: 12, marginTop: 2 },
+  currentBadge: { backgroundColor: '#FEF2F2', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  currentBadgeText: { color: '#E52224', fontSize: 10, fontWeight: '800' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
+  status: { fontWeight: '700', fontSize: 13 },
+  bar: { height: 6, backgroundColor: '#e5e7eb', borderRadius: 4, overflow: 'hidden', marginTop: 6 },
+  barFill: { height: '100%', backgroundColor: '#10B981' },
+  cta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 10, minHeight: 20 },
+  ctaText: { color: '#E52224', fontWeight: '700', fontSize: 13 },
+  newBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1, borderColor: '#E52224', borderRadius: 10, paddingVertical: 12, marginTop: 8 },
+  newBtnText: { color: '#E52224', fontWeight: '700' },
 });
 
 export default MyApplicationsScreen;

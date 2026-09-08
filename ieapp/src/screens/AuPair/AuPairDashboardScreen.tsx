@@ -74,7 +74,7 @@ const AuPairDashboardScreen: React.FC = () => {
           title="¡Bienvenido!"
           message="Todavía no postulaste a Au Pair. Comenzá tu postulación desde Programas."
           actionLabel="Ver programas"
-          onAction={() => navigation.navigate('Programs')}
+          onAction={() => navigation.navigate('PublicPrograms')}
         />
       </SafeAreaView>
     );

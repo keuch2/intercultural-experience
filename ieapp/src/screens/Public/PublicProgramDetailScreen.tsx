@@ -12,6 +12,9 @@ import EmptyState from '../../components/EmptyState';
 import { onboardingScreenFor } from '../../navigation/programFlowRegistry';
 import { PublicStackParamList } from '../../navigation/PublicNavigator';
 import { usePublicAuth } from '../../contexts/PublicAuthContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useOptionalProgram, flowForApplication } from '../../contexts/ProgramContext';
+import { screensFor } from '../../navigation/programFlowRegistry';
 
 type Nav = NativeStackNavigationProp<PublicStackParamList>;
 type RouteP = RouteProp<PublicStackParamList, 'PublicProgramDetail'>;
@@ -20,7 +23,10 @@ const PublicProgramDetailScreen: React.FC = () => {
   const navigation = useNavigation<Nav>();
   const route = useRoute<RouteP>();
   const { requestAuth } = usePublicAuth();
+  const { isAuthenticated } = useAuth();
+  const programCtx = useOptionalProgram();
   const { id } = route.params;
+  const existing = programCtx?.applications.find(a => a.program_id === id) ?? null;
 
   const [program, setProgram] = useState<PublicProgram | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,11 +68,23 @@ const PublicProgramDetailScreen: React.FC = () => {
     }
   };
 
-  const handleApply = () => {
-    // V1: postular requiere crear cuenta o iniciar sesión.
-    // AppNavigator detecta el authRequest y monta AuthNavigator.
-    // Programas del motor → onboarding genérico; Au Pair → su onboarding propio.
-    requestAuth({ redirectTo: onboardingScreenFor(program ?? {}), programId: id });
+  const handleApply = async () => {
+    const onboarding = onboardingScreenFor(program ?? {});
+    if (isAuthenticated) {
+      // Ya logueado: si ya postuló a este programa, ir a su proceso; si no, al onboarding.
+      if (existing && programCtx) {
+        const flow = flowForApplication(existing);
+        if (flow !== 'none') {
+          await programCtx.selectApplication(existing.id);
+          (navigation as any).navigate(screensFor(flow).home);
+          return;
+        }
+      }
+      (navigation as any).navigate(onboarding, { programId: id });
+      return;
+    }
+    // Sin sesión: AppNavigator monta el AuthStack y retoma la intención tras el login.
+    requestAuth({ redirectTo: onboarding, programId: id });
   };
 
   if (loading) {
@@ -173,7 +191,7 @@ const PublicProgramDetailScreen: React.FC = () => {
         {available ? (
           <TouchableOpacity style={styles.primaryBtn} onPress={handleApply}>
             <Ionicons name="rocket-outline" size={18} color="#fff" />
-            <Text style={styles.primaryBtnText}>Postular ahora</Text>
+            <Text style={styles.primaryBtnText}>{existing ? 'Ver mi proceso' : isAuthenticated ? 'Postular ahora' : 'Postular (iniciar sesión)'}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={styles.whatsappBtn} onPress={openWhatsApp}>

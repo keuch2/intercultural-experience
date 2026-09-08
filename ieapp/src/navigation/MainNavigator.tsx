@@ -40,7 +40,8 @@ import ProgramOnboardingScreen from '../screens/Program/ProgramOnboardingScreen'
 import JobPoolScreen from '../screens/WorkTravel/JobPoolScreen';
 import JobPlacementScreen from '../screens/WorkTravel/JobPlacementScreen';
 import { useProgram } from '../contexts/ProgramContext';
-import { screensFor } from './programFlowRegistry';
+import PublicProgramsScreen from '../screens/Public/PublicProgramsScreen';
+import PublicProgramDetailScreen from '../screens/Public/PublicProgramDetailScreen';
 import { usePublicAuth } from '../contexts/PublicAuthContext';
 import { NavigationProvider, useTabNavigation } from '../contexts/NavigationContext';
 import BottomTabBar from '../components/BottomTabBar';
@@ -95,6 +96,8 @@ export type MainStackParamList = {
   ProgramOnboarding: { programId?: number } | undefined;
   JobPool: undefined;
   JobPlacement: undefined;
+  PublicPrograms: undefined;
+  PublicProgramDetail: { id: number };
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -145,6 +148,8 @@ const ProgramSupportWithNav = withTabs(ProgramSupportScreen);
 const ProgramResourcesWithNav = withTabs(ProgramResourcesScreen);
 const JobPoolWithNav = withTabs(JobPoolScreen);
 const JobPlacementWithNav = withTabs(JobPlacementScreen);
+const PublicProgramsWithNav = withTabs(PublicProgramsScreen);
+const PublicProgramDetailWithNav = withTabs(PublicProgramDetailScreen);
 
 // Sin BottomTabBar (vista detalle "modal-like")
 const NoTabsContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -169,7 +174,8 @@ const MainNavigator: React.FC = () => {
   // Ruta inicial: onboarding pedido desde el catálogo público (Au Pair o motor) o el
   // home del flujo resuelto (Au Pair → AuPairDashboard; motor / sin postulación → ProgramDashboard).
   const onboardingRequested = authRequest?.programId && (authRequest?.redirectTo === 'AuPairOnboarding' || authRequest?.redirectTo === 'ProgramOnboarding');
-  const initial = onboardingRequested ? authRequest!.redirectTo! : screensFor(flow).home;
+  // Tras el login siempre se entra al Home general; 'Mi proceso' (tab) abre el dashboard del flujo.
+  const initial = onboardingRequested ? authRequest!.redirectTo! : 'Home';
 
   if (loading && !onboardingRequested) {
     return <View style={styles.container} />;
@@ -178,6 +184,8 @@ const MainNavigator: React.FC = () => {
   return (
   <NavigationProvider>
     <Stack.Navigator key={initial} initialRouteName={initial as any} screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="PublicPrograms" component={PublicProgramsWithNav} />
+      <Stack.Screen name="PublicProgramDetail" component={PublicProgramDetailWithNav} />
       {/* Motor de programas (Work & Travel y programas configurables) */}
       <Stack.Screen name="ProgramDashboard" component={ProgramDashboardWithNav} />
       <Stack.Screen name="ProgramDocuments" component={ProgramDocumentsWithNav} />

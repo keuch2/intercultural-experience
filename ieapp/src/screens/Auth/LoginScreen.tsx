@@ -27,7 +27,7 @@ const { width, height } = Dimensions.get('window');
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { login, isLoading, error: contextError, clearError } = useAuth();
-  const { clearAuthRequest } = usePublicAuth();
+  const { clearAuthRequest, startExploring, authRequest } = usePublicAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -137,11 +137,11 @@ const LoginScreen: React.FC = () => {
         >
           <TouchableOpacity
             style={loginExtraStyles.backChip}
-            onPress={() => clearAuthRequest()}
-            accessibilityLabel="Volver al inicio"
+            onPress={() => { clearAuthRequest(); startExploring(); }}
+            accessibilityLabel={authRequest?.programId ? 'Volver al catálogo' : 'Explorar programas'}
           >
-            <Ionicons name="arrow-back" size={18} color="#fff" />
-            <Text style={loginExtraStyles.backChipText}>Volver</Text>
+            <Ionicons name={authRequest?.programId ? 'arrow-back' : 'compass-outline'} size={18} color="#fff" />
+            <Text style={loginExtraStyles.backChipText}>{authRequest?.programId ? 'Volver' : 'Explorar programas'}</Text>
           </TouchableOpacity>
           <ScrollView contentContainerStyle={{flexGrow: 1}}>
             <View style={styles.contentContainer}>

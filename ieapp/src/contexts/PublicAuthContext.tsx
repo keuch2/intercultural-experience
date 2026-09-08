@@ -1,12 +1,11 @@
 import React, { createContext, useCallback, useContext, useMemo, useState, ReactNode } from 'react';
 
 /**
- * Contexto liviano para permitir que pantallas del PublicStack
- * disparen el cambio al AuthStack (login/registro) sin acoplarse al AppNavigator.
- *
- * AppNavigator escucha `authRequest` y, cuando cambia, monta AuthNavigator
- * en lugar de PublicNavigator. Los params (programId, redirectTo) se guardan
- * para retomar el flujo tras autenticarse.
+ * Coordina el arranque de la app sin sesión:
+ *  - Por defecto la app abre en el AuthStack (Login / Registro).
+ *  - `startExploring()` muestra el catálogo público (enlace "Explorar programas" del Login).
+ *  - `requestAuth(params)` vuelve al AuthStack guardando la intención (programa a postular)
+ *    para retomarla tras iniciar sesión (MainNavigator lee `authRequest`).
  */
 export type AuthRequest = {
   redirectTo?: string;
@@ -15,26 +14,31 @@ export type AuthRequest = {
 
 interface PublicAuthCtx {
   authRequest: AuthRequest;
+  exploring: boolean;
   requestAuth: (params?: { redirectTo?: string; programId?: number }) => void;
   clearAuthRequest: () => void;
+  startExploring: () => void;
+  stopExploring: () => void;
 }
 
 const Ctx = createContext<PublicAuthCtx | undefined>(undefined);
 
 export const PublicAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [authRequest, setAuthRequest] = useState<AuthRequest>(null);
+  const [exploring, setExploring] = useState(false);
 
   const requestAuth = useCallback((params?: { redirectTo?: string; programId?: number }) => {
     setAuthRequest(params ?? {});
+    setExploring(false);
   }, []);
 
   const clearAuthRequest = useCallback(() => setAuthRequest(null), []);
+  const startExploring = useCallback(() => { setAuthRequest(null); setExploring(true); }, []);
+  const stopExploring = useCallback(() => setExploring(false), []);
 
   const value = useMemo<PublicAuthCtx>(() => ({
-    authRequest,
-    requestAuth,
-    clearAuthRequest,
-  }), [authRequest, requestAuth, clearAuthRequest]);
+    authRequest, exploring, requestAuth, clearAuthRequest, startExploring, stopExploring,
+  }), [authRequest, exploring, requestAuth, clearAuthRequest, startExploring, stopExploring]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

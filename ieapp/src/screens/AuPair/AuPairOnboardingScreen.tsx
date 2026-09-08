@@ -9,6 +9,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { programService, publicService } from '../../services/api';
 import { usePublicAuth } from '../../contexts/PublicAuthContext';
+import { useOptionalProgram } from '../../contexts/ProgramContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -27,6 +28,7 @@ const AuPairOnboardingScreen: React.FC = () => {
   const navigation = useNavigation<Nav>();
   const route = useRoute<RouteP>();
   const { authRequest, clearAuthRequest } = usePublicAuth();
+  const programCtx = useOptionalProgram();
 
   // Resolución del programId con 3 niveles de fallback:
   //  1. Params explícitos (PublicProgramDetail → requestAuth → MainNavigator → Onboarding).
@@ -72,7 +74,8 @@ const AuPairOnboardingScreen: React.FC = () => {
     if (step < 3) setStep((step + 1) as 1 | 2 | 3);
   };
 
-  const goToDashboard = () => {
+  const goToDashboard = async () => {
+    await programCtx?.refresh();
     navigation.reset({
       index: 0,
       routes: [{ name: 'AuPairDashboard' as any }],

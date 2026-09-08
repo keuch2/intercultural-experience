@@ -58,6 +58,9 @@ export type RootStackParamList = {
   ProgramOnboarding: { programId?: number } | undefined;
   JobPool: undefined;
   JobPlacement: undefined;
+  // Catálogo (también dentro del stack autenticado)
+  PublicPrograms: undefined;
+  PublicProgramDetail: { id: number };
 };
 
 /**
@@ -66,11 +69,13 @@ export type RootStackParamList = {
  */
 const RootSelector: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const { authRequest } = usePublicAuth();
+  const { authRequest, exploring } = usePublicAuth();
 
   if (isAuthenticated) return <MainNavigator />;
-  if (authRequest !== null) return <AuthNavigator />;
-  return <PublicNavigator />;
+  // Sin sesión la app abre en Login/Registro; el catálogo público solo se muestra
+  // si el usuario tocó "Explorar programas" y no pidió volver a autenticarse.
+  if (exploring && authRequest === null) return <PublicNavigator />;
+  return <AuthNavigator />;
 };
 
 const AppNavigator: React.FC = () => (

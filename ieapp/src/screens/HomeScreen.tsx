@@ -1,373 +1,191 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl, Image, Dimensions } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, RefreshControl, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { SafeAreaView } from '../components/SafeArea';
 import { useAuth } from '../contexts/AuthContext';
-import { useTabNavigation } from '../contexts/NavigationContext';
-import { programService, rewardService } from '../services/api';
-import Header from '../components/Header';
-import NetworkStatusBanner from '../components/NetworkStatusBanner';
+import { useProgram, flowForApplication } from '../contexts/ProgramContext';
+import { publicService } from '../services/api';
+import type { PublicProgram } from '../services/api';
+import { screensFor } from '../navigation/programFlowRegistry';
+import { APPLICATION_STATUS_LABELS } from '../types/applications';
 
+/**
+ * Home general del participante (tras el login): postulación actual con acceso
+ * a su proceso, programas disponibles para postular y accesos rápidos.
+ */
 const HomeScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user, isLoading } = useAuth();
-  const { activeTab, setActiveTab } = useTabNavigation();
+  const navigation = useNavigation<any>();
+  const { user } = useAuth();
+  const { flow, loading, selectedApplication, applications, envelope, auPairProcess, refresh } = useProgram();
+  const [programs, setPrograms] = useState<PublicProgram[]>([]);
+  const [loadingPrograms, setLoadingPrograms] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [programs, setPrograms] = useState<any[]>([]);
-  const [featuredPrograms, setFeaturedPrograms] = useState<any[]>([]);
-  const [applications, setApplications] = useState<any[]>([]);
-  const [totalPoints, setTotalPoints] = useState(0);
-  const [loadingPrograms, setLoadingPrograms] = useState(false);
-  
-  // Fetch user programs
-  const loadUserData = async () => {
-    setLoadingPrograms(true);
-    try {
-      // Get user's applications
-      const response = await programService.getUserApplications();
-      if (response && response.data && Array.isArray(response.data.data)) {
-        setApplications(response.data.data);
-      }
-      
-      // Get available programs (just for display in counter)
-      const programsResponse = await programService.getPrograms();
-      if (programsResponse && Array.isArray(programsResponse)) {
-        setPrograms(programsResponse);
-        // Get last 4 programs for featured carousel
-        const lastFour = programsResponse.slice(-4).reverse();
-        console.log('Featured programs:', lastFour.map(p => ({ 
-          id: p.id, 
-          name: p.name, 
-          image: p.image, 
-          image_url: p.image_url 
-        })));
-        setFeaturedPrograms(lastFour);
-      }
-      
-      // Get user's actual points balance from API
-      try {
-        const pointsBalance = await rewardService.getPointsBalance();
-        setTotalPoints(pointsBalance.total || 0);
-      } catch (pointsError) {
-        console.error('Error loading points:', pointsError);
-        // Fallback: try to get points from user context
-        if (user && user.points) {
-          const points = user.points.reduce((total: number, point: any) => total + (point.change || 0), 0);
-          setTotalPoints(points);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    } finally {
-      setLoadingPrograms(false);
-      setRefreshing(false);
-    }
-  };
-  
-  useEffect(() => {
-    if (user) {
-      loadUserData();
-    }
-  }, [user]);
-  
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadUserData();
-  };
-  
-  if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <Header title="Inicio" />
-        <NetworkStatusBanner onRetry={loadUserData} />
-        <ActivityIndicator size="large" color="#E52224" />
-        <Text style={styles.loadingText}>Cargando información...</Text>
-      </View>
-    );
-  }
-  
+
+  const loadPrograms = useCallback(async () => {
+    try { setPrograms(await publicService.getPublicPrograms()); } catch { /* se muestra vacío */ } finally { setLoadingPrograms(false); }
+  }, []);
+
+  useEffect(() => { loadPrograms(); }, [loadPrograms]);
+
+  const onRefresh = async () => { setRefreshing(true); await Promise.all([refresh(), loadPrograms()]); setRefreshing(false); };
+
+  const process = envelope ?? auPairProcess;
+  const currentStage = process?.stages?.find(s => s.key === process.current_stage);
+  const processHome = screensFor(flow).home;
+  const goProcess = () => navigation.navigate(flow === 'none' ? 'PublicPrograms' : processHome);
+  const available = programs.filter(p => p.is_available_in_app);
+  const others = programs.filter(p => !p.is_available_in_app);
+  const firstName = user?.name?.split(' ')[0] || 'participante';
+
   return (
-    <View style={styles.container}>
-      <Header title="Inicio" />
-      <NetworkStatusBanner onRetry={loadUserData} />
-      
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* Featured Programs Carousel */}
-        <View style={styles.carouselContainer}>
-          <Text style={styles.carouselTitle}>Programas Destacados</Text>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.carouselContent}
-          >
-            {loadingPrograms ? (
-              <ActivityIndicator size="small" color="#E52224" />
-            ) : featuredPrograms.length > 0 ? (
-              featuredPrograms.map((program) => {
-                const imageUri = program.image_url || program.image || 'https://via.placeholder.com/300x150?text=Programa';
-                console.log(`[HomeScreen] Rendering image for program ${program.id}:`, imageUri);
-                
-                return (
-                <TouchableOpacity 
-                  key={program.id}
-                  style={styles.carouselCard}
-                  onPress={() => navigation.navigate('ProgramDetail', { programId: program.id })}
-                >
-                  <Image 
-                    source={{ uri: imageUri }}
-                    style={styles.carouselImage}
-                    resizeMode="cover"
-                    onError={(error) => console.error(`[HomeScreen] Image load error for program ${program.id}:`, error.nativeEvent)}
-                    onLoad={() => console.log(`[HomeScreen] Image loaded successfully for program ${program.id}`)}
-                  />
-                  <View style={styles.carouselCardContent}>
-                    <Text style={styles.carouselCardTitle} numberOfLines={2}>
-                      {program.name}
-                    </Text>
-                    <Text style={styles.carouselCardLocation} numberOfLines={1}>
-                      📍 {program.location}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-                );
-              })
-            ) : (
-              <Text style={styles.noPrograms}>No hay programas disponibles</Text>
-            )}
-          </ScrollView>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.scroll} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.hello}>Hola, {firstName} 👋</Text>
+            <Text style={styles.subtitle}>Bienvenido a ie · intercultural experience</Text>
+          </View>
+          <TouchableOpacity onPress={() => navigation.navigate('Profile')} accessibilityLabel="Mi perfil">
+            {user?.avatar_url ? <Image source={{ uri: user.avatar_url }} style={styles.avatar} /> : <View style={[styles.avatar, styles.avatarFallback]}><Ionicons name="person" size={22} color="#E52224" /></View>}
+          </TouchableOpacity>
         </View>
-      <TouchableOpacity style={styles.redButton} onPress={() => navigation.navigate('Programs')}>
-        <Text style={styles.buttonText}>Ver y postular a Programas de IE</Text>
-      </TouchableOpacity>
-      <TouchableOpacity 
-        style={styles.purpleButton}
-        onPress={() => setActiveTab('applications')}
-      >
-        <Text style={styles.buttonText}>Ver el estado de mi Postulación</Text>
-      </TouchableOpacity>
-      <View style={styles.infoRow}>
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>MIS PROGRAMAS</Text>
-          {applications.length > 0 ? (
-            <View style={styles.programsList}>
-              {applications.map((application) => (
-                <TouchableOpacity 
-                  key={application.id} 
-                  style={styles.programItem}
-                  onPress={() => navigation.navigate('ApplicationDetail', { applicationId: application.id })}
-                >
-                  <View style={styles.programStatusDot}>
-                    <View style={[styles.statusDot, {
-                      backgroundColor: 
-                        application.status === 'approved' ? '#4CAF50' : 
-                        application.status === 'pending' ? '#FFC107' : 
-                        application.status === 'rejected' ? '#F44336' : 
-                        application.status === 'in_review' ? '#2196F3' : '#9E9E9E'
-                    }]} />
-                  </View>
-                  <View style={styles.programItemContent}>
-                    <Text style={styles.programName} numberOfLines={1}>
-                      {application.program?.name || 'Programa'}
-                    </Text>
-                    <Text style={styles.programStatus}>
-                      {application.status === 'approved' ? 'Aprobado' :
-                       application.status === 'pending' ? 'Pendiente' :
-                       application.status === 'rejected' ? 'Rechazado' :
-                       application.status === 'in_review' ? 'En Revisión' : 'Desconocido'}
-                    </Text>
-                  </View>
-                  <Text style={styles.viewDetails}>→</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+
+        {/* Mi postulación actual */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Mi postulación actual</Text>
+          {loading && !selectedApplication ? (
+            <View style={styles.card}><ActivityIndicator color="#E52224" /></View>
+          ) : selectedApplication ? (
+            <TouchableOpacity style={[styles.card, styles.cardAccent]} onPress={goProcess} activeOpacity={0.9}>
+              <View style={styles.cardHead}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.cardProgram}>{selectedApplication.program?.name}</Text>
+                  <Text style={styles.cardMeta}>
+                    {process?.application_approved === false
+                      ? 'Aprobación pendiente'
+                      : currentStage?.label ? `Etapa: ${currentStage.label}` : (APPLICATION_STATUS_LABELS[selectedApplication.status] ?? selectedApplication.status)}
+                  </Text>
+                </View>
+                <View style={styles.progressBubble}><Text style={styles.progressNumber}>{process?.progress_pct ?? selectedApplication.progress_percentage ?? 0}%</Text></View>
+              </View>
+              {process?.next_action?.label && (
+                <View style={styles.nextAction}><Ionicons name="flash" size={14} color="#E52224" /><Text style={styles.nextActionText} numberOfLines={2}>{process.next_action.label}</Text></View>
+              )}
+              <View style={styles.cardCta}><Text style={styles.cardCtaText}>Ver mi proceso</Text><Ionicons name="arrow-forward" size={16} color="#E52224" /></View>
+            </TouchableOpacity>
           ) : (
-            <Text style={styles.infoContent}>No tienes postulaciones activas</Text>
+            <View style={styles.card}>
+              <View style={styles.emptyRow}>
+                <Ionicons name="rocket-outline" size={28} color="#E52224" />
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={styles.cardProgram}>Todavía no postulaste a un programa</Text>
+                  <Text style={styles.cardMeta}>Elegí uno de los programas disponibles y empezá tu experiencia.</Text>
+                </View>
+              </View>
+              <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('PublicPrograms')}>
+                <Text style={styles.primaryBtnText}>Ver programas</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          {applications.length > 1 && (
+            <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('MyApplications')}>
+              <Text style={styles.link}>Ver todas mis postulaciones ({applications.length})</Text><Ionicons name="chevron-forward" size={14} color="#E52224" />
+            </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity 
-          style={styles.infoCard}
-          onPress={() => navigation.navigate('Rewards')}
-        >
-          <Text style={styles.infoTitle}>MIS PUNTOS IE</Text>
-          <Text style={styles.infoContent}>{totalPoints} puntos listos para canjear</Text>
-          <Text style={styles.tapToRedeemText}>Toca para canjear →</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.orangeRow}>
-        <TouchableOpacity 
-          style={styles.orangeButton} 
-          onPress={() => navigation.navigate('MyApplications')}
-        >
-          <Text style={styles.orangeButtonText}>Postulaciones</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.orangeButton}
-          onPress={() => navigation.navigate('Rewards')}
-        >
-          <Text style={styles.orangeButtonText}>Recompensas</Text>
-        </TouchableOpacity>
-      </View>
+
+        {/* Programas disponibles */}
+        <View style={styles.section}>
+          <View style={styles.sectionHead}>
+            <Text style={styles.sectionTitle}>Programas disponibles</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('PublicPrograms')}><Text style={styles.link}>Ver todos</Text></TouchableOpacity>
+          </View>
+          {loadingPrograms ? <ActivityIndicator color="#E52224" style={{ marginVertical: 20 }} /> : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 18 }}>
+              {[...available, ...others].map(p => {
+                const mine = applications.find(a => a.program_id === p.id);
+                return (
+                  <TouchableOpacity key={p.id} style={styles.programCard} onPress={() => navigation.navigate('PublicProgramDetail', { id: p.id })} activeOpacity={0.9}>
+                    {p.image_url ? <Image source={{ uri: p.image_url }} style={styles.programImage} /> : <View style={[styles.programImage, styles.programImageFallback]}><Ionicons name="earth-outline" size={30} color="#fff" /></View>}
+                    <View style={styles.programBody}>
+                      <Text style={styles.programName} numberOfLines={2}>{p.name}</Text>
+                      {p.country && <Text style={styles.programMeta} numberOfLines={1}><Ionicons name="location-outline" size={11} /> {p.country}</Text>}
+                      <View style={[styles.badge, mine ? styles.badgeMine : p.is_available_in_app ? styles.badgeOpen : styles.badgeSoon]}>
+                        <Text style={styles.badgeText}>{mine ? 'Ya postulaste' : p.is_available_in_app ? 'Postulación abierta' : 'Consultar'}</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+              {programs.length === 0 && <Text style={styles.cardMeta}>No hay programas publicados por el momento.</Text>}
+            </ScrollView>
+          )}
+        </View>
+
+        {/* Accesos rápidos */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Accesos rápidos</Text>
+          <View style={styles.grid}>
+            <Shortcut icon="documents-outline" label="Mis postulaciones" onPress={() => navigation.navigate('MyApplications')} />
+            <Shortcut icon="map-outline" label="Mi proceso" onPress={goProcess} disabled={flow === 'none'} />
+            <Shortcut icon="person-circle-outline" label="Mis datos" onPress={() => navigation.navigate('Profile')} />
+            <Shortcut icon="notifications-outline" label="Avisos" onPress={() => navigation.navigate('Notifications')} />
+          </View>
+        </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.7;
+const Shortcut: React.FC<{ icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void; disabled?: boolean }> = ({ icon, label, onPress, disabled }) => (
+  <TouchableOpacity style={[styles.shortcut, disabled && { opacity: 0.5 }]} onPress={onPress} disabled={disabled}>
+    <Ionicons name={icon} size={24} color="#E52224" />
+    <Text style={styles.shortcutLabel} numberOfLines={1}>{label}</Text>
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  scrollContent: { padding: 20 },
-  centered: { justifyContent: 'center', alignItems: 'center' },
-  loadingText: { marginTop: 10, color: '#666' },
-  orangeButtonText: { color: '#333', fontWeight: 'bold', textAlign: 'center' },
-
-  // Carousel Styles
-  carouselContainer: {
-    marginBottom: 20,
-  },
-  carouselTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
-  },
-  carouselContent: {
-    paddingRight: 20,
-  },
-  carouselCard: {
-    width: CARD_WIDTH,
-    marginRight: 15,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    overflow: 'hidden',
-    elevation: 3,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-  },
-  carouselImage: {
-    width: '100%',
-    height: 150,
-  },
-  carouselCardContent: {
-    padding: 12,
-  },
-  carouselCardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 6,
-  },
-  carouselCardLocation: {
-    fontSize: 14,
-    color: '#666',
-  },
-  noPrograms: {
-    fontSize: 14,
-    color: '#999',
-    fontStyle: 'italic',
-  },
-  redButton: { 
-    backgroundColor: '#E52224', 
-    borderRadius: 10, 
-    padding: 15, 
-    marginBottom: 10 
-  },
-  purpleButton: { 
-    backgroundColor: '#6C4AA0', 
-    borderRadius: 10, 
-    padding: 15, 
-    marginBottom: 10 
-  },
-  buttonText: { 
-    color: '#fff', 
-    fontWeight: 'bold', 
-    textAlign: 'center' 
-  },
-  infoRow: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    marginBottom: 10 
-  },
-  infoCard: { 
-    backgroundColor: '#4FC3F7', 
-    borderRadius: 10, 
-    padding: 15, 
-    flex: 1, 
-    marginHorizontal: 5 
-  },
-  infoTitle: { 
-    fontWeight: 'bold', 
-    color: '#fff', 
-    marginBottom: 8 
-  },
-  infoContent: { 
-    color: '#fff' 
-  },
-  tapToRedeemText: { 
-    color: '#fff', 
-    fontSize: 12, 
-    fontStyle: 'italic', 
-    marginTop: 5 
-  },
-  orangeRow: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    marginBottom: 20 
-  },
-  orangeButton: { 
-    backgroundColor: '#F8B400', 
-    borderRadius: 10, 
-    padding: 15, 
-    flex: 1, 
-    marginHorizontal: 5, 
-    alignItems: 'center' 
-  },
-  programsList: { 
-    marginTop: 5 
-  },
-  programItem: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 5,
-    marginBottom: 5,
-    padding: 8
-  },
-  programStatusDot: {
-    width: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 5
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4
-  },
-  programItemContent: {
-    flex: 1
-  },
-  programName: { 
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 12
-  },
-  programStatus: {
-    color: '#E6F7FF',
-    fontSize: 10
-  },
-  viewDetails: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginLeft: 3
-  }
+  safe: { flex: 1, backgroundColor: '#f4f4f5' },
+  scroll: { paddingBottom: 100 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18, paddingTop: 14, paddingBottom: 6 },
+  hello: { fontSize: 20, fontWeight: '800', color: '#222' },
+  subtitle: { color: '#666', marginTop: 2, fontSize: 13 },
+  avatar: { width: 44, height: 44, borderRadius: 22 },
+  avatarFallback: { backgroundColor: '#FEF2F2', alignItems: 'center', justifyContent: 'center' },
+  section: { paddingHorizontal: 18, marginTop: 18 },
+  sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: '#555', marginBottom: 8 },
+  card: { backgroundColor: '#fff', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: '#eee' },
+  cardAccent: { borderColor: '#E52224', borderLeftWidth: 4 },
+  cardHead: { flexDirection: 'row', alignItems: 'center' },
+  cardProgram: { fontSize: 16, fontWeight: '800', color: '#222' },
+  cardMeta: { color: '#666', marginTop: 2, fontSize: 13 },
+  progressBubble: { width: 52, height: 52, borderRadius: 26, borderWidth: 3, borderColor: '#E52224', alignItems: 'center', justifyContent: 'center', marginLeft: 10 },
+  progressNumber: { color: '#E52224', fontWeight: '800', fontSize: 13 },
+  nextAction: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FEF2F2', padding: 8, borderRadius: 8, marginTop: 12 },
+  nextActionText: { color: '#7F1D1D', fontSize: 12, flex: 1 },
+  cardCta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 12, alignSelf: 'flex-end' },
+  cardCtaText: { color: '#E52224', fontWeight: '700' },
+  emptyRow: { flexDirection: 'row', alignItems: 'center' },
+  primaryBtn: { backgroundColor: '#E52224', paddingVertical: 12, borderRadius: 10, alignItems: 'center', marginTop: 14 },
+  primaryBtnText: { color: '#fff', fontWeight: '700' },
+  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8, alignSelf: 'flex-end' },
+  link: { color: '#E52224', fontWeight: '600', fontSize: 13 },
+  programCard: { width: 190, backgroundColor: '#fff', borderRadius: 14, overflow: 'hidden', borderWidth: 1, borderColor: '#eee' },
+  programImage: { width: '100%', height: 100 },
+  programImageFallback: { backgroundColor: '#8B5CF6', alignItems: 'center', justifyContent: 'center' },
+  programBody: { padding: 10 },
+  programName: { fontWeight: '700', color: '#222', fontSize: 13, minHeight: 34 },
+  programMeta: { color: '#777', fontSize: 11, marginTop: 4 },
+  badge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginTop: 8 },
+  badgeOpen: { backgroundColor: '#D1FAE5' },
+  badgeSoon: { backgroundColor: '#F3F4F6' },
+  badgeMine: { backgroundColor: '#DBEAFE' },
+  badgeText: { fontSize: 10, fontWeight: '700', color: '#333' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  shortcut: { width: '48%', backgroundColor: '#fff', paddingVertical: 18, borderRadius: 12, alignItems: 'center' },
+  shortcutLabel: { marginTop: 6, fontWeight: '600', color: '#333', fontSize: 13 },
 });
 
-export default HomeScreen; 
+export default HomeScreen;
