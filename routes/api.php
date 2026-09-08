@@ -332,6 +332,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('payments')->group(function () {
         Route::get('/', [\App\Http\Controllers\API\PaymentController::class, 'index']);
         Route::get('/installments', [\App\Http\Controllers\API\PaymentController::class, 'installments']);
+        Route::get('/summary', [\App\Http\Controllers\API\PaymentController::class, 'summary'])->name('api.payments.summary');
         Route::get('/{id}', [\App\Http\Controllers\API\PaymentController::class, 'show']);
         Route::middleware('throttle:10,1')->group(function () {
             Route::post('/', [\App\Http\Controllers\API\PaymentController::class, 'store']);

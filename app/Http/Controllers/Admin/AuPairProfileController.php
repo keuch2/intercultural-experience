@@ -829,7 +829,7 @@ class AuPairProfileController extends Controller
 
         $data = $request->validate([
             'appointment_date' => 'nullable|date',
-            'appointment_time' => 'nullable|date_format:H:i',
+            'appointment_time' => 'nullable|date_format:H:i,H:i:s',
             'embassy' => 'nullable|string|max:255',
             'interview_result' => 'nullable|in:pending,approved,denied,administrative_process',
             'interview_result_notes' => 'nullable|string|max:1000',

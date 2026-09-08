@@ -61,7 +61,8 @@ class DocumentService
                     'unlocked' => $unlocked,
                     'lock_reason' => $lockReason,
                     'count' => $forReq->count(),
-                    'status' => $this->aggregateStatus($forReq),
+                    'approved_count' => $forReq->where('status', ProgramDocument::STATUS_APPROVED)->count(),
+                    'status' => $this->aggregateStatus($forReq, (int) $req->min_count),
                     'files' => $forReq->map(fn ($d) => $this->serialize($d))->all(),
                 ];
             }
@@ -99,6 +100,13 @@ class DocumentService
         }
 
         $isMulti = $req->min_count > 1 || $req->allow_multiple;
+        if ($isMulti && $uploaderType === 'participant') {
+            // Multi-archivo: completo y aprobado → solo IE puede modificarlo.
+            $approvedCount = $process->documents()->where('requirement_key', $req->key)->where('status', ProgramDocument::STATUS_APPROVED)->count();
+            if ($approvedCount >= max(1, (int) $req->min_count)) {
+                throw new DocumentException('already_approved', 'Este documento ya fue aprobado. Para cambiarlo, contactá al equipo IE.', 403);
+            }
+        }
         if (! $isMulti) {
             $existing = $process->documents()->where('requirement_key', $req->key)->get();
             if ($existing->contains(fn ($d) => $d->status === ProgramDocument::STATUS_APPROVED) && $uploaderType === 'participant') {
@@ -193,15 +201,17 @@ class DocumentService
         $this->log($doc->process, $actor, 'document_deleted', "Documento '{$doc->requirement_key}' eliminado", ['document_id' => $doc->id, 'reason' => $reason]);
     }
 
-    public function aggregateStatus(Collection $docs): string
+    public function aggregateStatus(Collection $docs, int $minCount = 1): string
     {
         if ($docs->isEmpty()) {
             return 'missing';
         }
-        if ($docs->contains(fn ($d) => $d->status === ProgramDocument::STATUS_APPROVED)) {
+        // Multi-archivo: 'approved' solo cuando hay al menos min_count aprobados.
+        $approved = $docs->where('status', ProgramDocument::STATUS_APPROVED)->count();
+        if ($approved >= max(1, $minCount)) {
             return 'approved';
         }
-        if ($docs->contains(fn ($d) => $d->status === ProgramDocument::STATUS_PENDING)) {
+        if ($docs->contains(fn ($d) => $d->status === ProgramDocument::STATUS_PENDING) || $approved > 0) {
             return 'pending';
         }
 

@@ -53,9 +53,17 @@ class AuPairVisaProcess extends Model
         return $this->belongsTo(AuPairProcess::class, 'au_pair_process_id');
     }
 
+    /**
+     * La columna es TIME (MySQL devuelve HH:MM:SS); la UI y la validación trabajan en H:i.
+     */
+    public function getAppointmentTimeAttribute(?string $value): ?string
+    {
+        return $value ? substr($value, 0, 5) : null;
+    }
+
     public function getInterviewResultLabelAttribute(): string
     {
-        return match($this->interview_result) {
+        return match ($this->interview_result) {
             'pending' => 'Pendiente',
             'approved' => 'Aprobada',
             'denied' => 'Denegada',
@@ -66,7 +74,7 @@ class AuPairVisaProcess extends Model
 
     public function getInterviewResultColorAttribute(): string
     {
-        return match($this->interview_result) {
+        return match ($this->interview_result) {
             'approved' => 'success',
             'denied' => 'danger',
             'administrative_process' => 'warning',
@@ -89,6 +97,7 @@ class AuPairVisaProcess extends Model
             $this->pre_departure_orientation_completed,
         ];
         $completed = collect($steps)->filter()->count();
+
         return (int) round(($completed / count($steps)) * 100);
     }
 }

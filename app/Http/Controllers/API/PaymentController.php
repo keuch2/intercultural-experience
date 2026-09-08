@@ -7,6 +7,7 @@ use App\Models\Application;
 use App\Models\Currency;
 use App\Models\Payment;
 use App\Models\PaymentInstallment;
+use App\Services\PaymentPlanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -30,6 +31,7 @@ class PaymentController extends Controller
         }
 
         $payments = $query->orderByDesc('payment_date')->orderByDesc('id')->get();
+
         return response()->json([
             'status' => 'success',
             'data' => $payments->map(fn ($p) => $this->serialize($p))->values(),
@@ -42,6 +44,7 @@ class PaymentController extends Controller
         if (! $payment) {
             return response()->json(['status' => 'error', 'message' => 'Pago no encontrado.'], 404);
         }
+
         return response()->json(['status' => 'success', 'data' => $this->serialize($payment)]);
     }
 
@@ -136,6 +139,7 @@ class PaymentController extends Controller
 
         $plan = PaymentInstallment::where('application_id', $appId)
             ->where('user_id', $user->id)
+            ->where('status', '!=', 'cancelled')
             ->with('installmentDetails')
             ->latest('id')
             ->first();
@@ -164,6 +168,52 @@ class PaymentController extends Controller
         ]);
     }
 
+    /**
+     * Resumen financiero del participante para una postulación: costo total,
+     * pagado (solo verificados, fórmula del admin), pendiente de verificación,
+     * saldo, progreso y plan de cuotas vigente.
+     */
+    public function summary(Request $request, PaymentPlanService $plans)
+    {
+        $user = $request->user();
+        $appId = (int) $request->query('application_id');
+        if (! $appId) {
+            return response()->json(['status' => 'error', 'message' => 'application_id requerido.'], 422);
+        }
+        $this->assertOwnsApplication($user->id, $appId);
+
+        $application = Application::with('program')->findOrFail($appId);
+        $summary = $plans->summary($application);
+        $plan = $summary['installment_plan'];
+        $details = $plan?->installmentDetails ?? collect();
+        $nextDue = $details->where('status', '!=', 'paid')->sortBy('due_date')->first();
+
+        return response()->json(['status' => 'success', 'data' => [
+            'application_id' => $application->id,
+            'program_name' => $application->program?->name,
+            'currency' => $summary['currency'],
+            'total_cost' => round($summary['total_cost'], 2),
+            'amount_paid' => round($summary['total_paid'], 2),
+            'pending_amount' => round($summary['pending_amount'], 2),
+            'balance' => round($summary['balance'], 2),
+            'progress_pct' => $summary['pct'],
+            'payment_deadline' => $summary['payment_deadline'],
+            'payments_count' => $summary['payments']->count(),
+            'verified_count' => $summary['payments']->where('status', 'verified')->count(),
+            'pending_count' => $summary['payments']->where('status', 'pending')->count(),
+            'installment_plan' => $plan ? [
+                'id' => $plan->id,
+                'plan_name' => $plan->plan_name,
+                'total_installments' => (int) $plan->total_installments,
+                'paid_installments' => $details->where('status', 'paid')->count(),
+                'total_amount' => (float) $plan->total_amount,
+                'currency' => optional($plan->currency)->code,
+                'next_due_date' => $nextDue?->due_date?->toDateString(),
+                'next_due_amount' => $nextDue ? (float) $nextDue->amount : null,
+            ] : null,
+        ]]);
+    }
+
     private function assertOwnsApplication(int $userId, int $applicationId): void
     {
         $ok = Application::where('id', $applicationId)->where('user_id', $userId)->exists();
@@ -175,7 +225,7 @@ class PaymentController extends Controller
     private function serialize(Payment $p): array
     {
         $receiptUrl = $p->receipt_path
-            ? asset('storage/' . $p->receipt_path)
+            ? asset('storage/'.$p->receipt_path)
             : null;
 
         return [

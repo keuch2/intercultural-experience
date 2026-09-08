@@ -521,7 +521,7 @@ class ProgramProcessController extends Controller
         $bools = ['visa_email_sent', 'consular_fee_paid', 'appointment_scheduled', 'documents_sent_for_appointment', 'document_check_completed', 'pre_departure_orientation_completed'];
 
         $data = $request->validate([
-            'appointment_date' => 'nullable|date', 'appointment_time' => 'nullable|date_format:H:i', 'embassy' => 'nullable|string|max:255',
+            'appointment_date' => 'nullable|date', 'appointment_time' => 'nullable|date_format:H:i,H:i:s', 'embassy' => 'nullable|string|max:255',
             'interview_result' => 'nullable|in:pending,approved,denied,administrative_process', 'interview_result_notes' => 'nullable|string|max:1000',
             'departure_datetime' => 'nullable|date', 'arrival_usa_datetime' => 'nullable|date',
             'outbound_legs' => 'nullable|array', 'outbound_legs.*.origin' => 'nullable|string|max:255', 'outbound_legs.*.destination' => 'nullable|string|max:255',

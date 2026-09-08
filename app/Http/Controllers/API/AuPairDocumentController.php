@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\API\Concerns\ResolvesAuPairProcess;
-use App\Models\Application;
+use App\Http\Controllers\Controller;
 use App\Models\AuPairDocument;
 use App\Models\AuPairProcess;
-use App\Models\Program;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -32,13 +30,17 @@ class AuPairDocumentController extends Controller
     use ResolvesAuPairProcess;
 
     private const MAX_FILE_MB = 15;
+
     private const MAX_VIDEO_MB = 200;
+
     private const ALLOWED_MIMES = ['jpeg', 'jpg', 'png', 'pdf', 'mp4', 'mov'];
 
     public function index(Request $request)
     {
         [$process, $err] = $this->resolveProcess($request);
-        if ($err) return $err;
+        if ($err) {
+            return $err;
+        }
 
         // Gate: hasta que el Staff IE apruebe la postulación, no se exponen requisitos.
         if (! $this->applicantApproved($process)) {
@@ -68,7 +70,9 @@ class AuPairDocumentController extends Controller
     public function store(Request $request)
     {
         [$process, $err] = $this->resolveProcess($request);
-        if ($err) return $err;
+        if ($err) {
+            return $err;
+        }
 
         // Gate: no se permite subir documentos hasta que el Staff IE apruebe la postulación.
         if (! $this->applicantApproved($process)) {
@@ -85,7 +89,7 @@ class AuPairDocumentController extends Controller
             'document_type' => ['required', 'string', Rule::in($types)],
             'stage' => ['required', 'string', Rule::in($allStages)],
             'files' => ['required', 'array', 'min:1', 'max:20'],
-            'files.*' => ['required', 'file', 'mimes:' . implode(',', self::ALLOWED_MIMES)],
+            'files.*' => ['required', 'file', 'mimes:'.implode(',', self::ALLOWED_MIMES)],
         ]);
         if ($validator->fails()) {
             return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
@@ -108,6 +112,17 @@ class AuPairDocumentController extends Controller
         // → el participante debe eliminarlo antes de subir otro.
         $minCount = $cfg['min_count'] ?? null;
         $isMulti = ($minCount !== null && $minCount > 1) || ! empty($cfg['allow_multiple']);
+        if ($isMulti) {
+            // Multi-archivo: una vez que el requisito está completo y aprobado, solo IE puede modificarlo.
+            $approvedCount = $process->documents()->where('document_type', $type)->where('status', 'approved')->count();
+            if ($approvedCount >= max(1, (int) ($minCount ?? 1))) {
+                return response()->json([
+                    'status' => 'error',
+                    'code' => 'already_approved',
+                    'message' => 'Este documento ya fue aprobado. Para cambiarlo, contactá al equipo IE.',
+                ], 403);
+            }
+        }
         if (! $isMulti) {
             $existing = $process->documents()
                 ->where('document_type', $type)
@@ -138,7 +153,7 @@ class AuPairDocumentController extends Controller
             if ($file->getSize() > $maxBytes) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Archivo demasiado grande. Máximo ' . ($isVideo ? self::MAX_VIDEO_MB : self::MAX_FILE_MB) . 'MB.',
+                    'message' => 'Archivo demasiado grande. Máximo '.($isVideo ? self::MAX_VIDEO_MB : self::MAX_FILE_MB).'MB.',
                 ], 422);
             }
 
@@ -167,7 +182,9 @@ class AuPairDocumentController extends Controller
     public function destroy(Request $request, string $id)
     {
         [$process, $err] = $this->resolveProcess($request);
-        if ($err) return $err;
+        if ($err) {
+            return $err;
+        }
 
         $doc = AuPairDocument::where('au_pair_process_id', $process->id)->find($id);
         if (! $doc) {
@@ -189,7 +206,9 @@ class AuPairDocumentController extends Controller
     public function download(Request $request, string $id)
     {
         [$process, $err] = $this->resolveProcess($request);
-        if ($err) return $err;
+        if ($err) {
+            return $err;
+        }
 
         $doc = AuPairDocument::where('au_pair_process_id', $process->id)->find($id);
         if (! $doc || ! $doc->file_path) {
@@ -222,16 +241,18 @@ class AuPairDocumentController extends Controller
                 'stage' => $stage,
                 'required' => (bool) ($cfg['required'] ?? false),
                 'min_count' => $minCount,
-                'allow_multiple' => ($minCount !== null && $minCount > 1) || !empty($cfg['allow_multiple']),
+                'allow_multiple' => ($minCount !== null && $minCount > 1) || ! empty($cfg['allow_multiple']),
                 'uploaded_by' => $cfg['uploaded_by'] ?? 'participant',
                 'count' => $forType->count(),
-                'status' => $this->aggregateStatus($forType),
+                'approved_count' => $forType->where('status', 'approved')->count(),
+                'status' => $this->aggregateStatus($forType, $minCount),
                 'files' => $forType->map(fn ($d) => $this->serializeDocRecord($d))->all(),
             ];
         }
 
         // Ordenar por sort
         usort($items, fn ($a, $b) => ($cfgs[$a['document_type']]['sort'] ?? 0) <=> ($cfgs[$b['document_type']]['sort'] ?? 0));
+
         return $items;
     }
 
@@ -239,11 +260,23 @@ class AuPairDocumentController extends Controller
      * Si hay al menos un aprobado → 'approved'. Si todos rechazados → 'rejected'.
      * Si hay alguno pending → 'pending'. Si no hay → 'missing'.
      */
-    private function aggregateStatus($docs): string
+    private function aggregateStatus($docs, ?int $minCount = null): string
     {
-        if ($docs->isEmpty()) return 'missing';
-        if ($docs->contains(fn ($d) => $d->status === 'approved')) return 'approved';
-        if ($docs->contains(fn ($d) => $d->status === 'pending')) return 'pending';
+        if ($docs->isEmpty()) {
+            return 'missing';
+        }
+        // Multi-archivo: 'approved' solo cuando hay al menos min_count aprobados.
+        $approved = $docs->where('status', 'approved')->count();
+        if ($approved >= max(1, (int) ($minCount ?? 1))) {
+            return 'approved';
+        }
+        if ($docs->contains(fn ($d) => $d->status === 'pending')) {
+            return 'pending';
+        }
+        if ($approved > 0) {
+            return 'pending';
+        } // aprobados parciales: sigue en curso
+
         return 'rejected';
     }
 

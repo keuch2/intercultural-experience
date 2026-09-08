@@ -41,6 +41,14 @@ class ProgramVisaProcess extends Model
         return $this->belongsTo(ProgramProcess::class, 'program_process_id');
     }
 
+    /**
+     * La columna es TIME (MySQL devuelve HH:MM:SS); la UI y la validación trabajan en H:i.
+     */
+    public function getAppointmentTimeAttribute(?string $value): ?string
+    {
+        return $value ? substr($value, 0, 5) : null;
+    }
+
     /** Progreso 0..100 sobre los hitos principales (misma lógica que AuPairVisaProcess). */
     public function getProgressAttribute(): int
     {

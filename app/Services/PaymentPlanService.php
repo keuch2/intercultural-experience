@@ -61,20 +61,30 @@ class PaymentPlanService
     public function summary(?Application $application): array
     {
         if (! $application) {
-            return ['payments' => collect(), 'total_paid' => 0.0, 'total_cost' => 0.0, 'currency' => 'USD', 'pct' => 0, 'installment_plan' => null];
+            return ['payments' => collect(), 'total_paid' => 0.0, 'pending_amount' => 0.0, 'total_cost' => 0.0, 'balance' => 0.0, 'currency' => 'USD', 'pct' => 0, 'payment_deadline' => null, 'installment_plan' => null];
         }
 
-        $payments = $application->payments()->with(['currency', 'verifiedBy'])->orderByDesc('created_at')->get();
+        $payments = $application->payments()->with(['currency', 'verifiedBy'])->orderByDesc('payment_date')->orderByDesc('id')->get();
+        // Misma fórmula que el admin (Gestión de Pagos): solo verificados, en la moneda del programa.
         $totalPaid = (float) $payments->where('status', 'verified')->sum(fn ($p) => $p->converted_amount ?? $p->amount);
+        $pendingAmount = (float) $payments->where('status', 'pending')->sum(fn ($p) => $p->converted_amount ?? $p->amount);
         $totalCost = (float) ($application->total_cost ?? 0);
+        $plan = PaymentInstallment::where('application_id', $application->id)
+            ->where('status', '!=', 'cancelled')
+            ->with('installmentDetails')
+            ->latest('id')
+            ->first();
 
         return [
             'payments' => $payments,
             'total_paid' => $totalPaid,
+            'pending_amount' => $pendingAmount,
             'total_cost' => $totalCost,
+            'balance' => max(0.0, $totalCost - $totalPaid),
             'currency' => $application->cost_currency ?? 'USD',
             'pct' => $totalCost > 0 ? (int) min(100, round(($totalPaid / $totalCost) * 100)) : 0,
-            'installment_plan' => PaymentInstallment::where('application_id', $application->id)->with('installmentDetails')->first(),
+            'payment_deadline' => $application->payment_deadline?->toDateString(),
+            'installment_plan' => $plan,
         ];
     }
 }
