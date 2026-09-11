@@ -311,10 +311,8 @@
                     manteniendo su aplicación actual activa. Ambos programas podrán procesarse en paralelo.
                 </div>
 
-                <form id="newApplicationForm" action="{{ route('admin.participants.store') }}" method="POST">
+                <form id="newApplicationForm" action="{{ route('admin.participants.applications.store', $participant->id) }}" method="POST">
                     @csrf
-                    <input type="hidden" name="user_id" value="{{ $participant->id }}">
-                    <input type="hidden" name="copy_from_application" value="{{ optional($firstApp)->id }}">
                     
                     <div class="mb-3">
                         <label for="new_program_id" class="form-label">
@@ -339,12 +337,6 @@
 
                     <div class="mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="copy_basic_data" name="copy_basic_data" checked>
-                            <label class="form-check-label" for="copy_basic_data">
-                                <strong>Copiar datos básicos</strong> (nombre, cédula, pasaporte, contacto, etc.)
-                            </label>
-                        </div>
-                        <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="set_as_current" name="set_as_current">
                             <label class="form-check-label" for="set_as_current">
                                 Marcar como programa principal actual
@@ -362,7 +354,7 @@
                             <li>Se creará una nueva aplicación independiente</li>
                             <li>Cada programa tendrá sus propios datos específicos</li>
                             <li>El participante podrá estar en diferentes etapas en cada programa</li>
-                            <li>Los datos básicos se copiarán para agilizar el proceso</li>
+                            <li>Los datos personales son compartidos entre programas (viven en el participante)</li>
                         </ul>
                     </div>
 

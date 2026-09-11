@@ -285,7 +285,7 @@ class AdminParticipantController extends Controller
         $totalPoints = $participant->points->sum('points');
         
         // All applications for the applications tab
-        $allApplications = $participant->applications;
+        $allApplications = $participant->applications()->with(['program', 'programProcess'])->get();
         
         // Currencies for payment modal
         $currencies = \App\Models\Currency::all();
@@ -328,6 +328,56 @@ class AdminParticipantController extends Controller
         ]);
         
         return view('admin.participants.edit', compact('participant', 'programs'));
+    }
+
+    /**
+     * Crea una postulación adicional del participante a otro programa (modal "Nuevo programa").
+     * Los datos personales viven en el usuario, así que solo se crea la aplicación; si el
+     * programa usa el motor, se crea también su proceso para que aparezca en el hub.
+     */
+    public function storeApplication(Request $request, User $participant)
+    {
+        if ($participant->role !== 'user') {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'program_id' => ['required', 'exists:programs,id'],
+            'set_as_current' => ['nullable', 'boolean'],
+        ]);
+
+        $program = Program::findOrFail($validated['program_id']);
+
+        $active = Application::where('user_id', $participant->id)
+            ->where('program_id', $program->id)
+            ->whereNotIn('status', ['rejected', 'cancelled', 'withdrawn', 'completed'])
+            ->exists();
+        if ($active) {
+            return back()->withErrors(['program_id' => "El participante ya tiene una postulación activa en {$program->name}."]);
+        }
+
+        $application = \DB::transaction(function () use ($request, $participant, $program) {
+            $setCurrent = $request->boolean('set_as_current');
+            if ($setCurrent) {
+                Application::where('user_id', $participant->id)->update(['is_current_program' => false]);
+            }
+
+            return Application::create([
+                'user_id' => $participant->id,
+                'program_id' => $program->id,
+                'status' => 'pending',
+                'current_stage' => 'registration',
+                'progress_percentage' => 0,
+                'applied_at' => now(),
+                'is_current_program' => $setCurrent,
+                'total_cost' => $program->cost ?? 0,
+            ]);
+        });
+
+        app(ProcessResolver::class)->ensureForApplication($application);
+
+        return redirect()->route('admin.participants.show', $participant->id)
+            ->with('success', "Postulación a {$program->name} creada correctamente.");
     }
 
     /**

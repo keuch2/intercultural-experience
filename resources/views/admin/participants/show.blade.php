@@ -529,6 +529,12 @@
                                                                     <i class="bi bi-eye me-1"></i> Ver perfil Au Pair
                                                                 </a>
                                                             </li>
+                                                        @elseif(optional($application->program)->engine_enabled && $application->programProcess)
+                                                            <li>
+                                                                <a class="dropdown-item" href="{{ route('admin.program.participants.show', ['program' => $application->program->slug, 'process' => $application->programProcess->id]) }}">
+                                                                    <i class="bi bi-diagram-3 me-1"></i> Ver proceso {{ $application->program->name }}
+                                                                </a>
+                                                            </li>
                                                         @endif
                                                         <li>
                                                             <a class="dropdown-item" href="{{ route('admin.payment-management.show', $application->id) }}">
@@ -536,7 +542,7 @@
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a class="dropdown-item" href="{{ route('admin.participants.edit', $application->id) }}">
+                                                            <a class="dropdown-item" href="{{ route('admin.participants.edit', $participant->id) }}">
                                                                 <i class="bi bi-pencil me-1"></i> Editar
                                                             </a>
                                                         </li>
@@ -704,10 +710,8 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('admin.participants.store') }}" method="POST">
-                @csrf
-                <input type="hidden" name="user_id" value="{{ $participant->id }}">
-                <input type="hidden" name="copy_from_application" value="{{ optional($firstApp)->id }}">
+            <form action="{{ route('admin.participants.applications.store', $participant->id) }}" method="POST">
+                    @csrf
                 
                 <div class="modal-body">
                     <div class="alert alert-info">
@@ -731,13 +735,6 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="copy_basic_data" name="copy_basic_data" checked>
-                                <label class="form-check-label" for="copy_basic_data">
-                                    <strong>Copiar datos básicos</strong><br>
-                                    <small class="text-muted">(Nombre, cédula, pasaporte, contacto, etc.)</small>
-                                </label>
-                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <div class="form-check">

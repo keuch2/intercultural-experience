@@ -80,6 +80,7 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::get('/participants/{participant}', [AdminParticipantController::class, 'show'])->name('admin.participants.show');
         Route::get('/participants/{participant}/edit', [AdminParticipantController::class, 'edit'])->name('admin.participants.edit');
         Route::put('/participants/{participant}', [AdminParticipantController::class, 'update'])->name('admin.participants.update');
+        Route::post('/participants/{participant}/applications', [AdminParticipantController::class, 'storeApplication'])->name('admin.participants.applications.store');
         Route::delete('/participants/{participant}', [AdminParticipantController::class, 'destroy'])->name('admin.participants.destroy');
         
         // Agents Management

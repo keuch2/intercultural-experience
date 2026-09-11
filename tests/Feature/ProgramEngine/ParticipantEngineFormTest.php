@@ -73,4 +73,32 @@ class ParticipantEngineFormTest extends EngineTestCase
 
         $this->assertSame(0, ProgramProcess::where('user_id', $user->id)->count());
     }
+
+    public function test_new_application_modal_creates_application_and_process_without_touching_user(): void
+    {
+        $program = $this->engineProgram(['slug' => 'work-travel']);
+        $user = $this->participant();
+
+        $this->actingAs($this->admin())
+            ->post(route('admin.participants.applications.store', $user->id), ['program_id' => $program->id, 'set_as_current' => 1])
+            ->assertRedirect(route('admin.participants.show', $user->id))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('applications', ['user_id' => $user->id, 'program_id' => $program->id, 'status' => 'pending']);
+        $this->assertSame(1, ProgramProcess::where('user_id', $user->id)->where('program_id', $program->id)->count());
+
+        // Duplicado activo → error de validación, sin crear otra postulación
+        $this->actingAs($this->admin())
+            ->from(route('admin.participants.edit', $user->id))
+            ->post(route('admin.participants.applications.store', $user->id), ['program_id' => $program->id])
+            ->assertRedirect(route('admin.participants.edit', $user->id))
+            ->assertSessionHasErrors('program_id');
+        $this->assertSame(1, \App\Models\Application::where('user_id', $user->id)->count());
+
+        // La ficha lista la postulación con enlace al hub del motor
+        $process = ProgramProcess::where('user_id', $user->id)->first();
+        $this->actingAs($this->admin())->get(route('admin.participants.show', $user->id))
+            ->assertOk()
+            ->assertSee(route('admin.program.participants.show', ['program' => $program->slug, 'process' => $process->id]), false);
+    }
 }
