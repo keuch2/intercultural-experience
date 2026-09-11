@@ -347,6 +347,11 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::get('/settings/backup', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'backup'])->name('admin.settings.backup');
         Route::post('/settings/backup', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'createBackup'])->name('admin.settings.backup.create');
 
+        // Alias legacy: las vistas de formularios dinámicos (admin/programs/forms/*) referencian
+        // admin.programs.index/show, que dejaron de existir al renombrar el módulo a ie-programs.
+        Route::get('/programs', fn () => redirect()->route('admin.ie-programs.index'))->name('admin.programs.index');
+        Route::get('/programs/{program}', fn (\App\Models\Program $program) => redirect()->route('admin.ie-programs.show', $program))->name('admin.programs.show');
+
         // Program Forms
         Route::prefix('programs/{program}/forms')->name('admin.programs.forms.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\AdminProgramFormController::class, 'index'])->name('index');
