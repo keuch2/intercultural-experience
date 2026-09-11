@@ -28,7 +28,7 @@
     "production": {
       "ios": {
         "appleId": "boris@mistercorporation.net",
-        "ascAppId": "REEMPLAZAR_app_store_connect_app_id",
+        "ascAppId": "6807643028",
         "appleTeamId": "889Q6N2WS5"
       },
       "android": {
