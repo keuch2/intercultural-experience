@@ -18,7 +18,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { usePublicAuth } from '../../contexts/PublicAuthContext';
 import { authService } from '../../services/api';
 import InputField from '../../components/InputField';
-import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 
@@ -120,10 +119,6 @@ const LoginScreen: React.FC = () => {
     }
   };
 
-  const goToApiTest = () => {
-    navigation.navigate('ApiTest');
-  };
-  
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -135,14 +130,6 @@ const LoginScreen: React.FC = () => {
           colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.5)']}
           style={styles.gradientOverlay}
         >
-          <TouchableOpacity
-            style={loginExtraStyles.backChip}
-            onPress={() => { clearAuthRequest(); startExploring(); }}
-            accessibilityLabel={authRequest?.programId ? 'Volver al catálogo' : 'Explorar programas'}
-          >
-            <Ionicons name={authRequest?.programId ? 'arrow-back' : 'compass-outline'} size={18} color="#fff" />
-            <Text style={loginExtraStyles.backChipText}>{authRequest?.programId ? 'Volver' : 'Explorar programas'}</Text>
-          </TouchableOpacity>
           <ScrollView contentContainerStyle={{flexGrow: 1}}>
             <View style={styles.contentContainer}>
               {/* Logo and Headline */}
@@ -243,28 +230,18 @@ const LoginScreen: React.FC = () => {
                 <Text style={styles.registerButtonText}>REGISTRO</Text>
               </TouchableOpacity>
 
-              {/* Google Sign In Button */}
-              <TouchableOpacity 
-                onPress={() => alert('Google login not yet implemented')}
+              {/* Catálogo público sin iniciar sesión. Si el usuario venía de postular
+                  a un programa, el texto vuelve a ser "Volver" al catálogo. */}
+              <TouchableOpacity
+                style={loginExtraStyles.exploreButton}
+                onPress={() => { clearAuthRequest(); startExploring(); }}
                 disabled={isLoading}
-                style={styles.googleButtonContainer}
+                accessibilityLabel={authRequest?.programId ? 'Volver al catálogo' : 'Explorar programas'}
               >
-                <Image 
-                  source={require('../../../assets/images/google.png')} 
-                  style={styles.googleButton}
-                  resizeMode="contain"
-                />
+                <Text style={loginExtraStyles.exploreButtonText}>
+                  {authRequest?.programId ? 'VOLVER AL CATÁLOGO' : 'EXPLORAR PROGRAMAS'}
+                </Text>
               </TouchableOpacity>
-              
-              {/* API Test Button — solo en desarrollo, nunca en builds de tienda */}
-              {__DEV__ && (
-                <TouchableOpacity
-                  style={styles.apiTestButton}
-                  onPress={goToApiTest}
-                >
-                  <Text style={styles.apiTestButtonText}>API Test Screen</Text>
-                </TouchableOpacity>
-              )}
             </View>
             </View>
           </ScrollView>
@@ -378,26 +355,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  googleButtonContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 15,
-  },
-  googleButton: {
-    width: 220,
-    height: 48,
-  },
-  apiTestButton: {
-    backgroundColor: '#333333',
-    borderRadius: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginTop: 10,
-  },
-  apiTestButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-  },
   errorContainer: {
     backgroundColor: 'rgba(255, 0, 0, 0.1)',
     borderRadius: 8,
@@ -435,19 +392,17 @@ const styles = StyleSheet.create({
 });
 
 const loginExtraStyles = StyleSheet.create({
-  backChip: {
-    position: 'absolute',
-    top: 44,
-    left: 14,
-    zIndex: 20,
+  exploreButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 18,
+    justifyContent: 'center',
+    backgroundColor: '#E52224',
+    borderRadius: 25,
+    width: '100%',
+    height: 50,
+    marginBottom: 20,
   },
-  backChipText: { color: '#fff', marginLeft: 4, fontSize: 13, fontWeight: '600' },
+  exploreButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });
 
 export default LoginScreen;

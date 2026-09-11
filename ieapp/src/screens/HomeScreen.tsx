@@ -42,6 +42,7 @@ const HomeScreen: React.FC = () => {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         <View style={styles.header}>
+          <Image source={require('../../assets/images/ie-icon.png')} style={styles.brandLogo} resizeMode="contain" />
           <View style={{ flex: 1 }}>
             <Text style={styles.hello}>Hola, {firstName} 👋</Text>
             <Text style={styles.subtitle}>Bienvenido a ie · intercultural experience</Text>
@@ -149,6 +150,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#f4f4f5' },
   scroll: { paddingBottom: 100 },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18, paddingTop: 14, paddingBottom: 6 },
+  brandLogo: { width: 38, height: 38, marginRight: 10 },
   hello: { fontSize: 20, fontWeight: '800', color: '#222' },
   subtitle: { color: '#666', marginTop: 2, fontSize: 13 },
   avatar: { width: 44, height: 44, borderRadius: 22 },
