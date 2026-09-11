@@ -32,7 +32,6 @@ const LoginScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{email?: string; password?: string}>({});
   const [apiError, setApiError] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
   
   const validateForm = () => {
     const newErrors: {email?: string; password?: string} = {};
@@ -56,7 +55,6 @@ const LoginScreen: React.FC = () => {
 
     // Clear previous errors
     setApiError(null);
-    setDebugInfo(null);
     clearError();
 
     // V1 mobile: antes del login chequeamos el estado del email. Si es un
@@ -89,9 +87,6 @@ const LoginScreen: React.FC = () => {
     } else {
       // Login failed
       console.error('Login error details:', result);
-      
-      // Capture detailed error information for debugging
-      setDebugInfo(result);
       
       if (result.errors) {
         // Validation errors from Laravel
@@ -193,18 +188,6 @@ const LoginScreen: React.FC = () => {
             {apiError && (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>{apiError}</Text>
-              </View>
-            )}
-            
-            {/* Debug Information (in development) */}
-            {debugInfo && (
-              <View style={styles.debugContainer}>
-                <Text style={styles.debugTitle}>Debug Information:</Text>
-                <ScrollView style={styles.debugScroll}>
-                  <Text style={styles.debugText}>
-                    {JSON.stringify(debugInfo, null, 2)}
-                  </Text>
-                </ScrollView>
               </View>
             )}
             
@@ -368,27 +351,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
-  debugContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 15,
-    maxHeight: 200,
-  },
-  debugTitle: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  debugScroll: {
-    maxHeight: 150,
-  },
-  debugText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontFamily: 'monospace',
-  }
 });
 
 const loginExtraStyles = StyleSheet.create({
