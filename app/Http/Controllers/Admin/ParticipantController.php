@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Program;
 use App\Models\User;
+use App\Services\ProgramEngine\ProcessResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -124,6 +125,7 @@ class ParticipantController extends Controller
         $validated['is_current_program'] = true; // Primera aplicación es siempre actual
         
         $participant = Application::create($validated);
+        app(ProcessResolver::class)->ensureForApplication($participant);
         
         return redirect()
             ->route('admin.participants.show', $participant)
@@ -194,6 +196,7 @@ class ParticipantController extends Controller
             
             // Crear nueva aplicación
             $newApplication = Application::create($newApplicationData);
+            app(ProcessResolver::class)->ensureForApplication($newApplication);
             
             return $newApplication;
         });
@@ -428,12 +431,20 @@ class ParticipantController extends Controller
             // Load existing data from application or create empty model
             switch($formType) {
                 case 'work_travel':
-                    $workTravelData = $application ? ($application->workTravelData ?? new \App\Models\WorkTravelData()) : new \App\Models\WorkTravelData();
-                    return view('admin.participants.forms.work_travel', compact('workTravelData'))->render();
-                    
+                case 'engine':
+                    // Los programas del motor (Work & Travel y nuevos) se gestionan en su hub;
+                    // el formulario legacy work_travel_data ya no se usa.
+                    $program = Program::find(request('program_id')) ?? $application?->program;
+                    if (! $program || ! $program->engine_enabled) {
+                        $program = Program::where('engine_enabled', true)->where('slug', 'work-travel')->first() ?? $program;
+                    }
+                    $hubUrl = $program && $program->engine_enabled && $program->slug
+                        ? route('admin.program.participants.index', ['program' => $program->slug, 'search' => $user->email])
+                        : null;
+                    return response(view('admin.participants.forms._engine_notice', ['program' => $program, 'hubUrl' => $hubUrl])->render(), 200);
+
                 case 'au_pair':
-                    $auPairData = $application ? ($application->auPairData ?? new \App\Models\AuPairData()) : new \App\Models\AuPairData();
-                    return view('admin.participants.forms.au_pair', compact('auPairData'))->render();
+                    return response('<div class="alert alert-info"><i class="fas fa-info-circle me-1"></i>El módulo Au Pair Legacy fue deshabilitado. Guardá los cambios y gestioná el proceso Au Pair (documentos, evaluaciones, visa, match) desde <a class="alert-link" href="' . route('admin.aupair.profiles.index') . '">Au Pair &gt; Perfiles</a>.</div>', 200);
                     
                 case 'teacher':
                     $teacherData = $application ? ($application->teacherData ?? new \App\Models\TeacherData()) : new \App\Models\TeacherData();

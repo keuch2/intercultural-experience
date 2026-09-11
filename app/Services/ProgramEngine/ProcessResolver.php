@@ -43,6 +43,27 @@ class ProcessResolver
     }
 
     /**
+     * Crea el proceso del motor si la postulación pertenece a un programa con motor
+     * habilitado (p. ej. cuando el admin asigna Work & Travel desde Participantes).
+     * Devuelve null para programas legacy o sin etapas configuradas.
+     */
+    public function ensureForApplication(Application $application): ?ProgramProcess
+    {
+        $program = $application->program ?? Program::find($application->program_id);
+        if (! $program || ! $program->engine_enabled) {
+            return null;
+        }
+
+        try {
+            return $this->forApplication($application->setRelation('program', $program));
+        } catch (RuntimeException $e) {
+            report($e);
+
+            return null;
+        }
+    }
+
+    /**
      * Última postulación del usuario en un programa del motor (opcionalmente uno específico).
      */
     public function latestForUser(User $user, ?Program $program = null): ?ProgramProcess

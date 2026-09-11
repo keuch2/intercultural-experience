@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Program;
 use App\Models\Application;
+use App\Services\ProgramEngine\ProcessResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -224,12 +225,13 @@ class AdminParticipantController extends Controller
 
         // Create application if program is assigned
         if ($request->filled('program_id')) {
-            Application::create([
+            $application = Application::create([
                 'user_id' => $user->id,
                 'program_id' => $request->program_id,
                 'status' => 'pending',
                 'application_date' => now(),
             ]);
+            app(ProcessResolver::class)->ensureForApplication($application);
         }
         
         return redirect()->route('admin.participants.index')
@@ -408,7 +410,7 @@ class AdminParticipantController extends Controller
                 if ($existingApp) {
                     $existingApp->update($request->only(['status', 'current_stage', 'progress_percentage']));
                 } else {
-                    Application::create([
+                    $application = Application::create([
                         'user_id' => $participant->id,
                         'program_id' => $request->program_id,
                         'status' => $request->status ?? 'pending',
@@ -416,6 +418,7 @@ class AdminParticipantController extends Controller
                         'progress_percentage' => $request->progress_percentage ?? 0,
                         'applied_at' => now(),
                     ]);
+                    app(ProcessResolver::class)->ensureForApplication($application);
                 }
             }
         } elseif ($firstApp) {

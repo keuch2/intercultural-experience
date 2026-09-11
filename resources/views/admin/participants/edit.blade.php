@@ -189,6 +189,7 @@
                                 @foreach($programs as $program)
                                     <option value="{{ $program->id }}" 
                                         data-subcategory="{{ $program->subcategory }}"
+                                        data-engine="{{ $program->engine_enabled ? '1' : '0' }}"
                                         {{ old('program_id', optional($firstApp)->program_id) == $program->id ? 'selected' : '' }}>
                                         [{{ $program->main_category }}] {{ $program->name }} - {{ $program->country }}
                                     </option>
@@ -392,9 +393,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const programSelect = document.getElementById('program_id');
     const formContainer = document.getElementById('specific-program-form-container');
     
-    // Mapeo de subcategorías a formularios
+    // Mapeo de subcategorías a formularios legacy que siguen en uso.
+    // Work & Travel y los programas del motor (data-engine="1") se gestionan en su hub:
+    // el formulario legacy work_travel_data fue reemplazado por el workflow del programa.
+    // Au Pair se gestiona en Au Pair > Perfiles.
     const programFormMap = {
-        'Work and Travel': 'work_travel',
         'Au Pair': 'au_pair',
         "Teacher's Program": 'teacher'
     };
@@ -405,13 +408,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const subcategory = selectedOption.dataset.subcategory;
         const programId = this.value;
         
-        if (!programId || !subcategory) {
+        if (!programId) {
             // Si no hay programa seleccionado, ocultar formulario
             formContainer.innerHTML = '';
             return;
         }
         
-        const formType = programFormMap[subcategory];
+        const formType = selectedOption.dataset.engine === '1' ? 'engine' : programFormMap[subcategory];
         
         if (!formType) {
             console.warn('No hay formulario específico para: ' + subcategory);
@@ -431,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         // Hacer petición AJAX para cargar el formulario específico
-        const url = "{{ route('admin.participants.program-form', ['participant' => $participant->id, 'formType' => 'FORM_TYPE']) }}".replace('FORM_TYPE', formType);
+        const url = "{{ route('admin.participants.program-form', ['participant' => $participant->id, 'formType' => 'FORM_TYPE']) }}".replace('FORM_TYPE', formType) + '?program_id=' + encodeURIComponent(programId);
         
         console.log('Cargando formulario desde:', url); // Debug
         
