@@ -20,18 +20,24 @@ const PRODUCTION_API_URL = 'https://ie.org.py/app/public/api';
 const LOCAL_API_PATH = '/intercultural-experience/public/api';
 
 const getBaseUrl = () => {
-  // 1. Override explícito por app.json extra.apiUrl (útil para dev local).
+  // 1. Override por variable de entorno (npm run web:local apunta a la API de la Mac).
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (typeof envUrl === 'string' && envUrl.length > 0) {
+    return envUrl;
+  }
+
+  // 2. Override explícito por app.json extra.apiUrl (útil para dev local).
   const extraUrl = (Constants as any)?.expoConfig?.extra?.apiUrl;
   if (typeof extraUrl === 'string' && extraUrl.length > 0) {
     return extraUrl;
   }
 
-  // 2. Web servido desde la Mac → API local (mismo origen).
+  // 3. Web servido desde la Mac → API local (mismo origen).
   if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
     return `http://localhost${LOCAL_API_PATH}`;
   }
 
-  // 3. Default: producción. Funciona desde cualquier red, sin LAN tricks.
+  // 4. Default: producción. Funciona desde cualquier red, sin LAN tricks.
   return PRODUCTION_API_URL;
 };
 

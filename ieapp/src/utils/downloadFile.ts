@@ -18,10 +18,37 @@ const sanitize = (name: string) => name.replace(/[^A-Za-z0-9._-]+/g, '_').slice(
 
 export const mimeFor = (filename: string): string | undefined => MIME_BY_EXT[(filename.split('.').pop() || '').toLowerCase()];
 
+/**
+ * Descarga en navegador: pedimos el archivo con el token vía fetch y lo entregamos
+ * como blob, porque en web no hay sistema de archivos ni hoja de compartir nativa.
+ */
+async function downloadInBrowser(url: string, name: string, token: string | null): Promise<boolean> {
+  const res = await fetch(url, {
+    headers: { Accept: 'application/octet-stream, */*', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  });
+  if (!res.ok) {
+    throw new Error(res.status === 401 ? 'Tu sesión expiró. Volvé a iniciar sesión.' : res.status === 404 ? 'El archivo no está disponible.' : `No pudimos descargar el archivo (HTTP ${res.status}).`);
+  }
+  const blobUrl = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+  return true;
+}
+
 export async function downloadAndOpen(url: string, filename?: string, mimeType?: string): Promise<boolean> {
   try {
     const token = await authService.getStoredToken();
     const name = sanitize(filename || url.split('/').pop() || `archivo-${Date.now()}`);
+
+    if (Platform.OS === 'web') {
+      return await downloadInBrowser(url, name, token);
+    }
+
     const dir = FileSystem.cacheDirectory ?? FileSystem.documentDirectory;
     if (!dir) throw new Error('Almacenamiento no disponible');
     const target = `${dir}${name}`;
