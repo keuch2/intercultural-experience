@@ -54,6 +54,13 @@
 <div class="card shadow mb-4">
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
         <h6 class="m-0 font-weight-bold text-primary">Participantes ({{ $participants->total() }})</h6>
+        <div class="small text-muted">
+            Estado de cada postulación:
+            <span class="badge bg-warning text-dark">En curso</span>
+            <span class="badge bg-success text-white">Aprobada</span>
+            <span class="badge bg-danger text-white">Rechazada</span>
+            <span class="badge bg-secondary text-white">Finalizada</span>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -64,8 +71,7 @@
                         <th>Nombre</th>
                         <th>Email</th>
                         <th>Ciudad/País</th>
-                        <th>Programa</th>
-                        <th>Estado</th>
+                        <th>Programas</th>
                         <th>Fecha de Registro</th>
                         <th>Acciones</th>
                     </tr>
@@ -92,35 +98,35 @@
                             @endif
                         </td>
                         <td>
-                            @php $currentApp = $participant->applications->first(); @endphp
-                            @if($currentApp && $currentApp->program)
-                                <span class="badge bg-primary text-white">
-                                    {{ $currentApp->program->name }}
+                            {{-- Una etiqueta por postulación; el color indica el estado de esa
+                                 postulación (verde aprobada, amarillo en curso, rojo rechazada). --}}
+                            @forelse($participant->applications as $application)
+                                @php
+                                    $status = $application->completed_at ? 'completed' : $application->status;
+                                    $color = match ($status) {
+                                        'approved' => 'success',
+                                        'rejected', 'cancelled', 'withdrawn' => 'danger',
+                                        'completed' => 'secondary',
+                                        default => 'warning',
+                                    };
+                                    $label = match ($status) {
+                                        'approved' => 'Aprobada',
+                                        'in_review' => 'En revisión',
+                                        'rejected' => 'Rechazada',
+                                        'cancelled' => 'Cancelada',
+                                        'withdrawn' => 'Retirada',
+                                        'completed' => 'Finalizada',
+                                        'pending' => 'Pendiente',
+                                        default => ucfirst((string) $status),
+                                    };
+                                @endphp
+                                <span class="badge bg-{{ $color }} {{ $color === 'warning' ? 'text-dark' : 'text-white' }} mb-1"
+                                      title="{{ optional($application->program)->name ?? 'Sin programa' }} — {{ $label }}">
+                                    {{ optional($application->program)->name ?? 'Sin programa' }}
                                 </span>
-                            @else
+                            @empty
                                 <span class="text-muted">Sin programa</span>
-                            @endif
-                        </td>
-                        <td>
-                            @php
-                                $statusColors = [
-                                    'pending' => 'warning',
-                                    'in_review' => 'info',
-                                    'approved' => 'success',
-                                    'rejected' => 'danger',
-                                ];
-                                $statusLabels = [
-                                    'pending' => 'Pendiente',
-                                    'in_review' => 'En Revisión',
-                                    'approved' => 'Aprobado',
-                                    'rejected' => 'Rechazado',
-                                ];
-                                $appStatus = $currentApp->status ?? null;
-                                $color = $statusColors[$appStatus] ?? 'secondary';
-                                $label = $statusLabels[$appStatus] ?? ($appStatus ? ucfirst($appStatus) : 'Sin aplicación');
-                                $textColor = in_array($color, ['warning', 'info']) ? 'text-dark' : 'text-white';
-                            @endphp
-                            <span class="badge bg-{{ $color }} {{ $textColor }}">{{ $label }}</span>
+                            @endforelse
                         </td>
                         <td>{{ $participant->created_at->format('d/m/Y') }}</td>
                         <td>
@@ -143,7 +149,7 @@
                     </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center">No se encontraron participantes</td>
+                            <td colspan="7" class="text-center">No se encontraron participantes</td>
                         </tr>
                     @endforelse
                 </tbody>
