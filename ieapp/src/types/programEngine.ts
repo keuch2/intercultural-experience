@@ -97,6 +97,9 @@ export interface ProgramEnvelope {
   application_approved: boolean;
   application_review_status: string | null;
   enrollment_date: string | null;
+  /** Fecha de inicio/fin del programa (viaje/trabajo), cargada por IE */
+  program_start_date: string | null;
+  program_end_date: string | null;
   season: string | null;
   stages: EngineStage[];
   statuses: Record<string, string>;

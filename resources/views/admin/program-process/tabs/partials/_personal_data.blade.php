@@ -7,6 +7,8 @@
         <div class="row g-3">
             <div class="col-md-3"><label class="form-label small text-muted mb-0">Fecha de inscripción</label><p class="mb-0 fw-semibold">{{ $process->enrollment_date?->format('d/m/Y') ?? '-' }}</p></div>
             <div class="col-md-3"><label class="form-label small text-muted mb-0">Temporada</label><p class="mb-0 fw-semibold">{{ $process->season ?? '-' }}</p></div>
+            <div class="col-md-3"><label class="form-label small text-muted mb-0">Inicio del programa</label><p class="mb-0 fw-semibold">{{ $process->program_start_date?->format('d/m/Y') ?? '-' }}</p></div>
+            <div class="col-md-3"><label class="form-label small text-muted mb-0">Fin del programa</label><p class="mb-0 fw-semibold">{{ $process->program_end_date?->format('d/m/Y') ?? '-' }}</p></div>
             <div class="col-md-3"><label class="form-label small text-muted mb-0">Nacionalidad</label><p class="mb-0 fw-semibold">{{ $user->nationality ?? '-' }}</p></div>
             <div class="col-md-3"><label class="form-label small text-muted mb-0">CI</label><p class="mb-0 fw-semibold">{{ $user->ci_number ?? '-' }}</p></div>
             <div class="col-md-3"><label class="form-label small text-muted mb-0">Fecha de nacimiento</label><p class="mb-0 fw-semibold">{{ $user->birth_date?->format('d/m/Y') ?? '-' }} @if($user->age)({{ $user->age }} años)@endif</p></div>
@@ -23,6 +25,8 @@
                 <div class="row g-3">
                     <div class="col-md-3"><label class="form-label small">Fecha de inscripción</label><input type="date" name="enrollment_date" class="form-control form-control-sm" value="{{ $process->enrollment_date?->format('Y-m-d') }}"></div>
                     <div class="col-md-3"><label class="form-label small">Temporada</label><input type="text" name="season" class="form-control form-control-sm" value="{{ $process->season }}" placeholder="2026"></div>
+                    <div class="col-md-3"><label class="form-label small">Inicio del programa</label><input type="date" name="program_start_date" class="form-control form-control-sm" value="{{ $process->program_start_date?->format('Y-m-d') }}"></div>
+                    <div class="col-md-3"><label class="form-label small">Fin del programa</label><input type="date" name="program_end_date" class="form-control form-control-sm" value="{{ $process->program_end_date?->format('Y-m-d') }}"></div>
                     <div class="col-md-6"><label class="form-label small">Nombre y apellido *</label><input type="text" name="name" class="form-control form-control-sm" value="{{ old('name', $user->name) }}" required></div>
                     <div class="col-md-3"><label class="form-label small">Nacionalidad</label><input type="text" name="nationality" class="form-control form-control-sm" value="{{ $user->nationality }}"></div>
                     <div class="col-md-3"><label class="form-label small">CI</label><input type="text" name="ci_number" class="form-control form-control-sm" value="{{ $user->ci_number }}"></div>

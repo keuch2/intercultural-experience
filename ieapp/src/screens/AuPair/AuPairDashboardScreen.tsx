@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
+import { describeProgramStart } from '../../utils/programDates';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { auPairService } from '../../services/api';
@@ -96,6 +97,9 @@ const AuPairDashboardScreen: React.FC = () => {
 
   const approved = process.application_approved;
 
+  const programStart = describeProgramStart(process.program_start_date);
+
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView
@@ -106,6 +110,7 @@ const AuPairDashboardScreen: React.FC = () => {
           <View>
             <Text style={styles.hello}>Hola, {user?.name?.split(' ')[0] || 'participante'} 👋</Text>
             <Text style={styles.subtitle}>Tu proceso Au Pair</Text>
+            {!!programStart && <Text style={styles.startDate}><Ionicons name="airplane-outline" size={13} color="#0369A1" /> {programStart.label}</Text>}
           </View>
           <View style={styles.progressBubble}>
             <Text style={styles.progressNumber}>{process.progress_pct}%</Text>
@@ -225,6 +230,7 @@ const styles = StyleSheet.create({
   },
   hello: { fontSize: 20, fontWeight: '800', color: '#222' },
   subtitle: { color: '#666', marginTop: 2 },
+  startDate: { marginTop: 6, fontSize: 12, color: '#0369A1', fontWeight: '600' },
   progressBubble: {
     width: 56, height: 56, borderRadius: 28,
     borderWidth: 3, borderColor: '#E52224',

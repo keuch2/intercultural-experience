@@ -30,6 +30,14 @@
                     <label class="form-label small text-muted mb-0">Nacionalidad</label>
                     <p class="mb-0 fw-semibold">{{ $user->nationality ?? '-' }}</p>
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted mb-0">Inicio del programa</label>
+                    <p class="mb-0 fw-semibold">{{ $process?->program_start_date?->format('d/m/Y') ?? '-' }}</p>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted mb-0">Fin del programa</label>
+                    <p class="mb-0 fw-semibold">{{ $process?->program_end_date?->format('d/m/Y') ?? '-' }}</p>
+                </div>
                 <div class="col-md-6">
                     <label class="form-label small text-muted mb-0">Nombres y Apellidos</label>
                     <p class="mb-0 fw-semibold">{{ $user->name }}</p>
@@ -102,6 +110,14 @@
                     <div class="col-md-4">
                         <label class="form-label small">País de Inscripción</label>
                         <input type="text" name="enrollment_country" class="form-control form-control-sm" value="{{ $process->enrollment_country ?? $user->country ?? '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">Inicio del programa</label>
+                        <input type="date" name="program_start_date" class="form-control form-control-sm" value="{{ $process?->program_start_date?->format('Y-m-d') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">Fin del programa</label>
+                        <input type="date" name="program_end_date" class="form-control form-control-sm" value="{{ $process?->program_end_date?->format('Y-m-d') }}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small">Nombres y Apellidos <span class="text-danger">*</span></label>

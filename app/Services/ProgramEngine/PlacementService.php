@@ -43,6 +43,18 @@ class PlacementService
         }
         $placement->save();
 
+        // La fecha de inicio/fin del programa vive en el proceso (fuente para API y app);
+        // la pestaña Job Placement es solo otro lugar desde donde cargarla.
+        $sync = [];
+        foreach (['program_start_date', 'program_end_date'] as $k) {
+            if (array_key_exists($k, $data)) {
+                $sync[$k] = $data[$k] ?: null;
+            }
+        }
+        if ($sync) {
+            $process->update($sync);
+        }
+
         return $placement;
     }
 

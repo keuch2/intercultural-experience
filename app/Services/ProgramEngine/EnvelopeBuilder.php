@@ -94,6 +94,8 @@ class EnvelopeBuilder
             'application_approved' => $process->applicantApproved(),
             'application_review_status' => optional($process->application)->status,
             'enrollment_date' => optional($process->enrollment_date)->toDateString(),
+            'program_start_date' => optional($process->program_start_date)->toDateString(),
+            'program_end_date' => optional($process->program_end_date)->toDateString(),
             'season' => $process->season,
             'stages' => $stages,
             'statuses' => $statuses,

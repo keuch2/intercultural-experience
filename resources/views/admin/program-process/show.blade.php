@@ -29,7 +29,7 @@
             <div class="col">
                 <h3 class="mb-1">{{ $user->name }} <small class="text-muted fs-6">· {{ $program->name }}</small></h3>
                 <div class="text-muted">{{ $user->email }} @if($user->phone) &middot; {{ $user->phone }} @endif @if($user->city) &middot; {{ $user->city }}, {{ $user->country ?? '' }} @endif</div>
-                @if($process->season)<small class="text-muted">Temporada {{ $process->season }}</small>@endif
+                <small class="text-muted">@if($process->season)Temporada {{ $process->season }}@endif @if($process->program_start_date) &middot; <i class="fas fa-plane-departure me-1"></i>Inicio del programa: <strong>{{ $process->program_start_date->format('d/m/Y') }}</strong>@if($process->program_end_date) &ndash; Fin: {{ $process->program_end_date->format('d/m/Y') }}@endif @endif</small>
             </div>
             <div class="col-auto text-end">
                 <div class="d-inline-flex align-items-center px-3 py-2 rounded border border-{{ $statusColor }} bg-{{ $statusColor }} bg-opacity-10">
@@ -62,9 +62,9 @@
             @if($english && $english['best_level'] && ! $english['meets_minimum'])
             <div class="alert alert-danger py-2 px-3 mb-2 d-flex align-items-center"><i class="fas fa-language me-2"></i><small><strong>Nivel de inglés insuficiente:</strong> {{ $english['best_level'] }}. Mínimo requerido: {{ $english['min_level'] }}.</small></div>
             @endif
-            @if($process->status === 'active' && $currentStage && !$currentStage->is_terminal && empty($envelope['blocking_reasons']))
+            @if($process->status === 'active' && $currentStage && !$currentStage->is_terminal && empty($envelope['blocking_reasons']) && $currentStage->hasAutomaticGuards())
             <div class="alert alert-success py-2 px-3 mb-2 d-flex align-items-center justify-content-between">
-                <small><i class="fas fa-check-circle me-2"></i><strong>Requisitos de "{{ $currentStage->label }}" completos.</strong> Se puede avanzar de etapa.</small>
+                <small><i class="fas fa-check-circle me-2"></i><strong>Requisitos de "{{ $currentStage->label }}" completos.</strong> Se puede avanzar a "{{ $definition->nextStage($currentStage->key)?->label }}".</small>
                 <form method="POST" action="{{ route('admin.program.stage.advance', [$program->slug, $process->id]) }}">@csrf<button class="btn btn-sm btn-success py-0">Avanzar <i class="fas fa-arrow-right ms-1"></i></button></form>
             </div>
             @endif

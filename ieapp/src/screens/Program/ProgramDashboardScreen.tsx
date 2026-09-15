@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
+import { describeProgramStart } from '../../utils/programDates';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProgram } from '../../contexts/ProgramContext';
@@ -58,6 +59,7 @@ const ProgramDashboardScreen: React.FC = () => {
   const currentIdx = Math.max(0, envelope.stages.findIndex(s => s.key === envelope.current_stage));
   const color = stageColor(currentIdx);
   const currentStage = envelope.stages[currentIdx];
+  const programStart = describeProgramStart(envelope.program_start_date);
   const modules = Object.entries(envelope.modules).filter(([, m]) => m.enabled && m.implemented);
 
   return (
@@ -68,6 +70,7 @@ const ProgramDashboardScreen: React.FC = () => {
             <Text style={styles.hello}>Hola, {user?.name?.split(' ')[0] || 'participante'} 👋</Text>
             <Text style={styles.subtitle}>{envelope.program.name}</Text>
             {currentStage && <Text style={[styles.stageChip, { color }]}>● {currentStage.label}</Text>}
+            {!!programStart && <Text style={styles.startDate}><Ionicons name="airplane-outline" size={13} color="#0369A1" /> {programStart.label}</Text>}
           </View>
           <View style={[styles.progressBubble, { borderColor: color }]}><Text style={[styles.progressNumber, { color }]}>{envelope.progress_pct}%</Text></View>
         </View>
@@ -154,6 +157,7 @@ const styles = StyleSheet.create({
   hello: { fontSize: 20, fontWeight: '800', color: '#222' },
   subtitle: { color: '#666', marginTop: 2 },
   stageChip: { marginTop: 4, fontSize: 12, fontWeight: '700' },
+  startDate: { marginTop: 6, fontSize: 12, color: '#0369A1', fontWeight: '600' },
   progressBubble: { width: 56, height: 56, borderRadius: 28, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
   progressNumber: { fontWeight: '800', fontSize: 14 },
   banner: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#FEF3C7', borderColor: '#F59E0B', borderWidth: 1, borderRadius: 12, padding: 14, marginHorizontal: 18, marginTop: 12 },

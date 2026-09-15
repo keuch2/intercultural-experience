@@ -86,6 +86,10 @@ class StageEvaluator
             $reasons[] = 'El Job Placement no está completo.';
         }
 
+        if ($stage->guardValue('require_visa_approved', false) && ! $this->visaApproved($process)) {
+            $reasons[] = 'Visa aún no aprobada.';
+        }
+
         return $reasons;
     }
 
@@ -118,6 +122,12 @@ class StageEvaluator
             ->where('requirement_key', $req->key)
             ->where('status', ProgramDocument::STATUS_APPROVED)
             ->count();
+    }
+
+    /** El resultado de la entrevista consular está registrado como aprobado. */
+    public function visaApproved(ProgramProcess $process): bool
+    {
+        return $process->visaProcess?->interview_result === 'approved';
     }
 
     public function englishMeetsMin(ProgramProcess $process): bool

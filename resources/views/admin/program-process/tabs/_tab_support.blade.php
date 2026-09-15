@@ -53,5 +53,8 @@
 </div></div></div>
 
 @if(!empty($tabData['stage']))
-    @include('admin.program-process.tabs.partials._stage_gate')
+    @include('admin.program-process.tabs.partials._stage_gate', ['prominent' => true])
+    @if($definition->nextStage($tabData['stage']->key)?->is_terminal)
+        @include('admin.program-process.tabs.partials._finalization')
+    @endif
 @endif

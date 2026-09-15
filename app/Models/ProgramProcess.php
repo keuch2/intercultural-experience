@@ -34,7 +34,7 @@ class ProgramProcess extends Model
 
     protected $fillable = [
         'application_id', 'program_id', 'user_id', 'current_stage_key', 'status', 'stage_states',
-        'module_access', 'season', 'enrollment_date', 'notes', 'finalization_result',
+        'module_access', 'season', 'enrollment_date', 'program_start_date', 'program_end_date', 'notes', 'finalization_result',
         'finalization_reason', 'finalization_date', 'finalized_by',
     ];
 
@@ -42,6 +42,8 @@ class ProgramProcess extends Model
         'stage_states' => 'array',
         'module_access' => 'array',
         'enrollment_date' => 'date',
+        'program_start_date' => 'date',
+        'program_end_date' => 'date',
         'finalization_date' => 'date',
     ];
 

@@ -98,7 +98,7 @@ class WorkTravelProgramSeeder extends Seeder
             ['key' => 'placement', 'label' => 'Job Placement', 'sort_order' => 4, 'mobile_screen' => 'JobPlacement',
                 'guards' => ['require_docs_approved' => true, 'require_placement_complete' => true]],
             ['key' => 'visa', 'label' => 'Gestión de Visa J1', 'sort_order' => 5, 'mobile_screen' => 'ProgramVisa',
-                'guards' => ['require_docs_approved' => false, 'manual_only' => true]],
+                'guards' => ['require_docs_approved' => true, 'require_visa_approved' => true]],
             ['key' => 'support', 'label' => 'Support', 'sort_order' => 6, 'mobile_screen' => 'ProgramSupport',
                 'guards' => ['manual_only' => true]],
             ['key' => 'completed', 'label' => 'Completado', 'sort_order' => 7, 'is_terminal' => true, 'guards' => ['manual_only' => true]],

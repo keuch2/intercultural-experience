@@ -20,6 +20,7 @@
                             <td class="small">
                                 @if(!empty($g['manual_only'])) <span class="badge bg-secondary">manual</span> @else
                                     @if(!empty($g['require_docs_approved'])) <span class="badge bg-info text-dark">docs</span> @endif
+                                    @if(!empty($g['require_visa_approved'])) <span class="badge bg-danger">visa</span> @endif
                                     @foreach($g['require_gates'] ?? [] as $gk) <span class="badge bg-success">pago:{{ $gk }}</span> @endforeach
                                     @foreach($g['require_checklist'] ?? [] as $ck) <span class="badge bg-primary">check:{{ $ck }}</span> @endforeach
                                     @if(!empty($g['require_english_min_level'])) <span class="badge bg-warning text-dark">inglés</span> @endif

@@ -131,6 +131,65 @@
 </div>
 
 {{-- Add Support Log Modal --}}
+{{-- Finalización del programa (se registra al terminar el programa, desde Support) --}}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-flag-checkered text-primary me-1"></i> Finalización del Programa</h6></div>
+    <div class="card-body">
+        <p class="text-muted small"><i class="fas fa-info-circle me-1"></i> Registrá acá el cierre cuando la participante <strong>termine el programa</strong>. El proceso pasa a "Completado".</p>
+        @if($process && $process->finalization_result)
+        <div class="alert alert-{{ $process->finalization_result === 'success' ? 'success' : ($process->finalization_result === 'not_success' ? 'danger' : 'warning') }} mb-3">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <strong>
+                        @switch($process->finalization_result)
+                            @case('success') <i class="fas fa-check-circle me-1"></i> Finalizó con éxito @break
+                            @case('not_success') <i class="fas fa-times-circle me-1"></i> No finalizó con éxito @break
+                            @case('status_change') <i class="fas fa-exchange-alt me-1"></i> Cambio de estatus @break
+                            @case('other') <i class="fas fa-info-circle me-1"></i> Otro @break
+                        @endswitch
+                    </strong>
+                    @if($process->finalization_date)
+                        <small class="ms-2">{{ $process->finalization_date->format('d/m/Y') }}</small>
+                    @endif
+                </div>
+            </div>
+            @if($process->finalization_reason)
+                <p class="mb-0 mt-2 small">{{ $process->finalization_reason }}</p>
+            @endif
+        </div>
+        @endif
+
+        <form method="POST" action="{{ route('admin.aupair.profiles.update-finalization', $user->id) }}">
+            @csrf @method('PUT')
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label small">Resultado <span class="text-danger">*</span></label>
+                    <select name="finalization_result" class="form-select form-select-sm" required>
+                        <option value="">-- Seleccionar --</option>
+                        <option value="success" {{ ($process->finalization_result ?? '') === 'success' ? 'selected' : '' }}>Finalizó con éxito</option>
+                        <option value="not_success" {{ ($process->finalization_result ?? '') === 'not_success' ? 'selected' : '' }}>No finalizó con éxito</option>
+                        <option value="status_change" {{ ($process->finalization_result ?? '') === 'status_change' ? 'selected' : '' }}>Cambio de estatus</option>
+                        <option value="other" {{ ($process->finalization_result ?? '') === 'other' ? 'selected' : '' }}>Otro</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">Fecha de Finalización</label>
+                    <input type="date" name="finalization_date" class="form-control form-control-sm" value="{{ $process && $process->finalization_date ? $process->finalization_date->format('Y-m-d') : '' }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label small">Motivo / Observaciones</label>
+                    <textarea name="finalization_reason" class="form-control form-control-sm" rows="3" placeholder="Explique el motivo en caso de no finalización, cambio de estatus u otro...">{{ $process->finalization_reason ?? '' }}</textarea>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('¿Está seguro de registrar la finalización? Esto marcará el proceso como completado.')">
+                    <i class="fas fa-flag-checkered me-1"></i> Registrar Finalización
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="modal fade" id="addSupportLogModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

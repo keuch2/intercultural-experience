@@ -225,6 +225,16 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Inicio programa:</span>
+                        <span class="fw-semibold">{{ $process?->program_start_date?->format('d/m/Y') ?? '—' }}</span>
+                    </div>
+                    @if($process?->program_end_date)
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Fin programa:</span>
+                        <span class="fw-semibold">{{ $process->program_end_date->format('d/m/Y') }}</span>
+                    </div>
+                    @endif
+                    <div class="d-flex justify-content-between mb-1">
                         <span class="text-muted">Etapa:</span>
                         <span class="fw-semibold">{{ $stageLabels[$stages['_meta']['current_stage']] ?? ucfirst($stages['_meta']['current_stage']) }}</span>
                     </div>

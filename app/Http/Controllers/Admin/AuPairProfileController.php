@@ -201,8 +201,12 @@ class AuPairProfileController extends Controller
                 'enrollment_date' => 'nullable|date',
                 'enrollment_city' => 'nullable|string|max:100',
                 'enrollment_country' => 'nullable|string|max:100',
-            ]);
-            $process->update(array_filter($processData));
+                'program_start_date' => 'nullable|date',
+                'program_end_date' => 'nullable|date|after_or_equal:program_start_date',
+            ], [], ['program_start_date' => 'fecha de inicio del programa', 'program_end_date' => 'fecha de fin del programa']);
+            // Asignación explícita: permite vaciar una fecha cargada por error.
+            $process->update(collect(['enrollment_date', 'enrollment_city', 'enrollment_country', 'program_start_date', 'program_end_date'])
+                ->mapWithKeys(fn ($k) => [$k => ($processData[$k] ?? null) ?: null])->all());
         }
 
         return redirect()
@@ -891,11 +895,12 @@ class AuPairProfileController extends Controller
 
         $data['finalized_by'] = Auth::id();
         $data['current_stage'] = 'completed';
+        $data['support_status'] = 'completed';
 
         $process->update($data);
 
         return redirect()
-            ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'match_visa'])
+            ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'support'])
             ->with('success', 'Finalización registrada correctamente.');
     }
 

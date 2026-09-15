@@ -244,9 +244,12 @@ class ProgramProcessController extends Controller
             'university' => 'nullable|string|max:255', 'career' => 'nullable|string|max:255', 'academic_year' => 'nullable|string|max:50',
             'current_job' => 'nullable|string|max:255', 'job_position' => 'nullable|string|max:255',
             'enrollment_date' => 'nullable|date', 'season' => 'nullable|string|max:20',
-        ]);
-        $process->user->update(collect($validated)->except(['enrollment_date', 'season'])->all());
-        $process->update(array_filter(['enrollment_date' => $validated['enrollment_date'] ?? null, 'season' => $validated['season'] ?? null]));
+            'program_start_date' => 'nullable|date', 'program_end_date' => 'nullable|date|after_or_equal:program_start_date',
+        ], [], ['program_start_date' => 'fecha de inicio del programa', 'program_end_date' => 'fecha de fin del programa']);
+        $processKeys = ['enrollment_date', 'season', 'program_start_date', 'program_end_date'];
+        $process->user->update(collect($validated)->except($processKeys)->all());
+        // Asignación explícita (no array_filter) para poder vaciar una fecha cargada por error.
+        $process->update(collect($processKeys)->mapWithKeys(fn ($k) => [$k => ($validated[$k] ?? null) ?: null])->all());
 
         return $this->toTab($program, $process, $request->input('redirect_tab', $process->current_stage_key), 'Datos personales actualizados.');
     }
@@ -460,7 +463,9 @@ class ProgramProcessController extends Controller
         ]);
         $this->advancer->finalize($process, $request->user(), $data['finalization_result'], $data['finalization_reason'] ?? null, $data['finalization_date'] ?? null);
 
-        return $this->toTab($program, $process, $request->input('redirect_tab', 'visa'), 'Finalización registrada.');
+        $lastTab = ProgramDefinition::for($program)->workflowStages()->last()?->key ?? 'visa';
+
+        return $this->toTab($program, $process, $request->input('redirect_tab', $lastTab), 'Finalización registrada.');
     }
 
     public function cancelProcess(Request $request, Program $program, ProgramProcess $process)

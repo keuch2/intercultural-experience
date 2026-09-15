@@ -372,63 +372,22 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
-{{-- C8: Finalización --}}
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-flag-checkered text-primary me-1"></i> C8. Finalización del Programa</h6></div>
+{{-- C8: Siguiente etapa → Support (la finalización se registra desde el tab Support) --}}
+@php $apCurrent = $stages['_meta']['current_stage'] ?? ($process->current_stage ?? ''); @endphp
+@if($apCurrent === 'match_visa')
+<div class="card shadow-sm mb-4 border-secondary">
+    <div class="card-header bg-secondary bg-opacity-10"><h6 class="mb-0"><i class="fas fa-arrow-circle-right text-secondary me-1"></i> C8. Siguiente etapa: Support</h6></div>
     <div class="card-body">
-        @if($process && $process->finalization_result)
-        <div class="alert alert-{{ $process->finalization_result === 'success' ? 'success' : ($process->finalization_result === 'not_success' ? 'danger' : 'warning') }} mb-3">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <strong>
-                        @switch($process->finalization_result)
-                            @case('success') <i class="fas fa-check-circle me-1"></i> Finalizó con éxito @break
-                            @case('not_success') <i class="fas fa-times-circle me-1"></i> No finalizó con éxito @break
-                            @case('status_change') <i class="fas fa-exchange-alt me-1"></i> Cambio de estatus @break
-                            @case('other') <i class="fas fa-info-circle me-1"></i> Otro @break
-                        @endswitch
-                    </strong>
-                    @if($process->finalization_date)
-                        <small class="ms-2">{{ $process->finalization_date->format('d/m/Y') }}</small>
-                    @endif
-                </div>
-            </div>
-            @if($process->finalization_reason)
-                <p class="mb-0 mt-2 small">{{ $process->finalization_reason }}</p>
-            @endif
-        </div>
-        @endif
-
-        <form method="POST" action="{{ route('admin.aupair.profiles.update-finalization', $user->id) }}">
-            @csrf @method('PUT')
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label small">Resultado <span class="text-danger">*</span></label>
-                    <select name="finalization_result" class="form-select form-select-sm" required>
-                        <option value="">-- Seleccionar --</option>
-                        <option value="success" {{ ($process->finalization_result ?? '') === 'success' ? 'selected' : '' }}>Finalizó con éxito</option>
-                        <option value="not_success" {{ ($process->finalization_result ?? '') === 'not_success' ? 'selected' : '' }}>No finalizó con éxito</option>
-                        <option value="status_change" {{ ($process->finalization_result ?? '') === 'status_change' ? 'selected' : '' }}>Cambio de estatus</option>
-                        <option value="other" {{ ($process->finalization_result ?? '') === 'other' ? 'selected' : '' }}>Otro</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label small">Fecha de Finalización</label>
-                    <input type="date" name="finalization_date" class="form-control form-control-sm" value="{{ $process && $process->finalization_date ? $process->finalization_date->format('Y-m-d') : '' }}">
-                </div>
-                <div class="col-12">
-                    <label class="form-label small">Motivo / Observaciones</label>
-                    <textarea name="finalization_reason" class="form-control form-control-sm" rows="3" placeholder="Explique el motivo en caso de no finalización, cambio de estatus u otro...">{{ $process->finalization_reason ?? '' }}</textarea>
-                </div>
-            </div>
-            <div class="mt-3">
-                <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('¿Está seguro de registrar la finalización? Esto marcará el proceso como completado.')">
-                    <i class="fas fa-flag-checkered me-1"></i> Registrar Finalización
-                </button>
-            </div>
+        <p class="mb-3 text-muted">Cuando la visa esté aprobada, los documentos en regla y el viaje coordinado, pasá a la participante a <strong>Support</strong> (seguimiento durante el programa). La finalización se registra al terminar el programa, desde el tab Support.</p>
+        <form method="POST" action="{{ route('admin.aupair.profiles.advance-stage', $user->id) }}" onsubmit="return confirm('¿Pasar a la participante a la etapa Support?')">
+            @csrf
+            <button type="submit" class="btn btn-success">Avanzar a Support <i class="fas fa-arrow-right ms-1"></i></button>
         </form>
     </div>
 </div>
+@elseif(in_array($apCurrent, ['support', 'completed']))
+<div class="alert alert-success py-2 px-3 mb-4"><i class="fas fa-check-circle me-1"></i> Etapa Match / Visa J1 completada. El proceso está en <strong>{{ $apCurrent === 'support' ? 'Support' : 'Completado' }}</strong>.</div>
+@endif
 
 {{-- Add Match Modal --}}
 <div class="modal fade" id="addMatchModal" tabindex="-1">

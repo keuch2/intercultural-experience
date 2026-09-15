@@ -135,10 +135,11 @@ class DocumentService
                 'original_filename' => $file->getClientOriginalName(),
                 'file_size' => $file->getSize(),
                 'mime_type' => $file->getClientMimeType(),
-                // Lo que sube el staff se considera validado por el staff.
-                'status' => $uploaderType === 'staff' ? ProgramDocument::STATUS_APPROVED : ProgramDocument::STATUS_PENDING,
-                'reviewed_by' => $uploaderType === 'staff' ? $actor?->id : null,
-                'reviewed_at' => $uploaderType === 'staff' ? now() : null,
+                // Todo documento nace pendiente (también los que sube IE): un admin lo aprueba
+                // explícitamente, igual que en Au Pair.
+                'status' => ProgramDocument::STATUS_PENDING,
+                'reviewed_by' => null,
+                'reviewed_at' => null,
             ]);
         }
 

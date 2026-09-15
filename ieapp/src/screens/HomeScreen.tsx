@@ -9,6 +9,7 @@ import { publicService } from '../services/api';
 import type { PublicProgram } from '../services/api';
 import { screensFor } from '../navigation/programFlowRegistry';
 import { APPLICATION_STATUS_LABELS } from '../types/applications';
+import { describeProgramStart } from '../utils/programDates';
 
 /**
  * Home general del participante (tras el login): postulación actual con acceso
@@ -70,6 +71,9 @@ const HomeScreen: React.FC = () => {
                 </View>
                 <View style={styles.progressBubble}><Text style={styles.progressNumber}>{process?.progress_pct ?? selectedApplication.progress_percentage ?? 0}%</Text></View>
               </View>
+              {!!process?.program_start_date && (
+                <Text style={styles.startDate}><Ionicons name="airplane-outline" size={13} color="#0369A1" /> {describeProgramStart(process.program_start_date)?.label}</Text>
+              )}
               {process?.next_action?.label && (
                 <View style={styles.nextAction}><Ionicons name="flash" size={14} color="#E52224" /><Text style={styles.nextActionText} numberOfLines={2}>{process.next_action.label}</Text></View>
               )}
@@ -165,6 +169,7 @@ const styles = StyleSheet.create({
   cardMeta: { color: '#666', marginTop: 2, fontSize: 13 },
   progressBubble: { width: 52, height: 52, borderRadius: 26, borderWidth: 3, borderColor: '#E52224', alignItems: 'center', justifyContent: 'center', marginLeft: 10 },
   progressNumber: { color: '#E52224', fontWeight: '800', fontSize: 13 },
+  startDate: { marginTop: 8, fontSize: 12, color: '#0369A1', fontWeight: '600' },
   nextAction: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FEF2F2', padding: 8, borderRadius: 8, marginTop: 12 },
   nextActionText: { color: '#7F1D1D', fontSize: 12, flex: 1 },
   cardCta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 12, alignSelf: 'flex-end' },

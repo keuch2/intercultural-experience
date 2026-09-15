@@ -51,13 +51,18 @@ class ProcessHubAdminTest extends EngineTestCase
         $this->actingAs($admin)->post($url('participants.approve'))->assertRedirect();
         $this->assertSame('approved', $process->application->fresh()->status);
 
-        // Subir docs de admisión desde el admin (quedan aprobados)
+        // Subir docs de admisión desde el admin: quedan pendientes hasta aprobarlos
         foreach (['cedula', 'enrollment_form'] as $key) {
             $this->actingAs($admin)->post($url('documents.upload'), [
                 'requirement_key' => $key, 'files' => [UploadedFile::fake()->create("{$key}.pdf", 100, 'application/pdf')],
             ])->assertRedirect();
         }
         $this->assertDatabaseCount('program_documents', 2);
+        $this->assertSame(2, $process->documents()->where('status', 'pending')->count());
+        $this->actingAs($admin)->post($url('stage.advance'))->assertSessionHas('error');
+        foreach (['cedula', 'enrollment_form'] as $key) {
+            $this->actingAs($admin)->post($url('documents.bulk-approve', ['requirementKey' => $key]))->assertRedirect();
+        }
         $this->assertSame(2, $process->documents()->where('status', 'approved')->count());
 
         // Avanzar a aplicación
@@ -81,6 +86,7 @@ class ProcessHubAdminTest extends EngineTestCase
 
         foreach (['university_certificate', 'grades_certificate', 'curriculum', 'signed_contract'] as $key) {
             $this->actingAs($admin)->post($url('documents.upload'), ['requirement_key' => $key, 'files' => [UploadedFile::fake()->create("{$key}.pdf", 10)]])->assertRedirect();
+            $this->actingAs($admin)->post($url('documents.bulk-approve', ['requirementKey' => $key]))->assertRedirect();
         }
 
         $this->actingAs($admin)->post($url('stage.advance'))->assertSessionHas('success');

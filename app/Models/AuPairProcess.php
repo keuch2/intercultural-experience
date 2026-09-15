@@ -18,6 +18,8 @@ class AuPairProcess extends Model
         'enrollment_date',
         'enrollment_city',
         'enrollment_country',
+        'program_start_date',
+        'program_end_date',
         'current_stage',
         'admission_status',
         'application_status',
@@ -43,6 +45,8 @@ class AuPairProcess extends Model
 
     protected $casts = [
         'enrollment_date' => 'date',
+        'program_start_date' => 'date',
+        'program_end_date' => 'date',
         'contract_signed_at' => 'datetime',
         'welcome_email_sent' => 'boolean',
         'interview_process_email_sent' => 'boolean',

@@ -76,7 +76,7 @@
         <input type="hidden" name="requirement_key" value="{{ $entry['document_type'] }}">
         <div class="modal-header"><h6 class="modal-title">Subir: {{ $entry['label'] }}</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
-            <div class="mb-3"><label class="form-label small">Archivo(s) <span class="text-danger">*</span></label><input type="file" name="files[]" class="form-control form-control-sm" required {{ $entry['allow_multiple'] ? 'multiple' : '' }} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.mp4,.mov"><small class="text-muted">PDF, imagen, Word o video. Lo que sube IE queda aprobado.</small></div>
+            <div class="mb-3"><label class="form-label small">Archivo(s) <span class="text-danger">*</span></label><input type="file" name="files[]" class="form-control form-control-sm" required {{ $entry['allow_multiple'] ? 'multiple' : '' }} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.mp4,.mov"><small class="text-muted">PDF, imagen, Word o video. Queda en revisión hasta que un admin lo apruebe.</small></div>
             <div class="mb-0"><label class="form-label small">Notas</label><input type="text" name="notes" class="form-control form-control-sm"></div>
         </div>
         <div class="modal-footer"><button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-upload me-1"></i> Subir</button></div>

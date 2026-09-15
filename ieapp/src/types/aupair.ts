@@ -39,6 +39,8 @@ export interface AuPairProcess {
   application_approved: boolean;
   application_review_status: string | null;
   enrollment_date: string | null;
+  program_start_date: string | null;
+  program_end_date: string | null;
   statuses: {
     admission: string;
     application: string;

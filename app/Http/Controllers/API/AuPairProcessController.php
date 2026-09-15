@@ -75,6 +75,8 @@ class AuPairProcessController extends Controller
             'application_approved' => optional($p->application)->status === 'approved',
             'application_review_status' => optional($p->application)->status,
             'enrollment_date' => optional($p->enrollment_date)->toDateString(),
+            'program_start_date' => optional($p->program_start_date)->toDateString(),
+            'program_end_date' => optional($p->program_end_date)->toDateString(),
             'statuses' => [
                 'admission' => $p->admission_status,
                 'application' => $p->application_status,

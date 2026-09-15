@@ -77,6 +77,14 @@ class NextActionResolver
             }
         }
 
+        if ($stage->mobile_screen === 'ProgramSupport' || $stage->key === 'support') {
+            return $this->action('support', 'Ya estás en el programa: tu coordinador te acompaña desde Support.', $stage->mobile_screen ?: 'ProgramSupport');
+        }
+
+        if ($stage->guardValue('require_visa_approved', false) && $this->evaluator->visaApproved($process)) {
+            return $this->action('wait_visa_confirmation', 'Tu visa fue aprobada. IE confirmará tus documentos y te pasará a la siguiente etapa.', $stage->mobile_screen);
+        }
+
         if ($stage->mobile_screen) {
             return $this->action('stage_screen', "Seguí tu proceso: {$stage->label}", $stage->mobile_screen);
         }

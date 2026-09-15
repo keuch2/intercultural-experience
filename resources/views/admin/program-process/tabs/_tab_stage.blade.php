@@ -29,3 +29,7 @@
 @endif
 
 @include('admin.program-process.tabs.partials._stage_gate')
+
+@if($definition->nextStage($stage->key)?->is_terminal)
+    @include('admin.program-process.tabs.partials._finalization')
+@endif
