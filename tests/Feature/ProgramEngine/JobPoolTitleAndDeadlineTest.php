@@ -96,4 +96,43 @@ class JobPoolTitleAndDeadlineTest extends EngineTestCase
         $this->assertTrue($legacy->isSelectable());
         $this->assertSame('Activa', $legacy->status_label);
     }
+
+    public function test_requirements_and_flyer_are_stored_and_exposed_with_position_as_headline(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $admin = $this->admin();
+        $slug = $this->program->slug;
+
+        $this->actingAs($admin)->post(route('admin.program.job-pool.store', $slug), [
+            'job_title' => 'Mesero', 'requirements' => "Inglés B1+\nMayor de 18 años", 'employer_name' => 'Hotel Aspen',
+            'state' => 'Colorado', 'city' => 'Aspen', 'positions_total' => 1, 'application_deadline' => now()->addWeek()->toDateString(),
+            'pdf' => UploadedFile::fake()->create('o.pdf', 10, 'application/pdf'),
+            'image' => UploadedFile::fake()->image('flyer.jpg', 800, 600),
+        ])->assertRedirect();
+
+        $offer = JobPoolOffer::firstOrFail();
+        $this->assertSame("Inglés B1+\nMayor de 18 años", $offer->requirements);
+        $this->assertTrue($offer->hasImage());
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($offer->image_path);
+        $this->assertStringContainsString('storage/job-pool/', $offer->image_url);
+
+        // La ficha lidera con el puesto y muestra requisitos y flyer
+        $this->actingAs($admin)->get(route('admin.program.job-pool.show', [$slug, $offer->id]))->assertOk()
+            ->assertSeeInOrder(['Mesero', 'Hotel Aspen'])->assertSee('Requisitos del puesto')->assertSee($offer->image_url, false);
+
+        // La API expone requisitos e imagen
+        $process = $this->processFor($this->participant(), $this->program);
+        $process->update(['module_access' => ['job_pool' => ['enabled' => true]]]);
+        $row = collect($this->actingAs($process->user)->getJson(route('api.programs.job-pool.offers', $slug))->assertOk()->json('data'))->firstWhere('id', $offer->id);
+        $this->assertSame('Mesero', $row['job_title']);
+        $this->assertSame("Inglés B1+\nMayor de 18 años", $row['requirements']);
+        $this->assertSame($offer->image_url, $row['image_url']);
+
+        // Un archivo que no es imagen se rechaza
+        $this->actingAs($admin)->from(route('admin.program.job-pool.edit', [$slug, $offer->id]))
+            ->put(route('admin.program.job-pool.update', [$slug, $offer->id]), [
+                'job_title' => 'Mesero', 'employer_name' => 'Hotel Aspen', 'state' => 'Colorado', 'city' => 'Aspen', 'positions_total' => 1,
+                'application_deadline' => now()->addWeek()->toDateString(), 'image' => UploadedFile::fake()->create('x.exe', 10, 'application/octet-stream'),
+            ])->assertSessionHasErrors('image');
+    }
 }

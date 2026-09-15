@@ -177,12 +177,15 @@ export interface EngineEnglishTestsResp {
 export interface JobPoolOffer {
   id: number;
   job_title: string | null;
+  requirements: string | null;
   employer_name: string;
   state: string;
   city: string;
   positions_available: number;
   positions_total: number;
   pdf_url: string | null;
+  /** Flyer / imagen pública de la oferta */
+  image_url: string | null;
   published_at: string | null;
   /** Fecha límite para postular (YYYY-MM-DD); se muestra mientras la oferta siga abierta */
   application_deadline: string | null;
@@ -208,6 +211,8 @@ export interface PlacementData {
   offer: {
     id: number;
     job_title?: string | null;
+    requirements?: string | null;
+    image_url?: string | null;
     employer_name: string;
     state: string;
     city: string;

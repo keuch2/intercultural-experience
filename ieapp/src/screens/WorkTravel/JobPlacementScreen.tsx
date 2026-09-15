@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl, Linking } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl, Linking } from 'react-native';
 import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -52,6 +52,8 @@ const JobPlacementScreen: React.FC = () => {
                   <Text style={styles.employer}>{offer.job_title || offer.employer_name}</Text>
                   {!!offer.job_title && <Text style={styles.location}>{offer.employer_name}</Text>}
                   <Text style={styles.location}>{offer.city}, {offer.state}</Text>
+                  {!!offer.requirements && <Text style={[styles.location, { marginTop: 6, fontStyle: 'italic' }]}>Requisitos: {offer.requirements}</Text>}
+                  {!!offer.image_url && <Image source={{ uri: offer.image_url }} style={{ width: '100%', height: 160, borderRadius: 10, marginTop: 10 }} resizeMode="cover" />}
                 </View>
                 {p && <StatusPill status={STATUS_COLOR[p.status] || 'missing'} label={p.status_label} small />}
               </View>

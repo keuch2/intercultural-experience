@@ -25,13 +25,13 @@
         <tbody>
         @forelse($offers as $offer)
         <tr>
-            <td><a href="{{ route('admin.program.job-pool.show', [$program->slug, $offer->id]) }}" class="fw-semibold text-decoration-none">{{ $offer->display_name }}</a>@if($offer->job_title)<div class="small text-muted">{{ $offer->employer_name }}</div>@endif</td>
+            <td><a href="{{ route('admin.program.job-pool.show', [$program->slug, $offer->id]) }}" class="fw-semibold text-decoration-none">{{ $offer->display_name }}</a>@if($offer->job_title)<div class="small text-muted">{{ $offer->employer_name }}</div>@else<div class="small text-warning"><i class="fas fa-exclamation-triangle me-1"></i>sin puesto cargado</div>@endif</td>
             <td>{{ $offer->city }}, {{ $offer->state }}</td>
             <td class="text-center"><span class="badge {{ $offer->positions_available > 0 ? 'bg-success' : 'bg-secondary' }}">{{ $offer->positions_available }}</span> <small class="text-muted">/ {{ $offer->positions_total }}</small></td>
             <td class="text-center">{{ $offer->active_assignments_count }}</td>
             <td>@if($offer->application_deadline)<small class="{{ $offer->isDeadlinePassed() ? 'text-danger fw-semibold' : 'text-muted' }}">{{ $offer->application_deadline->format('d/m/Y') }}</small>@else<small class="text-muted">—</small>@endif</td>
             <td><span class="badge bg-{{ $offer->status_color }}">{{ $offer->status_label }}</span></td>
-            <td>@if($offer->hasPdf())<a href="{{ route('admin.program.job-pool.pdf', [$program->slug, $offer->id]) }}" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-file-pdf text-danger"></i></a>@else<span class="text-warning" title="Sin PDF"><i class="fas fa-exclamation-triangle"></i></span>@endif</td>
+            <td>@if($offer->hasPdf())<a href="{{ route('admin.program.job-pool.pdf', [$program->slug, $offer->id]) }}" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-file-pdf text-danger"></i></a>@else<span class="text-warning" title="Sin PDF"><i class="fas fa-exclamation-triangle"></i></span>@endif @if($offer->hasImage())<i class="fas fa-image text-info ms-1" title="Con flyer"></i>@endif</td>
             <td><small class="text-muted">{{ $offer->published_at?->format('d/m/Y') }}</small></td>
             <td class="text-end"><a href="{{ route('admin.program.job-pool.show', [$program->slug, $offer->id]) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-arrow-right"></i></a></td>
         </tr>

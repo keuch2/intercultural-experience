@@ -101,12 +101,14 @@ class JobPoolController extends Controller
         return [
             'id' => $o->id,
             'job_title' => $o->job_title,
+            'requirements' => $o->requirements,
             'employer_name' => $o->employer_name,
             'state' => $o->state,
             'city' => $o->city,
             'positions_available' => $o->positions_available,
             'positions_total' => $o->positions_total,
             'pdf_url' => $o->hasPdf() ? route('api.programs.job-pool.pdf', ['engineProgram' => $program->slug, 'id' => $o->id]) : null,
+            'image_url' => $o->image_url,
             'published_at' => $o->published_at?->toIso8601String(),
             // La app muestra la fecha límite mientras la oferta siga abierta (sin seleccionado)
             'application_deadline' => $o->application_deadline?->toDateString(),

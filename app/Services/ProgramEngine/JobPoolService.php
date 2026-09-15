@@ -29,11 +29,12 @@ class JobPoolService
     public const DISK = 'public';
 
     // ── Ofertas (admin) ────────────────────────────────────────────────
-    public function publish(Program $program, array $data, ?UploadedFile $pdf, ?User $actor): JobPoolOffer
+    public function publish(Program $program, array $data, ?UploadedFile $pdf, ?User $actor, ?UploadedFile $image = null): JobPoolOffer
     {
         $offer = new JobPoolOffer([
             'program_id' => $program->id,
             'job_title' => $data['job_title'] ?? null,
+            'requirements' => $data['requirements'] ?? null,
             'employer_name' => $data['employer_name'],
             'state' => $data['state'],
             'city' => $data['city'],
@@ -48,6 +49,9 @@ class JobPoolService
         if ($pdf) {
             $this->attachPdf($offer, $pdf);
         }
+        if ($image) {
+            $this->attachImage($offer, $image);
+        }
         $offer->save();
 
         $this->event($offer, null, 'offer_published', $actor, ['positions' => $offer->positions_total]);
@@ -57,9 +61,9 @@ class JobPoolService
         return $offer;
     }
 
-    public function update(JobPoolOffer $offer, array $data, ?UploadedFile $pdf, ?User $actor): JobPoolOffer
+    public function update(JobPoolOffer $offer, array $data, ?UploadedFile $pdf, ?User $actor, ?UploadedFile $image = null): JobPoolOffer
     {
-        DB::transaction(function () use ($offer, $data, $pdf, $actor) {
+        DB::transaction(function () use ($offer, $data, $pdf, $actor, $image) {
             $offer = JobPoolOffer::whereKey($offer->id)->lockForUpdate()->firstOrFail();
             $taken = $offer->positions_total - $offer->positions_available;
             $newTotal = (int) ($data['positions_total'] ?? $offer->positions_total);
@@ -68,6 +72,7 @@ class JobPoolService
             }
             $offer->fill([
                 'job_title' => array_key_exists('job_title', $data) ? $data['job_title'] : $offer->job_title,
+                'requirements' => array_key_exists('requirements', $data) ? $data['requirements'] : $offer->requirements,
                 'employer_name' => $data['employer_name'] ?? $offer->employer_name,
                 'state' => $data['state'] ?? $offer->state,
                 'city' => $data['city'] ?? $offer->city,
@@ -78,6 +83,9 @@ class JobPoolService
             ]);
             if ($pdf) {
                 $this->attachPdf($offer, $pdf);
+            }
+            if ($image) {
+                $this->attachImage($offer, $image);
             }
             $offer->save();
 
@@ -267,6 +275,15 @@ class JobPoolService
         $this->log($offer->program, $actor, 'job_offer_'.$status, "Oferta {$offer->status_label}: {$offer->employer_name}", $offer);
 
         return $offer;
+    }
+
+    private function attachImage(JobPoolOffer $offer, UploadedFile $image): void
+    {
+        if ($offer->image_path && Storage::disk(self::DISK)->exists($offer->image_path)) {
+            Storage::disk(self::DISK)->delete($offer->image_path);
+        }
+        $offer->image_path = $image->store('job-pool/'.($offer->program?->slug ?? $offer->program_id).'/flyers', self::DISK);
+        $offer->image_original_filename = $image->getClientOriginalName();
     }
 
     private function attachPdf(JobPoolOffer $offer, UploadedFile $pdf): void

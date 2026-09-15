@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, Alert, Linking
+  View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, Alert, Linking, Image, Modal, Dimensions
 } from 'react-native';
 import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +23,7 @@ const formatDeadline = (iso: string): string => {
 };
 
 const JobPoolScreen: React.FC = () => {
+  const [flyer, setFlyer] = useState<{ uri: string; title: string } | null>(null);
   const navigation = useNavigation<any>();
   const { slug, refresh } = useProgram();
   const [data, setData] = useState<JobPoolOffersResp | null>(null);
@@ -110,16 +111,22 @@ const JobPoolScreen: React.FC = () => {
                 <Ionicons name="chevron-forward" size={18} color="#065F46" />
               </TouchableOpacity>
             ) : (
-              <Text style={styles.intro}>Todas las ofertas disponibles para la temporada. El detalle completo del puesto (salario, funciones, housing, fechas, beneficios) está en el PDF de cada oferta.</Text>
+              <Text style={styles.intro}>Puestos de trabajo disponibles para la temporada. Revisá los requisitos de cada puesto; el detalle completo (salario, funciones, housing, fechas, beneficios) está en el PDF.</Text>
             )
           }
           ListEmptyComponent={<EmptyState icon="briefcase-outline" title="No hay ofertas disponibles" message="Por ahora no hay ofertas con posiciones disponibles. Te avisaremos cuando IE publique nuevas." />}
           renderItem={({ item }) => (
             <View style={styles.card}>
+              {!!item.image_url && (
+                <TouchableOpacity activeOpacity={0.9} onPress={() => setFlyer({ uri: item.image_url!, title: item.job_title || item.employer_name })} accessibilityLabel="Ver flyer de la oferta">
+                  <Image source={{ uri: item.image_url }} style={styles.flyer} resizeMode="cover" />
+                  <View style={styles.flyerHint}><Ionicons name="expand-outline" size={13} color="#fff" /><Text style={styles.flyerHintText}>Ver flyer</Text></View>
+                </TouchableOpacity>
+              )}
               <View style={styles.cardHead}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.employer}>{item.job_title || item.employer_name}</Text>
-                  {!!item.job_title && <Text style={styles.employerSub}>{item.employer_name}</Text>}
+                  <Text style={styles.jobTitle}>{item.job_title || item.employer_name}</Text>
+                  {!!item.job_title && <Text style={styles.employerSub}><Ionicons name="business-outline" size={13} color="#444" /> {item.employer_name}</Text>}
                   <Text style={styles.location}><Ionicons name="location-outline" size={13} color="#666" /> {item.city}, {item.state}</Text>
                   {/* La fecha límite se muestra mientras la oferta siga abierta (sin seleccionado) */}
                   {!!item.application_deadline && item.positions_available > 0 && (
@@ -131,6 +138,12 @@ const JobPoolScreen: React.FC = () => {
                   <Text style={styles.positionsLabel}>{item.positions_available === 1 ? 'posición' : 'posiciones'}</Text>
                 </View>
               </View>
+              {!!item.requirements && (
+                <View style={styles.reqBox}>
+                  <Text style={styles.reqLabel}>Requisitos del puesto</Text>
+                  <Text style={styles.reqText}>{item.requirements}</Text>
+                </View>
+              )}
               <View style={styles.actions}>
                 <TouchableOpacity style={styles.btnSecondary} onPress={() => openPdf(item)}>
                   <Ionicons name="document-text-outline" size={16} color="#444" />
@@ -146,6 +159,13 @@ const JobPoolScreen: React.FC = () => {
           )}
         />
       )}
+      <Modal visible={!!flyer} transparent animationType="fade" onRequestClose={() => setFlyer(null)}>
+        <View style={styles.viewer}>
+          <TouchableOpacity style={styles.viewerClose} onPress={() => setFlyer(null)} accessibilityLabel="Cerrar"><Ionicons name="close" size={28} color="#fff" /></TouchableOpacity>
+          {!!flyer && <Text style={styles.viewerTitle}>{flyer.title}</Text>}
+          {!!flyer && <Image source={{ uri: flyer.uri }} style={styles.viewerImage} resizeMode="contain" />}
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -162,7 +182,18 @@ const styles = StyleSheet.create({
   cardHead: { flexDirection: 'row', alignItems: 'flex-start' },
   employer: { fontSize: 16, fontWeight: '800', color: '#222' },
   location: { color: '#666', marginTop: 4, fontSize: 13 },
-  employerSub: { fontSize: 13, color: '#444', marginTop: 1 },
+  jobTitle: { fontSize: 18, fontWeight: '800', color: '#222' },
+  flyer: { width: '100%', height: 170, borderRadius: 10, marginBottom: 10, backgroundColor: '#eee' },
+  flyerHint: { position: 'absolute', right: 8, bottom: 18, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,0,0,0.55)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  flyerHintText: { color: '#fff', fontSize: 11, fontWeight: '600' },
+  viewer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+  viewerClose: { position: 'absolute', top: 44, right: 16, zIndex: 2, padding: 6 },
+  viewerTitle: { color: '#fff', fontWeight: '700', fontSize: 16, marginBottom: 10, textAlign: 'center' },
+  viewerImage: { width: Dimensions.get('window').width - 32, height: Dimensions.get('window').height * 0.75 },
+  employerSub: { fontSize: 13, color: '#444', marginTop: 2 },
+  reqBox: { backgroundColor: '#F8FAFC', borderRadius: 8, padding: 10, marginTop: 10, borderLeftWidth: 3, borderLeftColor: '#E52224' },
+  reqLabel: { fontSize: 11, fontWeight: '700', color: '#666', textTransform: 'uppercase', marginBottom: 3 },
+  reqText: { fontSize: 13, color: '#333', lineHeight: 18 },
   deadline: { fontSize: 12, color: '#B45309', fontWeight: '600', marginTop: 6 },
   positionsBadge: { alignItems: 'center', backgroundColor: '#FEF2F2', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, marginLeft: 8 },
   positionsNum: { fontSize: 18, fontWeight: '800', color: '#E52224' },

@@ -9,15 +9,17 @@
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
         <div>
             <h3 class="mb-1"><i class="fas fa-briefcase text-primary me-2"></i>{{ $offer->display_name }} <span class="badge bg-{{ $offer->status_color }} ms-2">{{ $offer->status_label }}</span></h3>
-            @if($offer->job_title)<div class="fw-semibold"><i class="fas fa-building me-1 text-muted"></i>{{ $offer->employer_name }}</div>@endif
+            @if($offer->job_title)<div class="fw-semibold"><i class="fas fa-building me-1 text-muted"></i>{{ $offer->employer_name }}</div>@else<div class="small text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Esta oferta no tiene cargado el puesto laboral: editala para completarlo.</div>@endif
             <div class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ $offer->city }}, {{ $offer->state }} &middot; Publicada {{ $offer->published_at?->format('d/m/Y H:i') }} @if($offer->creator)por {{ $offer->creator->name }}@endif</div>
             <div class="mt-2 d-flex gap-3">
                 <div><small class="text-muted d-block">Posiciones</small><span class="h4 mb-0">{{ $offer->positions_available }}</span> <small class="text-muted">disponibles de {{ $offer->positions_total }}</small></div>
                 <div><small class="text-muted d-block">Ocupadas</small><span class="h4 mb-0">{{ $offer->positions_taken }}</span></div>
                 <div><small class="text-muted d-block">Fecha límite</small><span class="h5 mb-0 {{ $offer->isDeadlinePassed() ? 'text-danger' : '' }}">{{ $offer->application_deadline?->format('d/m/Y') ?? '—' }}</span>@if($offer->isDeadlinePassed())<small class="d-block text-danger">vencida</small>@endif</div>
+                <div><small class="text-muted d-block">Flyer</small>@if($offer->hasImage())<a href="{{ $offer->image_url }}" target="_blank" rel="noopener"><img src="{{ $offer->image_url }}" alt="Flyer" style="height: 64px; border-radius: 6px" class="border"></a>@else<span class="text-muted">—</span>@endif</div>
                 <div><small class="text-muted d-block">PDF</small>@if($offer->hasPdf())<a href="{{ $r('pdf') }}" class="btn btn-sm btn-outline-danger py-0"><i class="fas fa-file-pdf me-1"></i>{{ Str::limit($offer->pdf_original_filename, 30) }}</a>@else<span class="badge bg-warning text-dark">sin PDF</span>@endif</div>
             </div>
-            @if($offer->notes)<div class="mt-2 small text-muted"><i class="fas fa-sticky-note me-1"></i>{{ $offer->notes }}</div>@endif
+            @if($offer->requirements)<div class="mt-3"><small class="text-muted d-block">Requisitos del puesto</small><div class="border rounded p-2 bg-light" style="white-space: pre-line">{{ $offer->requirements }}</div></div>@endif
+            @if($offer->notes)<div class="mt-2 small text-muted"><i class="fas fa-sticky-note me-1"></i>Nota interna: {{ $offer->notes }}</div>@endif
         </div>
         <div class="d-flex flex-wrap gap-1">
             <a href="{{ $r('edit') }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit me-1"></i> Editar / reemplazar PDF</a>

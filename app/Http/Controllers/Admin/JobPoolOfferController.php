@@ -58,7 +58,7 @@ class JobPoolOfferController extends Controller
     {
         $this->assertModule($program);
         $data = $this->validateOffer($request, true);
-        $offer = $this->pool->publish($program, $data, $request->file('pdf'), $request->user());
+        $offer = $this->pool->publish($program, $data, $request->file('pdf'), $request->user(), $request->file('image'));
 
         return redirect()->route('admin.program.job-pool.show', [$program->slug, $offer->id])->with('success', 'Oferta publicada. Los participantes habilitados fueron notificados.');
     }
@@ -87,7 +87,7 @@ class JobPoolOfferController extends Controller
         $this->assertOwned($program, $offer);
         $data = $this->validateOffer($request, false);
         try {
-            $this->pool->update($offer, $data, $request->file('pdf'), $request->user());
+            $this->pool->update($offer, $data, $request->file('pdf'), $request->user(), $request->file('image'));
         } catch (JobPoolException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
@@ -189,6 +189,7 @@ class JobPoolOfferController extends Controller
     {
         return $request->validate([
             'job_title' => 'required|string|max:150',
+            'requirements' => 'nullable|string|max:2000',
             'employer_name' => 'required|string|max:255',
             'state' => 'required|string|max:100',
             'city' => 'required|string|max:100',
@@ -196,8 +197,9 @@ class JobPoolOfferController extends Controller
             // Al crear no se acepta una fecha ya vencida; al editar sí (p. ej. para cerrar/documentar)
             'application_deadline' => ['required', 'date', $creating ? 'after_or_equal:today' : 'date'],
             'pdf' => [$creating ? 'required' : 'nullable', 'file', 'mimes:pdf', 'max:20480'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'notes' => 'nullable|string|max:1000',
-        ], ['application_deadline.after_or_equal' => 'La fecha límite para postular no puede ser anterior a hoy.'], ['job_title' => 'puesto laboral', 'employer_name' => 'empleador', 'positions_total' => 'posiciones', 'application_deadline' => 'fecha límite para postular', 'pdf' => 'PDF de la oferta']);
+        ], ['application_deadline.after_or_equal' => 'La fecha límite para postular no puede ser anterior a hoy.'], ['job_title' => 'puesto laboral', 'requirements' => 'requisitos del puesto', 'employer_name' => 'empleador', 'positions_total' => 'posiciones', 'application_deadline' => 'fecha límite para postular', 'pdf' => 'PDF de la oferta', 'image' => 'imagen / flyer de la oferta']);
     }
 
     private function assertModule(Program $program): void

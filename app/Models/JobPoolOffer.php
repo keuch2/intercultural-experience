@@ -18,8 +18,8 @@ class JobPoolOffer extends Model
     public const STATUS_CLOSED = 'closed';
 
     protected $fillable = [
-        'program_id', 'job_title', 'employer_name', 'state', 'city', 'positions_total', 'positions_available', 'application_deadline',
-        'pdf_path', 'pdf_original_filename', 'status', 'published_at', 'closed_at', 'closed_by', 'created_by', 'notes',
+        'program_id', 'job_title', 'requirements', 'employer_name', 'state', 'city', 'positions_total', 'positions_available', 'application_deadline',
+        'pdf_path', 'pdf_original_filename', 'image_path', 'image_original_filename', 'status', 'published_at', 'closed_at', 'closed_by', 'created_by', 'notes',
     ];
 
     protected $casts = [
@@ -58,6 +58,17 @@ class JobPoolOffer extends Model
     public function hasPdf(): bool
     {
         return ! empty($this->pdf_path);
+    }
+
+    public function hasImage(): bool
+    {
+        return ! empty($this->image_path);
+    }
+
+    /** URL pública del flyer (disco public), o null. */
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image_path ? asset('storage/'.$this->image_path) : null;
     }
 
     /** Venció la fecha límite para postular (si la oferta tiene una). */
