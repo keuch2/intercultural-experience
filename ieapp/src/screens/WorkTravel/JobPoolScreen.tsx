@@ -17,6 +17,11 @@ import { downloadAndOpen } from '../../utils/downloadFile';
  * las ofertas con cupo, descarga el PDF y selecciona una con confirmación. Una vez
  * asignada no puede elegir otra salvo autorización de IE.
  */
+const formatDeadline = (iso: string): string => {
+  const [y, m, d] = iso.slice(0, 10).split('-');
+  return y && m && d ? `${d}/${m}/${y}` : iso;
+};
+
 const JobPoolScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { slug, refresh } = useProgram();
@@ -42,13 +47,13 @@ const JobPoolScreen: React.FC = () => {
 
   const openPdf = (offer: JobPoolOffer) => {
     if (!offer.pdf_url) { Alert.alert('Sin PDF', 'Esta oferta todavía no tiene el PDF cargado.'); return; }
-    downloadAndOpen(offer.pdf_url, `oferta-${offer.employer_name}.pdf`, 'application/pdf');
+    downloadAndOpen(offer.pdf_url, `oferta-${offer.job_title || offer.employer_name}.pdf`, 'application/pdf');
   };
 
   const select = (offer: JobPoolOffer) => {
     Alert.alert(
       'Confirmar selección',
-      `¿Querés seleccionar la oferta de ${offer.employer_name} en ${offer.city}, ${offer.state}?\n\nUna vez confirmada, no podrás elegir otra oferta salvo autorización de IE.`,
+      `¿Querés seleccionar la oferta ${offer.job_title ? `"${offer.job_title}" de ` : 'de '}${offer.employer_name} en ${offer.city}, ${offer.state}?\n\nUna vez confirmada, no podrás elegir otra oferta salvo autorización de IE.`,
       [
         { text: 'Cancelar', style: 'cancel' },
         { text: 'Sí, seleccionar', style: 'default', onPress: async () => {
@@ -99,7 +104,7 @@ const JobPoolScreen: React.FC = () => {
                 <Ionicons name="checkmark-circle" size={26} color="#065F46" />
                 <View style={{ flex: 1, marginLeft: 10 }}>
                   <Text style={styles.assignedTitle}>Tu oferta asignada</Text>
-                  <Text style={styles.assignedText}>{assignment.offer.employer_name} · {assignment.offer.city}, {assignment.offer.state}</Text>
+                  <Text style={styles.assignedText}>{assignment.offer.job_title ? `${assignment.offer.job_title} · ` : ''}{assignment.offer.employer_name} · {assignment.offer.city}, {assignment.offer.state}</Text>
                   <Text style={styles.assignedHint}>{data.allow_reselect ? 'IE te autorizó a cambiar de oferta.' : 'Para cambiarla, contactá al equipo IE. Tocá para ver tu Job Placement.'}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={18} color="#065F46" />
@@ -113,8 +118,13 @@ const JobPoolScreen: React.FC = () => {
             <View style={styles.card}>
               <View style={styles.cardHead}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.employer}>{item.employer_name}</Text>
+                  <Text style={styles.employer}>{item.job_title || item.employer_name}</Text>
+                  {!!item.job_title && <Text style={styles.employerSub}>{item.employer_name}</Text>}
                   <Text style={styles.location}><Ionicons name="location-outline" size={13} color="#666" /> {item.city}, {item.state}</Text>
+                  {/* La fecha límite se muestra mientras la oferta siga abierta (sin seleccionado) */}
+                  {!!item.application_deadline && item.positions_available > 0 && (
+                    <Text style={styles.deadline}><Ionicons name="time-outline" size={13} color="#B45309" /> Postulá hasta el {formatDeadline(item.application_deadline)}</Text>
+                  )}
                 </View>
                 <View style={styles.positionsBadge}>
                   <Text style={styles.positionsNum}>{item.positions_available}</Text>
@@ -152,6 +162,8 @@ const styles = StyleSheet.create({
   cardHead: { flexDirection: 'row', alignItems: 'flex-start' },
   employer: { fontSize: 16, fontWeight: '800', color: '#222' },
   location: { color: '#666', marginTop: 4, fontSize: 13 },
+  employerSub: { fontSize: 13, color: '#444', marginTop: 1 },
+  deadline: { fontSize: 12, color: '#B45309', fontWeight: '600', marginTop: 6 },
   positionsBadge: { alignItems: 'center', backgroundColor: '#FEF2F2', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, marginLeft: 8 },
   positionsNum: { fontSize: 18, fontWeight: '800', color: '#E52224' },
   positionsLabel: { fontSize: 10, color: '#E52224', fontWeight: '600' },

@@ -172,7 +172,7 @@ class ProgramReportController extends Controller
             'doc_status_label' => ['complete' => 'Completa', 'pending' => 'En revisión', 'rejected' => 'Con rechazos', 'missing' => 'Incompleta'][$docStatus],
             'english' => $best,
             'english_ok' => $best ? ProgramEnglishTest::levelMeets($best, $definition->minEnglishLevel()) : null,
-            'offer' => $offer?->employer_name, 'offer_location' => $offer ? "{$offer->city}, {$offer->state}" : null, 'offer_status' => $offer ? 'Asignada' : null,
+            'offer' => $offer?->headline, 'offer_location' => $offer ? "{$offer->city}, {$offer->state}" : null, 'offer_status' => $offer ? 'Asignada' : null,
             'sponsor' => $placement?->sponsor?->name, 'placement_status' => $placement?->status_label, 'sevis' => $placement?->sevis_number, 'ds2019' => $placement?->ds2019_number,
             'visa_result' => $visa ? (['pending' => 'Pendiente', 'approved' => 'Aprobada', 'denied' => 'Denegada', 'administrative_process' => 'Proceso administrativo'][$visa->interview_result] ?? $visa->interview_result) : null,
             'appointment' => $visa?->appointment_date?->format('Y-m-d'),
@@ -208,7 +208,7 @@ class ProgramReportController extends Controller
             'gates' => $definition->gates(),
             'universities' => User::whereIn('id', $userIds)->whereNotNull('university')->distinct()->orderBy('university')->pluck('university'),
             'careers' => User::whereIn('id', $userIds)->whereNotNull('career')->distinct()->orderBy('career')->pluck('career'),
-            'offers' => JobPoolOffer::forProgram($program)->orderBy('employer_name')->get(['id', 'employer_name', 'city', 'state']),
+            'offers' => JobPoolOffer::forProgram($program)->orderBy('job_title')->orderBy('employer_name')->get(['id', 'job_title', 'employer_name', 'city', 'state']),
             'sponsors' => Sponsor::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ];
     }

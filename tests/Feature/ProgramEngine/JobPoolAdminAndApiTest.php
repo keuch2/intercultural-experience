@@ -31,7 +31,8 @@ class JobPoolAdminAndApiTest extends EngineTestCase
         $this->actingAs($admin)->get(route('admin.program.job-pool.create', $slug))->assertOk();
 
         $this->actingAs($admin)->post(route('admin.program.job-pool.store', $slug), [
-            'employer_name' => 'Hershey Park', 'state' => 'Pennsylvania', 'city' => 'Hershey', 'positions_total' => 2,
+            'job_title' => 'Ride Operator', 'employer_name' => 'Hershey Park', 'state' => 'Pennsylvania', 'city' => 'Hershey', 'positions_total' => 2,
+            'application_deadline' => now()->addMonth()->toDateString(),
             'pdf' => UploadedFile::fake()->create('oferta.pdf', 100, 'application/pdf'),
         ])->assertRedirect();
         $offer = JobPoolOffer::firstOrFail();
@@ -39,7 +40,7 @@ class JobPoolAdminAndApiTest extends EngineTestCase
 
         $this->actingAs($admin)->get(route('admin.program.job-pool.show', [$slug, $offer->id]))->assertOk()->assertSee('Hershey Park');
         $this->actingAs($admin)->get(route('admin.program.job-pool.edit', [$slug, $offer->id]))->assertOk();
-        $this->actingAs($admin)->put(route('admin.program.job-pool.update', [$slug, $offer->id]), ['employer_name' => 'Hershey Park Inc', 'state' => 'PA', 'city' => 'Hershey', 'positions_total' => 3])->assertRedirect();
+        $this->actingAs($admin)->put(route('admin.program.job-pool.update', [$slug, $offer->id]), ['job_title' => 'Ride Operator', 'employer_name' => 'Hershey Park Inc', 'state' => 'PA', 'city' => 'Hershey', 'positions_total' => 3, 'application_deadline' => now()->addMonth()->toDateString()])->assertRedirect();
         $this->assertSame(3, $offer->fresh()->positions_available);
 
         // asignación manual, liberar, reasignar

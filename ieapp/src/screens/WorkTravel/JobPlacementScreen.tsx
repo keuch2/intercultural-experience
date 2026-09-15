@@ -49,7 +49,8 @@ const JobPlacementScreen: React.FC = () => {
               <View style={styles.offerHead}>
                 <Ionicons name="business" size={26} color="#E52224" />
                 <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={styles.employer}>{offer.employer_name}</Text>
+                  <Text style={styles.employer}>{offer.job_title || offer.employer_name}</Text>
+                  {!!offer.job_title && <Text style={styles.location}>{offer.employer_name}</Text>}
                   <Text style={styles.location}>{offer.city}, {offer.state}</Text>
                 </View>
                 {p && <StatusPill status={STATUS_COLOR[p.status] || 'missing'} label={p.status_label} small />}
@@ -61,7 +62,7 @@ const JobPlacementScreen: React.FC = () => {
                 <Field label="Fin del programa" value={p?.program_end_date} />
               </View>
               {offer.pdf_url && (
-                <TouchableOpacity style={styles.pdfBtn} onPress={() => downloadAndOpen(offer.pdf_url!, `oferta-${offer.employer_name}.pdf`, 'application/pdf')}>
+                <TouchableOpacity style={styles.pdfBtn} onPress={() => downloadAndOpen(offer.pdf_url!, `oferta-${offer.job_title || offer.employer_name}.pdf`, 'application/pdf')}>
                   <Ionicons name="document-text-outline" size={16} color="#444" /><Text style={styles.pdfBtnText}>Descargar PDF de la oferta</Text>
                 </TouchableOpacity>
               )}

@@ -5,7 +5,7 @@
         @if($o)
         <div class="border rounded p-3 mb-3 bg-light">
             <div class="row g-3">
-                <div class="col-md-4"><small class="text-muted d-block">Empleador</small><strong>{{ $o->employer_name }}</strong></div>
+                <div class="col-md-4"><small class="text-muted d-block">Puesto / Empleador</small><strong>{{ $o->display_name }}</strong>@if($o->job_title)<div class="small">{{ $o->employer_name }}</div>@endif</div>
                 <div class="col-md-3"><small class="text-muted d-block">Estado / Ciudad</small>{{ $o->state }} / {{ $o->city }}</div>
                 <div class="col-md-3"><small class="text-muted d-block">Fecha de aceptación</small>{{ $placement->acceptance_date?->format('d/m/Y') ?? $assignment->selected_at->format('d/m/Y') }}</div>
                 <div class="col-md-2 text-end">@if($o->hasPdf())<a href="{{ route('admin.program.job-pool.pdf', [$program->slug, $o->id]) }}" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf me-1"></i> PDF</a>@endif</div>

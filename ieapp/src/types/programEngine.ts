@@ -176,6 +176,7 @@ export interface EngineEnglishTestsResp {
 // ── Pool de ofertas / placement ─────────────────────────────────────────
 export interface JobPoolOffer {
   id: number;
+  job_title: string | null;
   employer_name: string;
   state: string;
   city: string;
@@ -183,6 +184,9 @@ export interface JobPoolOffer {
   positions_total: number;
   pdf_url: string | null;
   published_at: string | null;
+  /** Fecha límite para postular (YYYY-MM-DD); se muestra mientras la oferta siga abierta */
+  application_deadline: string | null;
+  deadline_passed?: boolean;
 }
 
 export interface JobPoolAssignment {
@@ -203,6 +207,7 @@ export interface PlacementData {
   has_assignment: boolean;
   offer: {
     id: number;
+    job_title?: string | null;
     employer_name: string;
     state: string;
     city: string;

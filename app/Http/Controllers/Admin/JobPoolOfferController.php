@@ -32,7 +32,7 @@ class JobPoolOfferController extends Controller
         }
         if ($request->filled('search')) {
             $s = $request->search;
-            $query->where(fn ($q) => $q->where('employer_name', 'like', "%{$s}%")->orWhere('city', 'like', "%{$s}%")->orWhere('state', 'like', "%{$s}%"));
+            $query->where(fn ($q) => $q->where('job_title', 'like', "%{$s}%")->orWhere('employer_name', 'like', "%{$s}%")->orWhere('city', 'like', "%{$s}%")->orWhere('state', 'like', "%{$s}%"));
         }
 
         $offers = $query->paginate(20)->withQueryString();
@@ -188,13 +188,16 @@ class JobPoolOfferController extends Controller
     private function validateOffer(Request $request, bool $creating): array
     {
         return $request->validate([
+            'job_title' => 'required|string|max:150',
             'employer_name' => 'required|string|max:255',
             'state' => 'required|string|max:100',
             'city' => 'required|string|max:100',
             'positions_total' => 'required|integer|min:1|max:500',
+            // Al crear no se acepta una fecha ya vencida; al editar sí (p. ej. para cerrar/documentar)
+            'application_deadline' => ['required', 'date', $creating ? 'after_or_equal:today' : 'date'],
             'pdf' => [$creating ? 'required' : 'nullable', 'file', 'mimes:pdf', 'max:20480'],
             'notes' => 'nullable|string|max:1000',
-        ], [], ['employer_name' => 'empleador', 'positions_total' => 'posiciones', 'pdf' => 'PDF de la oferta']);
+        ], ['application_deadline.after_or_equal' => 'La fecha límite para postular no puede ser anterior a hoy.'], ['job_title' => 'puesto laboral', 'employer_name' => 'empleador', 'positions_total' => 'posiciones', 'application_deadline' => 'fecha límite para postular', 'pdf' => 'PDF de la oferta']);
     }
 
     private function assertModule(Program $program): void

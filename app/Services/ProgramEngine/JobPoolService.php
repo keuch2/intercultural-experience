@@ -33,11 +33,13 @@ class JobPoolService
     {
         $offer = new JobPoolOffer([
             'program_id' => $program->id,
+            'job_title' => $data['job_title'] ?? null,
             'employer_name' => $data['employer_name'],
             'state' => $data['state'],
             'city' => $data['city'],
             'positions_total' => (int) $data['positions_total'],
             'positions_available' => (int) $data['positions_total'],
+            'application_deadline' => $data['application_deadline'] ?? null,
             'status' => JobPoolOffer::STATUS_ACTIVE,
             'published_at' => now(),
             'created_by' => $actor?->id,
@@ -49,7 +51,7 @@ class JobPoolService
         $offer->save();
 
         $this->event($offer, null, 'offer_published', $actor, ['positions' => $offer->positions_total]);
-        $this->log($program, $actor, 'job_offer_published', "Oferta publicada: {$offer->employer_name} ({$offer->city}, {$offer->state})", $offer);
+        $this->log($program, $actor, 'job_offer_published', "Oferta publicada: {$offer->headline} ({$offer->city}, {$offer->state})", $offer);
         event(new JobPoolOfferPublished($offer, $actor));
 
         return $offer;
@@ -65,11 +67,13 @@ class JobPoolService
                 throw new JobPoolException('positions_below_taken', "No se puede reducir a {$newTotal} posiciones: ya hay {$taken} asignadas.");
             }
             $offer->fill([
+                'job_title' => array_key_exists('job_title', $data) ? $data['job_title'] : $offer->job_title,
                 'employer_name' => $data['employer_name'] ?? $offer->employer_name,
                 'state' => $data['state'] ?? $offer->state,
                 'city' => $data['city'] ?? $offer->city,
                 'positions_total' => $newTotal,
                 'positions_available' => $newTotal - $taken,
+                'application_deadline' => array_key_exists('application_deadline', $data) ? $data['application_deadline'] : $offer->application_deadline,
                 'notes' => $data['notes'] ?? $offer->notes,
             ]);
             if ($pdf) {
@@ -78,7 +82,7 @@ class JobPoolService
             $offer->save();
 
             $this->event($offer, null, $pdf ? 'offer_pdf_replaced' : 'offer_updated', $actor, ['positions_total' => $newTotal]);
-            $this->log($offer->program, $actor, 'job_offer_updated', "Oferta editada: {$offer->employer_name}", $offer);
+            $this->log($offer->program, $actor, 'job_offer_updated', "Oferta editada: {$offer->headline}", $offer);
         });
 
         return $offer->refresh();
@@ -157,6 +161,9 @@ class JobPoolService
                 if ($offer->status !== JobPoolOffer::STATUS_ACTIVE) {
                     throw new JobPoolException('offer_unavailable', 'Esta oferta ya no está disponible.', 409);
                 }
+                if (! $staff && $offer->isDeadlinePassed()) {
+                    throw new JobPoolException('deadline_passed', 'La fecha límite para postular a esta oferta ya pasó.', 409);
+                }
                 if (JobPoolAssignment::where('active_process_id', $proc->id)->exists()) {
                     throw new JobPoolException('already_assigned', 'Ya tenés una oferta asignada. Para cambiarla, contactá al equipo IE.', 409);
                 }
@@ -177,7 +184,7 @@ class JobPoolService
 
                 $offer->refresh();
                 $this->event($offer, $proc, 'selected', $staff ?? $proc->user, ['assignment_id' => $assignment->id, 'positions_available' => $offer->positions_available], $staff ? 'staff' : 'participant');
-                $this->log($offer->program, $staff, 'job_offer_selected', "Oferta seleccionada: {$offer->employer_name} ({$offer->city}, {$offer->state})", $proc->user);
+                $this->log($offer->program, $staff, 'job_offer_selected', "Oferta seleccionada: {$offer->headline} ({$offer->city}, {$offer->state})", $proc->user);
 
                 return $assignment->setRelation('offer', $offer);
             });

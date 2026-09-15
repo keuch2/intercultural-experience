@@ -100,7 +100,7 @@ class PlacementService
         return [
             'has_assignment' => $assignment !== null,
             'offer' => $offer ? [
-                'id' => $offer->id, 'employer_name' => $offer->employer_name, 'state' => $offer->state, 'city' => $offer->city,
+                'id' => $offer->id, 'job_title' => $offer->job_title, 'employer_name' => $offer->employer_name, 'state' => $offer->state, 'city' => $offer->city,
                 'pdf_url' => $offer->hasPdf() ? route('api.programs.job-pool.pdf', ['engineProgram' => $process->program->slug, 'id' => $offer->id]) : null,
                 'selected_at' => $assignment->selected_at?->toIso8601String(),
             ] : null,

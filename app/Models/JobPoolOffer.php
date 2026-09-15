@@ -18,13 +18,14 @@ class JobPoolOffer extends Model
     public const STATUS_CLOSED = 'closed';
 
     protected $fillable = [
-        'program_id', 'employer_name', 'state', 'city', 'positions_total', 'positions_available',
+        'program_id', 'job_title', 'employer_name', 'state', 'city', 'positions_total', 'positions_available', 'application_deadline',
         'pdf_path', 'pdf_original_filename', 'status', 'published_at', 'closed_at', 'closed_by', 'created_by', 'notes',
     ];
 
     protected $casts = [
         'positions_total' => 'integer',
         'positions_available' => 'integer',
+        'application_deadline' => 'date',
         'published_at' => 'datetime',
         'closed_at' => 'datetime',
     ];
@@ -59,9 +60,27 @@ class JobPoolOffer extends Model
         return ! empty($this->pdf_path);
     }
 
+    /** Venció la fecha límite para postular (si la oferta tiene una). */
+    public function isDeadlinePassed(): bool
+    {
+        return $this->application_deadline !== null && $this->application_deadline->lt(today());
+    }
+
     public function isSelectable(): bool
     {
-        return $this->status === self::STATUS_ACTIVE && $this->positions_available > 0;
+        return $this->status === self::STATUS_ACTIVE && $this->positions_available > 0 && ! $this->isDeadlinePassed();
+    }
+
+    /** Nombre para mostrar: puesto laboral, o el empleador si la oferta es anterior a este campo. */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->job_title ?: $this->employer_name;
+    }
+
+    /** "Puesto · Empleador" para notificaciones y logs. */
+    public function getHeadlineAttribute(): string
+    {
+        return $this->job_title ? "{$this->job_title} · {$this->employer_name}" : $this->employer_name;
     }
 
     public function getPositionsTakenAttribute(): int
@@ -72,7 +91,7 @@ class JobPoolOffer extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            self::STATUS_ACTIVE => $this->positions_available > 0 ? 'Activa' : 'Sin cupo',
+            self::STATUS_ACTIVE => $this->positions_available <= 0 ? 'Sin cupo' : ($this->isDeadlinePassed() ? 'Vencida' : 'Activa'),
             self::STATUS_PAUSED => 'Pausada',
             self::STATUS_CLOSED => 'Cerrada',
             default => $this->status,
@@ -82,17 +101,19 @@ class JobPoolOffer extends Model
     public function getStatusColorAttribute(): string
     {
         return match ($this->status) {
-            self::STATUS_ACTIVE => $this->positions_available > 0 ? 'success' : 'secondary',
+            self::STATUS_ACTIVE => $this->positions_available <= 0 ? 'secondary' : ($this->isDeadlinePassed() ? 'danger' : 'success'),
             self::STATUS_PAUSED => 'warning',
             self::STATUS_CLOSED => 'dark',
             default => 'secondary',
         };
     }
 
-    /** Ofertas visibles para los participantes: activas y con cupo. */
+    /** Ofertas visibles para los participantes: activas, con cupo y dentro de la fecha límite. */
     public function scopeSelectable($query)
     {
-        return $query->where('status', self::STATUS_ACTIVE)->where('positions_available', '>', 0);
+        return $query->where('status', self::STATUS_ACTIVE)
+            ->where('positions_available', '>', 0)
+            ->where(fn ($q) => $q->whereNull('application_deadline')->orWhereDate('application_deadline', '>=', today()));
     }
 
     public function scopeForProgram($query, Program|int $program)

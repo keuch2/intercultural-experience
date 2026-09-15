@@ -40,7 +40,7 @@ class SendJobPoolNotifications
         $this->notifier->toProgramParticipants(
             $offer->program,
             'Nueva oferta laboral disponible',
-            "{$offer->employer_name} — {$offer->city}, {$offer->state} ({$offer->positions_available} posiciones). Revisá el Pool de Ofertas en la app.",
+            "{$offer->headline} — {$offer->city}, {$offer->state} ({$offer->positions_available} posiciones). Revisá el Pool de Ofertas en la app.",
             self::CATEGORY,
             fn (ProgramProcess $p) => $p->hasModuleAccess(ModuleCatalog::JOB_POOL) && ! $p->activeJobAssignment()->exists(),
         );
@@ -50,20 +50,20 @@ class SendJobPoolNotifications
     {
         $a = $event->assignment->loadMissing(['offer', 'process.user']);
         $offer = $a->offer;
-        $this->notifier->toUser($a->process->user_id, 'Oferta laboral seleccionada', "Confirmamos tu selección: {$offer->employer_name} — {$offer->city}, {$offer->state}. El equipo IE continuará con tu Job Placement.", self::CATEGORY);
-        $this->notifier->toAdmins('Selección de oferta laboral', "{$a->process->user?->name} seleccionó la oferta {$offer->employer_name} ({$offer->city}, {$offer->state}). Cupos restantes: {$offer->positions_available}.", self::CATEGORY);
+        $this->notifier->toUser($a->process->user_id, 'Oferta laboral seleccionada', "Confirmamos tu selección: {$offer->headline} — {$offer->city}, {$offer->state}. El equipo IE continuará con tu Job Placement.", self::CATEGORY);
+        $this->notifier->toAdmins('Selección de oferta laboral', "{$a->process->user?->name} seleccionó la oferta {$offer->headline} ({$offer->city}, {$offer->state}). Cupos restantes: {$offer->positions_available}.", self::CATEGORY);
     }
 
     public function onReleased(JobPoolAssignmentReleased $event): void
     {
         $a = $event->assignment->loadMissing(['offer', 'process']);
         $offer = $a->offer;
-        $this->notifier->toUser($a->process->user_id, 'Asignación de oferta liberada', "El equipo IE liberó tu asignación a {$offer->employer_name} ({$offer->city}, {$offer->state}).".($event->reason ? " Motivo: {$event->reason}." : '').' Podés volver a elegir en el Pool de Ofertas.', self::CATEGORY);
+        $this->notifier->toUser($a->process->user_id, 'Asignación de oferta liberada', "El equipo IE liberó tu asignación a {$offer->headline} ({$offer->city}, {$offer->state}).".($event->reason ? " Motivo: {$event->reason}." : '').' Podés volver a elegir en el Pool de Ofertas.', self::CATEGORY);
     }
 
     public function onExhausted(JobPoolOfferExhausted $event): void
     {
         $offer = $event->offer;
-        $this->notifier->toAdmins('Oferta sin posiciones disponibles', "La oferta {$offer->employer_name} ({$offer->city}, {$offer->state}) completó sus {$offer->positions_total} posiciones y dejó de mostrarse en la app.", self::CATEGORY);
+        $this->notifier->toAdmins('Oferta sin posiciones disponibles', "La oferta {$offer->headline} ({$offer->city}, {$offer->state}) completó sus {$offer->positions_total} posiciones y dejó de mostrarse en la app.", self::CATEGORY);
     }
 }
