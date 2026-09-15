@@ -71,10 +71,8 @@ class ApplicationController extends Controller
         }
         
         // Verificar si el usuario ya tiene una solicitud para este programa
-        $existingApplication = Application::where('user_id', auth()->id())
-            ->where('program_id', $request->program_id)
-            ->whereIn('status', ['pending', 'in_review'])
-            ->first();
+        // Vigente = pending / in_review / approved; una postulación rechazada o eliminada permite volver a postular.
+        $existingApplication = Application::activeForProgram(auth()->id(), (int) $request->program_id)->first();
             
         if ($existingApplication) {
             return response()->json([

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Program;
 use App\Models\Application;
+use App\Services\ApplicationDeletionService;
+use App\Services\Exceptions\ApplicationDeletionException;
 use App\Services\ProgramEngine\ProcessResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -286,6 +288,8 @@ class AdminParticipantController extends Controller
         
         // All applications for the applications tab
         $allApplications = $participant->applications()->with(['program', 'programProcess'])->get();
+        $deletion = app(ApplicationDeletionService::class);
+        $allApplications->each(fn ($a) => $a->setAttribute('deletion_summary', $deletion->summary($a)));
         
         // Currencies for payment modal
         $currencies = \App\Models\Currency::all();
@@ -348,10 +352,7 @@ class AdminParticipantController extends Controller
 
         $program = Program::findOrFail($validated['program_id']);
 
-        $active = Application::where('user_id', $participant->id)
-            ->where('program_id', $program->id)
-            ->whereNotIn('status', ['rejected', 'cancelled', 'withdrawn', 'completed'])
-            ->exists();
+        $active = Application::activeForProgram($participant->id, $program->id)->exists();
         if ($active) {
             return back()->withErrors(['program_id' => "El participante ya tiene una postulación activa en {$program->name}."]);
         }
@@ -378,6 +379,28 @@ class AdminParticipantController extends Controller
 
         return redirect()->route('admin.participants.show', $participant->id)
             ->with('success', "Postulación a {$program->name} creada correctamente.");
+    }
+
+    /**
+     * Elimina definitivamente una postulación del participante (proceso, documentos, pagos).
+     * El participante queda libre para volver a postular al programa.
+     */
+    public function destroyApplication(Request $request, User $participant, Application $application, ApplicationDeletionService $deletion)
+    {
+        if ($participant->role !== 'user' || $application->user_id !== $participant->id) {
+            abort(404);
+        }
+        $request->validate(['confirm_payments' => ['nullable', 'boolean']]);
+        $programName = $application->program?->name ?? 'programa';
+
+        try {
+            $deletion->delete($application, $request->user(), $request->boolean('confirm_payments'));
+        } catch (ApplicationDeletionException $e) {
+            return back()->withErrors(['application' => $e->getMessage()]);
+        }
+
+        return redirect()->route('admin.participants.show', $participant->id)
+            ->with('success', "Postulación a {$programName} eliminada. El participante puede volver a postular.");
     }
 
     /**

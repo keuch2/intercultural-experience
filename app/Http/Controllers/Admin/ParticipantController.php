@@ -149,7 +149,7 @@ class ParticipantController extends Controller
         // Verificar que no exista ya una aplicación activa para este programa
         $existingApp = Application::where('user_id', $validated['user_id'])
             ->where('program_id', $validated['program_id'])
-            ->whereIn('status', ['pending', 'in_review', 'approved'])
+            ->whereIn('status', Application::ACTIVE_STATUSES)
             ->first();
         
         if ($existingApp) {

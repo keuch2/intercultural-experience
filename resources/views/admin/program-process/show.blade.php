@@ -141,7 +141,14 @@
                 <button class="btn btn-sm btn-outline-danger text-nowrap"><i class="fas fa-ban me-1"></i> Cancelar proceso</button>
             </form>
             @endif
+            @if($process->application)
+            <div class="mt-2 d-flex align-items-center gap-2"><small class="text-muted">Para que el participante pueda postular de nuevo:</small>
+            @php $ds = $process->application->deletion_summary ?? app(\App\Services\ApplicationDeletionService::class)->summary($process->application); @endphp
+<button type="button" class="btn btn-sm btn-outline-danger text-nowrap" data-bs-toggle="modal" data-bs-target="#deleteApplicationModal" data-action="{{ route('admin.participants.applications.destroy', [$process->user_id, $process->application_id]) }}" data-program="{{ optional($process->application->program)->name }}" data-docs="{{ $ds['documents'] }}" data-pay-verified="{{ $ds['payments_verified'] }}" data-pay-pending="{{ $ds['payments_pending'] }}" data-assignment="{{ $ds['has_active_assignment'] ? 1 : 0 }}"><i class="fas fa-trash me-1"></i> Eliminar postulación</button>
+            </div>
+            @endif
         </div></div>
     </div>
 </div></div>
+@include('admin.partials._delete_application_modal')
 @endsection

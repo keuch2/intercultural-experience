@@ -84,6 +84,11 @@
                                 <input type="hidden" name="action" value="revoke">
                                 <button type="submit" class="btn btn-sm btn-outline-danger py-0">Revocar</button>
                             </form>
+                            @php $apDeleteApp = $process ? \App\Models\Application::find($process->application_id) : null; @endphp
+                            @if($apDeleteApp)
+                            @php $ds = $apDeleteApp->deletion_summary ?? app(\App\Services\ApplicationDeletionService::class)->summary($apDeleteApp); @endphp
+<button type="button" class="btn btn-sm btn-outline-danger py-0 ms-1" data-bs-toggle="modal" data-bs-target="#deleteApplicationModal" data-action="{{ route('admin.participants.applications.destroy', [$user->id, $apDeleteApp->id]) }}" data-program="{{ optional($apDeleteApp->program)->name }}" data-docs="{{ $ds['documents'] }}" data-pay-verified="{{ $ds['payments_verified'] }}" data-pay-pending="{{ $ds['payments_pending'] }}" data-assignment="{{ $ds['has_active_assignment'] ? 1 : 0 }}"><i class="fas fa-trash me-1"></i> Eliminar postulación</button>
+                            @endif
                         @else
                             <span class="badge bg-warning bg-opacity-25 text-warning border border-warning">
                                 <i class="fas fa-clock me-1"></i> Aprobación pendiente
@@ -303,4 +308,5 @@
     </div>
 </div>
 @endif
+@include('admin.partials._delete_application_modal')
 @endsection

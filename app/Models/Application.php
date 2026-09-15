@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Application extends Model
 {
+    /** Estados que cuentan como postulación vigente (bloquean volver a postular al mismo programa). */
+    public const ACTIVE_STATUSES = ['pending', 'in_review', 'approved'];
+
     protected $fillable = [
         'user_id',
         'program_id',
@@ -186,6 +189,12 @@ class Application extends Model
     /**
      * Scope: Participantes IE Cue (Alumni)
      */
+    /** Postulaciones vigentes del usuario a un programa (pending, in_review, approved). */
+    public function scopeActiveForProgram($query, int $userId, int $programId)
+    {
+        return $query->where('user_id', $userId)->where('program_id', $programId)->whereIn('status', self::ACTIVE_STATUSES);
+    }
+
     public function scopeIeCue($query)
     {
         return $query->where('is_ie_cue', true);

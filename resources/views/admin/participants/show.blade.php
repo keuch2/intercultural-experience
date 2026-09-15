@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
+@if($errors->has('application'))<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-1"></i> {{ $errors->first('application') }}</div>@endif
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">
@@ -548,9 +549,8 @@
                                                         </li>
                                                         <li><hr class="dropdown-divider"></li>
                                                         <li>
-                                                            <button type="button" class="dropdown-item text-danger" onclick="confirmDelete({{ $application->id }})">
-                                                                <i class="bi bi-trash me-1"></i> Eliminar
-                                                            </button>
+@php $ds = $application->deletion_summary ?? app(\App\Services\ApplicationDeletionService::class)->summary($application); @endphp
+<button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteApplicationModal" data-action="{{ route('admin.participants.applications.destroy', [$participant->id, $application->id]) }}" data-program="{{ optional($application->program)->name }}" data-docs="{{ $ds['documents'] }}" data-pay-verified="{{ $ds['payments_verified'] }}" data-pay-pending="{{ $ds['payments_pending'] }}" data-assignment="{{ $ds['has_active_assignment'] ? 1 : 0 }}"><i class="bi bi-trash me-1"></i> Eliminar postulación</button>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -766,33 +766,7 @@
     </div>
 </div>
 
-{{-- Modal: Confirmar Eliminación --}}
-<div class="modal fade" id="deleteApplicationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p><strong>¿Estás seguro de eliminar esta solicitud?</strong></p>
-                <p class="text-muted">Esta acción no se puede deshacer. Se eliminarán todos los datos asociados a esta solicitud.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form id="deleteForm" method="POST" style="display:inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-trash"></i> Eliminar Solicitud
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+@include('admin.partials._delete_application_modal')
 
 @section('styles')
 <style>
@@ -834,23 +808,6 @@ document.getElementById('new_program_id')?.addEventListener('change', function()
         programInfo.classList.remove('d-none');
     } else {
         programInfo.classList.add('d-none');
-    }
-});
-
-// Función para confirmar eliminación de solicitud
-function confirmDelete(applicationId) {
-    const deleteModal = new bootstrap.Modal(document.getElementById('deleteApplicationModal'));
-    const deleteForm = document.getElementById('deleteForm');
-    const baseUrl = "{{ url('/admin/participants') }}";
-    deleteForm.action = `${baseUrl}/${applicationId}`;
-    deleteModal.show();
-}
-
-// Confirmación adicional para eliminar
-document.getElementById('deleteForm')?.addEventListener('submit', function(e) {
-    const confirmText = confirm('Esta acción eliminará TODOS los datos asociados a esta solicitud. ¿Continuar?');
-    if (!confirmText) {
-        e.preventDefault();
     }
 });
 
