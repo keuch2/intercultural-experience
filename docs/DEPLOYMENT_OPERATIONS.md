@@ -325,6 +325,10 @@ Script ejecutado diariamente via cron:
 ```bash
 # Crontab entry
 0 2 * * * /var/www/ie.org.py/scripts/backup-database.sh production >> /var/log/backup.log 2>&1
+
+# Scheduler de Laravel (obligatorio): alertas por fechas de programa y paso automático a Support.
+# El comando programado es `programs:process-dates` (07:00 America/Asuncion, ver routes/console.php).
+* * * * * cd /home/ieorgpy/public_html/app && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 ### Backup Manual

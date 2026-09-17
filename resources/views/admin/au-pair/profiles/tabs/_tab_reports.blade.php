@@ -45,6 +45,7 @@
                         'document_reject' => ['fa-times', 'danger'],
                         'document_delete' => ['fa-trash', 'danger'],
                         'stage_advance' => ['fa-arrow-right', 'primary'],
+                        'stage_advanced_auto' => ['fa-robot', 'success'],
                     ];
                     $iconData = $iconMap[$log->action] ?? ['fa-history', 'secondary'];
                     $authorName = $log->causer ? optional($log->causer)->name : null;

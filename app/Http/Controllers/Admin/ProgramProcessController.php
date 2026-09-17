@@ -111,7 +111,7 @@ class ProgramProcessController extends Controller
         $envelope = $this->envelope->build($process);
         $entries = collect($this->documents->describe($process));
         $tabData = $this->tabData($activeTab, $tabs[$activeTab], $program, $process, $definition, $entries);
-        $notes = ParticipantNote::where('user_id', $user->id)->with('admin:id,name')->latest()->get();
+        $notes = ParticipantNote::where('user_id', $user->id)->forApplication(null)->with('admin:id,name')->latest()->get();
 
         return view('admin.program-process.show', compact(
             'program', 'definition', 'process', 'user', 'application', 'tabs', 'activeTab', 'tabData', 'envelope', 'entries', 'notes'

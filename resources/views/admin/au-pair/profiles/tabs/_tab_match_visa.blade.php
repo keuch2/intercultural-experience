@@ -188,6 +188,14 @@
             $returnLegs = $flightInfo['return_legs'] ?? [];
         @endphp
 
+        {{-- Fechas del programa (viven en au_pair_processes; también editables en Admisión) --}}
+        <h6 class="small fw-bold text-muted mb-2"><i class="fas fa-calendar-alt me-1"></i> Fechas del programa</h6>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4"><label class="form-label small">Inicio del programa</label><input type="date" form="visaProcessForm" name="program_start_date" class="form-control form-control-sm" value="{{ $process?->program_start_date?->format('Y-m-d') }}"></div>
+            <div class="col-md-4"><label class="form-label small">Fin del programa</label><input type="date" form="visaProcessForm" name="program_end_date" class="form-control form-control-sm" value="{{ $process?->program_end_date?->format('Y-m-d') }}"></div>
+            <div class="col-md-4 d-flex align-items-end"><small class="text-muted">Disparan las alertas a IE y el paso automático a Support el día de inicio.</small></div>
+        </div>
+
         {{-- Viaje de Ida --}}
         <h6 class="small fw-bold text-muted mb-2"><i class="fas fa-plane-departure me-1"></i> Viaje de Ida</h6>
         <div class="row g-3 mb-3">
@@ -378,11 +386,22 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="card shadow-sm mb-4 border-secondary">
     <div class="card-header bg-secondary bg-opacity-10"><h6 class="mb-0"><i class="fas fa-arrow-circle-right text-secondary me-1"></i> C8. Siguiente etapa: Support</h6></div>
     <div class="card-body">
-        <p class="mb-3 text-muted">Cuando la visa esté aprobada, los documentos en regla y el viaje coordinado, pasá a la participante a <strong>Support</strong> (seguimiento durante el programa). La finalización se registra al terminar el programa, desde el tab Support.</p>
+        @php $apReasons = $process ? $process->supportBlockingReasons() : []; @endphp
+        <p class="mb-3 text-muted">Con la visa aprobada, los documentos en regla y el viaje coordinado, pasá a la participante a <strong>Support</strong> (seguimiento durante el programa). Si cargaste la fecha de inicio, el sistema lo hace automáticamente ese día. La finalización se registra al terminar el programa, desde el tab Support.</p>
+        @if(empty($apReasons))
+        <p class="mb-3"><i class="fas fa-check-circle text-success me-1"></i> <strong>Requisitos completos.</strong> La participante puede pasar a Support.</p>
         <form method="POST" action="{{ route('admin.aupair.profiles.advance-stage', $user->id) }}" onsubmit="return confirm('¿Pasar a la participante a la etapa Support?')">
             @csrf
             <button type="submit" class="btn btn-success">Avanzar a Support <i class="fas fa-arrow-right ms-1"></i></button>
         </form>
+        @else
+        <p class="mb-2"><i class="fas fa-lock text-warning me-1"></i> <strong>Pendiente para avanzar a Support:</strong></p>
+        <ul class="mb-3">@foreach($apReasons as $r)<li>{{ $r }}</li>@endforeach</ul>
+        <form method="POST" action="{{ route('admin.aupair.profiles.advance-stage', $user->id) }}" onsubmit="return confirm('La visa no está aprobada. ¿Forzar el avance a Support de todos modos?')">
+            @csrf<input type="hidden" name="force" value="1">
+            <button type="submit" class="btn btn-outline-warning">Forzar avance a Support <i class="fas fa-arrow-right ms-1"></i></button>
+        </form>
+        @endif
     </div>
 </div>
 @elseif(in_array($apCurrent, ['support', 'completed']))

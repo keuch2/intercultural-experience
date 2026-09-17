@@ -156,7 +156,9 @@ class AuPairProfileController extends Controller
         // Datos para cada tab
         $tabData = $this->getTabData($activeTab, $user, $application, $profile, $process);
 
+        // Solo notas legacy sin postulación: las de la postulación ya se muestran en su tarjeta.
         $notes = ParticipantNote::where('user_id', $id)
+            ->forApplication(null)
             ->with('admin:id,name')
             ->latest()
             ->get();
@@ -720,7 +722,8 @@ class AuPairProfileController extends Controller
         }
 
         $previousStage = $process->current_stage;
-        $result = $process->advanceStage();
+        $force = $request->boolean('force');
+        $result = $process->advanceStage($force);
 
         if ($result) {
             // File inheritance: admission → application
@@ -774,15 +777,19 @@ class AuPairProfileController extends Controller
                 ->performedOn($user)
                 ->causedBy(auth()->user())
                 ->withAction('stage_advance')
-                ->withProperties(['from' => $previousStage, 'to' => $process->fresh()->current_stage])
-                ->log("Proceso avanzó de '{$previousStage}' a '{$process->fresh()->current_stage}'");
+                ->withProperties(['from' => $previousStage, 'to' => $process->fresh()->current_stage, 'forced' => $force])
+                ->log("Proceso avanzó de '{$previousStage}' a '{$process->fresh()->current_stage}'".($force ? ' (forzado)' : ''));
+
+            $newStage = $process->fresh()->current_stage;
 
             return redirect()
-                ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => $process->fresh()->current_stage === 'application' ? 'application' : 'match_visa'])
+                ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => match ($newStage) { 'application' => 'application', 'support' => 'support', default => 'match_visa' }])
                 ->with('success', 'El proceso avanzó a la siguiente etapa.');
         }
 
-        return back()->with('error', 'No se puede avanzar. Verifique que se cumplan todos los requisitos.');
+        $reasons = $process->current_stage === 'match_visa' ? $process->supportBlockingReasons() : [];
+
+        return back()->with('error', 'No se puede avanzar. '.($reasons ? implode(' ', $reasons) : 'Verifique que se cumplan todos los requisitos.'));
     }
 
     /**
@@ -852,7 +859,15 @@ class AuPairProfileController extends Controller
             'return_legs.*.flight_number' => 'nullable|string|max:50',
             'return_legs.*.departure' => 'nullable|string|max:50',
             'pre_departure_orientation_date' => 'nullable|date',
-        ]);
+            'program_start_date' => 'nullable|date',
+            'program_end_date' => 'nullable|date|after_or_equal:program_start_date',
+        ], [], ['program_start_date' => 'fecha de inicio del programa', 'program_end_date' => 'fecha de fin del programa']);
+
+        // Las fechas del programa viven en el proceso (no en el proceso de visa)
+        if ($request->has('program_start_date') || $request->has('program_end_date')) {
+            $process->update(['program_start_date' => ($data['program_start_date'] ?? null) ?: null, 'program_end_date' => ($data['program_end_date'] ?? null) ?: null]);
+        }
+        unset($data['program_start_date'], $data['program_end_date']);
 
         foreach ($boolFields as $field) {
             $data[$field] = $request->has($field);

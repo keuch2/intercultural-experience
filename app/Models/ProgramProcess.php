@@ -34,7 +34,7 @@ class ProgramProcess extends Model
 
     protected $fillable = [
         'application_id', 'program_id', 'user_id', 'current_stage_key', 'status', 'stage_states',
-        'module_access', 'season', 'enrollment_date', 'program_start_date', 'program_end_date', 'notes', 'finalization_result',
+        'module_access', 'season', 'enrollment_date', 'program_start_date', 'program_end_date', 'automation_flags', 'notes', 'finalization_result',
         'finalization_reason', 'finalization_date', 'finalized_by',
     ];
 
@@ -44,6 +44,7 @@ class ProgramProcess extends Model
         'enrollment_date' => 'date',
         'program_start_date' => 'date',
         'program_end_date' => 'date',
+        'automation_flags' => 'array',
         'finalization_date' => 'date',
     ];
 
@@ -162,6 +163,19 @@ class ProgramProcess extends Model
     }
 
     // Scopes
+
+    /** Marca (idempotente) un evento de la automatización por fechas. */
+    public function markAutomation(string $key): void
+    {
+        $this->automation_flags = array_merge($this->automation_flags ?? [], [$key => now()->toIso8601String()]);
+        $this->save();
+    }
+
+    public function automationFlag(string $key): ?string
+    {
+        return ($this->automation_flags ?? [])[$key] ?? null;
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', self::STATUS_ACTIVE);

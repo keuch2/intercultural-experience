@@ -20,6 +20,7 @@ class AuPairProcess extends Model
         'enrollment_country',
         'program_start_date',
         'program_end_date',
+        'automation_flags',
         'current_stage',
         'admission_status',
         'application_status',
@@ -47,6 +48,7 @@ class AuPairProcess extends Model
         'enrollment_date' => 'date',
         'program_start_date' => 'date',
         'program_end_date' => 'date',
+        'automation_flags' => 'array',
         'contract_signed_at' => 'datetime',
         'welcome_email_sent' => 'boolean',
         'interview_process_email_sent' => 'boolean',
@@ -178,7 +180,37 @@ class AuPairProcess extends Model
     /**
      * Advance to next stage
      */
-    public function advanceStage(): bool
+    /** Match/Visa → Support: requiere visa aprobada (resultado de la entrevista consular). */
+    public function canAdvanceToSupport(): bool
+    {
+        return $this->visaProcess?->interview_result === 'approved';
+    }
+
+    /** @return string[] Motivos que impiden pasar a Support (vacío si puede avanzar). */
+    public function supportBlockingReasons(): array
+    {
+        if ($this->canAdvanceToSupport()) {
+            return [];
+        }
+        $labels = ['pending' => 'pendiente', 'denied' => 'denegada', 'administrative_process' => 'en proceso administrativo'];
+        $result = $this->visaProcess?->interview_result;
+
+        return ['Visa aún no aprobada (resultado de la entrevista: '.($labels[$result] ?? 'sin registrar').').'];
+    }
+
+    /** Marca (idempotente) un evento de la automatización por fechas. */
+    public function markAutomation(string $key): void
+    {
+        $this->automation_flags = array_merge($this->automation_flags ?? [], [$key => now()->toIso8601String()]);
+        $this->save();
+    }
+
+    public function automationFlag(string $key): ?string
+    {
+        return ($this->automation_flags ?? [])[$key] ?? null;
+    }
+
+    public function advanceStage(bool $force = false): bool
     {
         switch ($this->current_stage) {
             case 'admission':
@@ -200,6 +232,9 @@ class AuPairProcess extends Model
                 return true;
 
             case 'match_visa':
+                if (! $force && ! $this->canAdvanceToSupport()) {
+                    return false;
+                }
                 $this->update([
                     'current_stage' => 'support',
                     'match_visa_status' => 'approved',
