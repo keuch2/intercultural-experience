@@ -23,6 +23,9 @@ export const isApplicationActive = (app: UserApplication): boolean =>
 
 interface ProgramCtx {
   flow: ProgramFlow;
+  /** true tras la primera resolución de postulaciones; el navegador principal solo espera esto */
+  ready: boolean;
+  /** true mientras se (re)carga el proceso; NO desmonta pantallas */
   loading: boolean;
   applications: UserApplication[];
   selectedApplication: UserApplication | null;
@@ -51,6 +54,7 @@ export const ProgramProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [envelope, setEnvelope] = useState<ProgramEnvelope | null>(null);
   const [auPairProcess, setAuPairProcess] = useState<AuPairProcess | null>(null);
   const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
 
   const loadProcessFor = useCallback(async (app: UserApplication | null) => {
     const f = flowForApplication(app);
@@ -77,7 +81,7 @@ export const ProgramProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const refresh = useCallback(async () => {
     if (!isAuthenticated) {
-      setApplications([]); setSelectedId(null); setFlow('none'); setEnvelope(null); setAuPairProcess(null); setLoading(false);
+      setApplications([]); setSelectedId(null); setFlow('none'); setEnvelope(null); setAuPairProcess(null); setLoading(false); setReady(false);
       return;
     }
     setLoading(true);
@@ -94,17 +98,20 @@ export const ProgramProvider: React.FC<{ children: ReactNode }> = ({ children })
       // Sin red u otro error: se conserva el estado resuelto previamente.
     } finally {
       setLoading(false);
+      setReady(true);
     }
   }, [isAuthenticated, loadProcessFor]);
 
   const selectApplication = useCallback(async (id: number) => {
     const app = applications.find(a => a.id === id);
     if (!app) return;
+    // Ya seleccionada y con proceso cargado: no hay nada que recargar (evita parpadeos y navegaciones perdidas).
+    if (id === selectedId && (envelope || auPairProcess)) return;
     setSelectedId(id);
     try { await AsyncStorage.setItem(SELECTED_KEY, String(id)); } catch {}
     setLoading(true);
     try { await loadProcessFor(app); } finally { setLoading(false); }
-  }, [applications, loadProcessFor]);
+  }, [applications, loadProcessFor, selectedId, envelope, auPairProcess]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -112,6 +119,7 @@ export const ProgramProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const value = useMemo<ProgramCtx>(() => ({
     flow,
+    ready,
     loading,
     applications,
     selectedApplication,
@@ -122,7 +130,7 @@ export const ProgramProvider: React.FC<{ children: ReactNode }> = ({ children })
     refresh,
     selectApplication,
     setEnvelope,
-  }), [flow, loading, applications, selectedApplication, envelope, auPairProcess, refresh, selectApplication]);
+  }), [flow, ready, loading, applications, selectedApplication, envelope, auPairProcess, refresh, selectApplication]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

@@ -170,14 +170,16 @@ const MainNavigator: React.FC = () => {
   // Si el visitante llegó desde "Postular Au Pair" y completó login/register,
   // arrancamos en AuPairOnboarding (se le crea la Application). Sino, dashboard.
   const { authRequest } = usePublicAuth();
-  const { flow, loading } = useProgram();
+  const { ready } = useProgram();
   // Ruta inicial: onboarding pedido desde el catálogo público (Au Pair o motor) o el
   // home del flujo resuelto (Au Pair → AuPairDashboard; motor / sin postulación → ProgramDashboard).
   const onboardingRequested = authRequest?.programId && (authRequest?.redirectTo === 'AuPairOnboarding' || authRequest?.redirectTo === 'ProgramOnboarding');
   // Tras el login siempre se entra al Home general; 'Mi proceso' (tab) abre el dashboard del flujo.
   const initial = onboardingRequested ? authRequest!.redirectTo! : 'Home';
 
-  if (loading && !onboardingRequested) {
+  // Solo la primera resolución bloquea el montaje. Si el stack se desmontara en cada recarga
+  // (cambio de postulación, pull-to-refresh) se perdería la navegación y volvería a Inicio.
+  if (!ready && !onboardingRequested) {
     return <View style={styles.container} />;
   }
 
