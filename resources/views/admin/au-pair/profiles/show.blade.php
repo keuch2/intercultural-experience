@@ -1,19 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-{{-- Flash messages --}}
-@if(session('success'))
-<div class="alert alert-success alert-dismissible fade show py-2 px-3 mb-3" role="alert">
-    <i class="fas fa-check-circle me-1"></i> {{ session('success') }}
-    <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
-</div>
-@endif
-@if(session('error'))
-<div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3" role="alert">
-    <i class="fas fa-exclamation-circle me-1"></i> {{ session('error') }}
-    <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
-</div>
-@endif
+{{-- Los mensajes de éxito/error los muestra el layout (evitar duplicados) --}}
 @if($errors->any())
 <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3" role="alert">
     <i class="fas fa-exclamation-triangle me-1"></i>

@@ -34,7 +34,7 @@ class SponsorController extends Controller
             $query->byCountry($request->country);
         }
 
-        $sponsors = $query->withCount('jobOffers')
+        $sponsors = $query->withCount(['jobOffers', 'jobPlacements'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -135,10 +135,13 @@ class SponsorController extends Controller
     {
         $sponsor = Sponsor::findOrFail($id);
 
-        // Verificar si tiene job offers asociadas
-        if ($sponsor->jobOffers()->count() > 0) {
-            return redirect()->back()
-                ->with('error', 'No se puede eliminar el sponsor porque tiene ofertas laborales asociadas');
+        // Con historial (participantes que viajaron con él u ofertas) no se borra: se desactiva,
+        // así deja de ofrecerse en Job Placement pero queda la constancia en cada participante.
+        if ($sponsor->hasHistory()) {
+            $sponsor->update(['is_active' => false]);
+
+            return redirect()->route('admin.sponsors.index')
+                ->with('success', "El sponsor {$sponsor->name} tiene participantes asociados: se desactivó en lugar de eliminarse. Ya no se ofrece en nuevos Job Placement.");
         }
 
         $sponsor->delete();

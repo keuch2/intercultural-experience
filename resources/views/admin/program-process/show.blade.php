@@ -3,8 +3,7 @@
 @section('title', $user->name . ' — ' . $program->name)
 
 @section('content')
-@if(session('success'))<div class="alert alert-success alert-dismissible fade show py-2 px-3 mb-3" role="alert"><i class="fas fa-check-circle me-1"></i> {{ session('success') }}<button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button></div>@endif
-@if(session('error'))<div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3" role="alert"><i class="fas fa-exclamation-circle me-1"></i> {{ session('error') }}<button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button></div>@endif
+{{-- Los mensajes de éxito/error los muestra el layout (evitar duplicados) --}}
 @if($errors->any())<div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3" role="alert"><i class="fas fa-exclamation-triangle me-1"></i><ul class="mb-0 ps-3">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul><button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button></div>@endif
 
 @php
@@ -41,6 +40,10 @@
                     @if($isApproved)
                         <span class="badge bg-success bg-opacity-25 text-success border border-success"><i class="fas fa-check-circle me-1"></i> Postulante aprobado</span>
                         <form method="POST" action="{{ route('admin.program.participants.approve', [$program->slug, $process->id]) }}" class="d-inline ms-1" onsubmit="return confirm('¿Revocar la aprobación? El postulante dejará de poder subir documentos desde la app.')">@csrf<input type="hidden" name="action" value="revoke"><button type="submit" class="btn btn-sm btn-outline-danger py-0">Revocar</button></form>
+                        @if($process->application)
+                            @php $ds = app(\App\Services\ApplicationDeletionService::class)->summary($process->application); @endphp
+                            <button type="button" class="btn btn-sm btn-outline-danger py-0 ms-1" data-bs-toggle="modal" data-bs-target="#deleteApplicationModal" data-action="{{ route('admin.participants.applications.destroy', [$process->user_id, $process->application_id]) }}" data-program="{{ optional($process->application->program)->name }}" data-docs="{{ $ds['documents'] }}" data-pay-verified="{{ $ds['payments_verified'] }}" data-pay-pending="{{ $ds['payments_pending'] }}" data-assignment="{{ $ds['has_active_assignment'] ? 1 : 0 }}"><i class="fas fa-trash me-1"></i> Eliminar postulación</button>
+                        @endif
                     @else
                         <span class="badge bg-warning bg-opacity-25 text-warning border border-warning"><i class="fas fa-clock me-1"></i> Aprobación pendiente</span>
                         <form method="POST" action="{{ route('admin.program.participants.approve', [$program->slug, $process->id]) }}" class="d-inline ms-1">@csrf<button type="submit" class="btn btn-sm btn-success py-0"><i class="fas fa-user-check me-1"></i> Aprobar postulante</button></form>
@@ -116,6 +119,14 @@
             @endif
         </div></div>
 
+        @if($process->application)
+        <div class="card shadow-sm mt-3">
+            <div class="card-body py-3">
+                <h6 class="card-title small text-muted text-uppercase mb-1"><i class="fas fa-sticky-note me-1"></i> Notas de la Postulación</h6>
+                @include('admin.applications._notes_widget', ['user' => $user, 'application' => $process->application])
+            </div>
+        </div>
+        @endif
         @include('admin.partials._participant_notes_widget', ['user' => $user, 'notes' => $notes])
     </div>
 
@@ -140,12 +151,6 @@
                 <input type="text" name="reason" class="form-control form-control-sm" placeholder="Motivo de cancelación (opcional)">
                 <button class="btn btn-sm btn-outline-danger text-nowrap"><i class="fas fa-ban me-1"></i> Cancelar proceso</button>
             </form>
-            @endif
-            @if($process->application)
-            <div class="mt-2 d-flex align-items-center gap-2"><small class="text-muted">Para que el participante pueda postular de nuevo:</small>
-            @php $ds = $process->application->deletion_summary ?? app(\App\Services\ApplicationDeletionService::class)->summary($process->application); @endphp
-<button type="button" class="btn btn-sm btn-outline-danger text-nowrap" data-bs-toggle="modal" data-bs-target="#deleteApplicationModal" data-action="{{ route('admin.participants.applications.destroy', [$process->user_id, $process->application_id]) }}" data-program="{{ optional($process->application->program)->name }}" data-docs="{{ $ds['documents'] }}" data-pay-verified="{{ $ds['payments_verified'] }}" data-pay-pending="{{ $ds['payments_pending'] }}" data-assignment="{{ $ds['has_active_assignment'] ? 1 : 0 }}"><i class="fas fa-trash me-1"></i> Eliminar postulación</button>
-            </div>
             @endif
         </div></div>
     </div>

@@ -209,6 +209,9 @@
                                         @if(in_array('job_pool', $engineProgram->modules ?? []) && Route::has('admin.program.job-pool.index'))
                                         <li class="nav-item"><a class="nav-link {{ request()->is('admin/programas/'.$engineProgram->slug.'/ofertas*') ? 'active' : '' }}" href="{{ route('admin.program.job-pool.index', $engineProgram->slug) }}"><i class="fas fa-briefcase"></i> Pool de Ofertas</a></li>
                                         @endif
+                                        @if(in_array('placement', $engineProgram->modules ?? []) && Route::has('admin.sponsors.index'))
+                                        <li class="nav-item"><a class="nav-link {{ request()->is('admin/sponsors*') ? 'active' : '' }}" href="{{ route('admin.sponsors.index') }}"><i class="fas fa-handshake"></i> Sponsors</a></li>
+                                        @endif
                                         <li class="nav-item"><a class="nav-link {{ request()->is('admin/ie-programs/'.$engineProgram->id.'/config*') && request('tab') === 'resources' ? 'active' : '' }}" href="{{ route('admin.program-config.show', ['program' => $engineProgram->id, 'tab' => 'resources']) }}"><i class="fas fa-folder-open"></i> Recursos del Programa</a></li>
                                         @if(Route::has('admin.program.reports.index'))
                                         <li class="nav-item"><a class="nav-link {{ request()->is('admin/programas/'.$engineProgram->slug.'/informes*') ? 'active' : '' }}" href="{{ route('admin.program.reports.index', $engineProgram->slug) }}"><i class="fas fa-chart-bar"></i> Informes</a></li>

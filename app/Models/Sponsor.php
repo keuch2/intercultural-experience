@@ -30,6 +30,18 @@ class Sponsor extends Model
         return $this->hasMany(JobOffer::class);
     }
 
+    /** Job Placements (motor) que viajaron con este sponsor: constancia histórica, nunca se pierde. */
+    public function jobPlacements(): HasMany
+    {
+        return $this->hasMany(JobPlacement::class);
+    }
+
+    /** Tiene historial (ofertas legacy o placements): no se puede borrar, solo desactivar. */
+    public function hasHistory(): bool
+    {
+        return $this->jobOffers()->exists() || $this->jobPlacements()->exists();
+    }
+
     /**
      * Scope: Solo sponsors activos
      */

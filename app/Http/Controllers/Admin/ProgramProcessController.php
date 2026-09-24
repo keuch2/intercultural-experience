@@ -98,7 +98,7 @@ class ProgramProcessController extends Controller
         $definition = ProgramDefinition::for($program);
         $this->resolver->syncRows($process, $definition);
 
-        $process->load(['user', 'application.payments', 'documents', 'englishTests', 'visaProcess', 'supportLogs', 'checklist', 'gates']);
+        $process->load(['user', 'application.payments', 'application.notes.admin', 'documents', 'englishTests', 'visaProcess', 'supportLogs', 'checklist', 'gates']);
         $user = $process->user;
         $application = $process->application;
 
@@ -215,7 +215,7 @@ class ProgramProcessController extends Controller
             'placement' => [
                 'placement' => app(\App\Services\ProgramEngine\PlacementService::class)->ensure($process),
                 'assignment' => $process->activeJobAssignment()->with('offer')->first(),
-                'sponsors' => \App\Models\Sponsor::where('is_active', true)->orderBy('name')->get(),
+                'sponsors' => \App\Models\Sponsor::query()->where(fn ($q) => $q->where('is_active', true)->orWhere('id', $process->placement?->sponsor_id))->orderBy('name')->get(),
                 'entries' => $entries->where('stage_key', 'placement')->values(),
                 'documentsComplete' => app(\App\Services\ProgramEngine\PlacementService::class)->documentsComplete($process),
             ],
@@ -534,7 +534,13 @@ class ProgramProcessController extends Controller
             'return_legs' => 'nullable|array', 'return_legs.*.origin' => 'nullable|string|max:255', 'return_legs.*.destination' => 'nullable|string|max:255',
             'return_legs.*.airline' => 'nullable|string|max:255', 'return_legs.*.flight_number' => 'nullable|string|max:50', 'return_legs.*.departure' => 'nullable|string|max:50',
             'pre_departure_orientation_date' => 'nullable|date',
-        ]);
+            'program_start_date' => 'nullable|date', 'program_end_date' => 'nullable|date|after_or_equal:program_start_date',
+        ], [], ['program_start_date' => 'fecha de inicio del programa', 'program_end_date' => 'fecha de fin del programa']);
+        // Las fechas del programa viven en el proceso (no en el proceso de visa)
+        if ($request->has('program_start_date') || $request->has('program_end_date')) {
+            $process->update(['program_start_date' => ($data['program_start_date'] ?? null) ?: null, 'program_end_date' => ($data['program_end_date'] ?? null) ?: null]);
+        }
+        unset($data['program_start_date'], $data['program_end_date']);
         foreach ($bools as $field) {
             $data[$field] = $request->boolean($field);
         }

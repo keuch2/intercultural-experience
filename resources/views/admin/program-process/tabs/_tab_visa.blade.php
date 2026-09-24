@@ -63,6 +63,18 @@
 </div>
 @endif
 
+{{-- Fechas del programa (viven en el proceso; también editables en Datos personales y Job Placement) --}}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-calendar-alt text-primary me-1"></i> Fechas del programa</h6></div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4"><label class="form-label small">Inicio del programa</label><input type="date" form="visaProcessForm" name="program_start_date" class="form-control form-control-sm" value="{{ $process->program_start_date?->format('Y-m-d') }}"></div>
+            <div class="col-md-4"><label class="form-label small">Fin del programa</label><input type="date" form="visaProcessForm" name="program_end_date" class="form-control form-control-sm" value="{{ $process->program_end_date?->format('Y-m-d') }}"></div>
+            <div class="col-md-4 d-flex align-items-end"><small class="text-muted">Disparan las alertas a IE y el paso automático a Support el día de inicio.</small></div>
+        </div>
+    </div>
+</div>
+
 @if(in_array('c5', $sections))
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-plane-departure text-primary me-1"></i> C5. Información de viaje</h6></div>
