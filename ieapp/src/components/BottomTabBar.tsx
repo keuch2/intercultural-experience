@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useOptionalProgram } from '../contexts/ProgramContext';
 import { screensFor } from '../navigation/programFlowRegistry';
+import { useTabNavigation } from '../contexts/NavigationContext';
 
 /**
  * Menú inferior:
@@ -45,6 +46,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, setActiveTab }) 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const program = useOptionalProgram();
   const insets = useSafeAreaInsets();
+  const { unreadCount } = useTabNavigation();
   const flow = program?.flow ?? 'none';
 
   const targetFor = (tab: TabConfig): string => {
@@ -63,7 +65,12 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, setActiveTab }) 
         const active = activeTab === tab.key;
         return (
           <TouchableOpacity key={tab.key} style={styles.navItem} onPress={() => handlePress(tab)} accessibilityLabel={tab.label}>
-            <Ionicons name={active ? tab.iconActive : tab.icon} size={24} color={active ? '#E52224' : '#777'} />
+            <View>
+              <Ionicons name={active ? tab.iconActive : tab.icon} size={24} color={active ? '#E52224' : '#777'} />
+              {tab.key === 'notifications' && unreadCount > 0 && (
+                <View style={styles.badge}><Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text></View>
+              )}
+            </View>
             <Text style={active ? styles.activeNavText : styles.navText}>{tab.label}</Text>
           </TouchableOpacity>
         );
@@ -77,6 +84,8 @@ const styles = StyleSheet.create({
   navItem: { alignItems: 'center', justifyContent: 'center', minWidth: 56 },
   activeNavText: { color: '#E52224', fontSize: 11, marginTop: 2, fontWeight: 'bold' },
   navText: { color: '#777', fontSize: 11, marginTop: 2 },
+  badge: { position: 'absolute', top: -4, right: -10, minWidth: 16, height: 16, borderRadius: 8, backgroundColor: '#E52224', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
+  badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
 });
 
 export default BottomTabBar;

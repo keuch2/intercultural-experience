@@ -1,4 +1,5 @@
 import React from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, StyleSheet } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
@@ -103,7 +104,8 @@ export type MainStackParamList = {
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
 const AuthenticatedScreenContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { activeTab, setActiveTab } = useTabNavigation();
+  const { activeTab, setActiveTab, refreshUnread } = useTabNavigation();
+  useFocusEffect(React.useCallback(() => { refreshUnread(); }, [refreshUnread]));
   return (
     <View style={styles.container}>
       {children}

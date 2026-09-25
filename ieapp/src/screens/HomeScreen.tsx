@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from '../components/SafeArea';
 import { useAuth } from '../contexts/AuthContext';
 import { useProgram, flowForApplication } from '../contexts/ProgramContext';
+import { useTabNavigation } from '../contexts/NavigationContext';
 import { publicService } from '../services/api';
 import type { PublicProgram } from '../services/api';
 import { screensFor } from '../navigation/programFlowRegistry';
@@ -19,6 +20,7 @@ const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { flow, loading, selectedApplication, applications, envelope, auPairProcess, refresh } = useProgram();
+  const { unreadCount } = useTabNavigation();
   const [programs, setPrograms] = useState<PublicProgram[]>([]);
   const [loadingPrograms, setLoadingPrograms] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -135,7 +137,7 @@ const HomeScreen: React.FC = () => {
             <Shortcut icon="documents-outline" label="Mis postulaciones" onPress={() => navigation.navigate('MyApplications')} />
             <Shortcut icon="map-outline" label="Mi proceso" onPress={goProcess} disabled={flow === 'none'} />
             <Shortcut icon="person-circle-outline" label="Mis datos" onPress={() => navigation.navigate('Profile')} />
-            <Shortcut icon="notifications-outline" label="Avisos" onPress={() => navigation.navigate('Notifications')} />
+            <Shortcut icon="notifications-outline" label="Avisos" onPress={() => navigation.navigate('Notifications')} badge={unreadCount} />
           </View>
         </View>
       </ScrollView>
@@ -143,9 +145,12 @@ const HomeScreen: React.FC = () => {
   );
 };
 
-const Shortcut: React.FC<{ icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void; disabled?: boolean }> = ({ icon, label, onPress, disabled }) => (
+const Shortcut: React.FC<{ icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void; disabled?: boolean; badge?: number }> = ({ icon, label, onPress, disabled, badge }) => (
   <TouchableOpacity style={[styles.shortcut, disabled && { opacity: 0.5 }]} onPress={onPress} disabled={disabled}>
-    <Ionicons name={icon} size={24} color="#E52224" />
+    <View>
+      <Ionicons name={icon} size={24} color="#E52224" />
+      {!!badge && <View style={styles.shortcutBadge}><Text style={styles.shortcutBadgeText}>{badge > 9 ? '9+' : badge}</Text></View>}
+    </View>
     <Text style={styles.shortcutLabel} numberOfLines={1}>{label}</Text>
   </TouchableOpacity>
 );
@@ -192,6 +197,8 @@ const styles = StyleSheet.create({
   badgeText: { fontSize: 10, fontWeight: '700', color: '#333' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   shortcut: { width: '48%', backgroundColor: '#fff', paddingVertical: 18, borderRadius: 12, alignItems: 'center' },
+  shortcutBadge: { position: 'absolute', top: -6, right: -12, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: '#E52224', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  shortcutBadgeText: { color: '#fff', fontSize: 10, fontWeight: '800' },
   shortcutLabel: { marginTop: 6, fontWeight: '600', color: '#333', fontSize: 13 },
 });
 

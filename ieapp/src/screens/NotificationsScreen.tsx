@@ -1,16 +1,19 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
   TouchableOpacity, RefreshControl
 } from 'react-native';
 import { SafeAreaView } from '../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { notificationService } from '../services/api';
 import { Notification } from '../types';
 import EmptyState from '../components/EmptyState';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { useTabNavigation } from '../contexts/NavigationContext';
+import { useOptionalProgram } from '../contexts/ProgramContext';
+import { screensFor } from '../navigation/programFlowRegistry';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -40,20 +43,42 @@ const NotificationsScreen: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const { refreshUnread, setUnreadCount } = useTabNavigation();
+  const program = useOptionalProgram();
+  const flow = program?.flow ?? 'none';
+
+  /** Pantalla a la que lleva cada categoría de aviso */
+  const screenFor = (category?: string): string | null => {
+    switch (category) {
+      case 'payment': return 'Payments';
+      case 'documents': return flow === 'none' ? null : screensFor(flow).documents;
+      case 'visa': return flow === 'aupair' ? 'AuPairVisa' : flow === 'engine' ? 'ProgramVisa' : null;
+      case 'support': return flow === 'aupair' ? 'AuPairSupport' : flow === 'engine' ? 'ProgramSupport' : null;
+      case 'job_pool': return flow === 'engine' ? 'JobPool' : null;
+      case 'program_stage': case 'program_dates': return flow === 'none' ? null : screensFor(flow).home;
+      default: return null;
+    }
+  };
 
   const markRead = async (n: Notification) => {
-    if (n.is_read) return;
-    try {
-      await notificationService.markAsRead(n.id);
+    if (!n.is_read) {
       setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x));
-    } catch {}
+      setUnreadCount(Math.max(0, notifications.filter(x => !x.is_read).length - 1));
+      try { await notificationService.markAsRead(n.id); } catch {}
+      refreshUnread(true);
+    }
+    const target = screenFor(n.category);
+    if (target) (navigation as any).navigate(target);
   };
 
   const markAll = async () => {
     try {
       await notificationService.markAllAsRead();
       setNotifications(prev => prev.map(x => ({ ...x, is_read: true })));
+      setUnreadCount(0);
+      refreshUnread(true);
     } catch {}
   };
 

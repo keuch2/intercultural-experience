@@ -145,6 +145,20 @@ const AuPairDashboardScreen: React.FC = () => {
           </View>
         </View>
 
+        {!!process.active_match && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Tu familia anfitriona</Text>
+            <TouchableOpacity style={styles.familyCard} activeOpacity={0.9} onPress={() => navigation.navigate('AuPairMatchDetail', { id: process.active_match!.id })}>
+              <Ionicons name="home" size={26} color="#E52224" />
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.familyTitle}>{[process.active_match.host_city, process.active_match.host_state].filter(Boolean).join(', ') || 'Ubicación a confirmar'}</Text>
+                <Text style={styles.familyMeta}>{process.active_match.match_type_label}{process.active_match.match_date ? ` · desde ${process.active_match.match_date.slice(8, 10)}/${process.active_match.match_date.slice(5, 7)}/${process.active_match.match_date.slice(0, 4)}` : ''}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#E52224" />
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Accesos rápidos</Text>
           <View style={styles.grid}>
@@ -169,6 +183,11 @@ const AuPairDashboardScreen: React.FC = () => {
               icon="airplane-outline"
               label="Visa"
               onPress={() => navigation.navigate('AuPairVisa')}
+            />
+            <Shortcut
+              icon="home-outline"
+              label="Mi familia"
+              onPress={() => navigation.navigate('AuPairMatches')}
             />
             <Shortcut
               icon="folder-open-outline"
@@ -252,6 +271,9 @@ const styles = StyleSheet.create({
   pendingText: { color: '#92400E', fontSize: 13, lineHeight: 18 },
   section: { paddingHorizontal: 18, marginTop: 18 },
   sectionTitle: { fontSize: 14, fontWeight: '700', color: '#555', marginBottom: 8 },
+  familyCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#E52224' },
+  familyTitle: { fontSize: 16, fontWeight: '800', color: '#222' },
+  familyMeta: { color: '#666', fontSize: 12, marginTop: 2 },
   stagesWrap: { backgroundColor: '#fff', borderRadius: 12, padding: 12 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   shortcut: {
