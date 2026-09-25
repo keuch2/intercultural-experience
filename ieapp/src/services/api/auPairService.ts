@@ -7,6 +7,7 @@ import {
   AuPairVisaProcessData,
   AuPairMatch,
   AuPairSupportLog,
+  SupportReportPayload,
   AuPairResource,
 } from '../../types/aupair';
 
@@ -119,6 +120,12 @@ class AuPairService {
   async getSupportLogs(): Promise<AuPairSupportLog[]> {
     const res = await apiClient.get<ListResp<AuPairSupportLog>>('/au-pair/support-logs');
     return res.data?.data ?? [];
+  }
+
+  /** Reporte / consulta o incidente enviado por la participante (IE recibe un aviso). */
+  async createSupportLog(payload: SupportReportPayload): Promise<AuPairSupportLog> {
+    const res = await apiClient.post<{ data: AuPairSupportLog }>('/au-pair/support-logs', payload);
+    return res.data.data;
   }
 
   // Resources

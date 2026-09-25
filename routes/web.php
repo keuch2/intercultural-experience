@@ -345,6 +345,8 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::get('/settings', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'index'])->name('admin.settings.index');
         Route::post('/settings', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'update'])->name('admin.settings.update');
         Route::get('/settings/cache/clear', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'clearCache'])->name('admin.settings.cache.clear');
+        Route::get('/settings/whatsapp', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'whatsapp'])->name('admin.settings.whatsapp');
+        Route::post('/settings/whatsapp', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'updateWhatsapp'])->name('admin.settings.whatsapp.update');
         Route::get('/settings/logs', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'logs'])->name('admin.settings.logs');
         Route::get('/settings/backup', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'backup'])->name('admin.settings.backup');
         Route::post('/settings/backup', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'createBackup'])->name('admin.settings.backup.create');

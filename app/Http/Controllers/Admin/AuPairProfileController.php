@@ -390,10 +390,14 @@ class AuPairProfileController extends Controller
             'rejection_reason' => 'required_if:action,reject|nullable|string|max:500',
         ]);
 
+        $docLabel = AuPairDocument::documentTypes()[$doc->document_type]['label'] ?? $doc->document_type;
+        $notifier = app(\App\Services\ProgramEngine\Notifier::class);
         if ($request->action === 'approve') {
             $doc->approve(Auth::id());
+            $notifier->toUser((int) $id, "Documento aprobado: {$docLabel}", "Tu documento \"{$docLabel}\" fue aprobado.", 'documents');
         } else {
             $doc->reject(Auth::id(), $request->rejection_reason);
+            $notifier->toUser((int) $id, "Documento rechazado: {$docLabel}", "Tu documento \"{$docLabel}\" fue rechazado. Motivo: {$request->rejection_reason}. Volvé a subirlo desde la app.", 'documents');
         }
 
         // Check if all required admission docs are now approved → update process
@@ -781,6 +785,8 @@ class AuPairProfileController extends Controller
                 ->log("Proceso avanzó de '{$previousStage}' a '{$process->fresh()->current_stage}'".($force ? ' (forzado)' : ''));
 
             $newStage = $process->fresh()->current_stage;
+            $stageLabels = ['admission' => 'Admisión', 'application' => 'Aplicación', 'match_visa' => 'Match / Visa J1', 'support' => 'Support', 'completed' => 'Completado'];
+            app(\App\Services\ProgramEngine\Notifier::class)->toUser($user->id, 'Tu proceso avanzó: '.($stageLabels[$newStage] ?? $newStage), 'Tu proceso Au Pair pasó a la etapa "'.($stageLabels[$newStage] ?? $newStage).'". Revisá la app para ver los próximos pasos.', 'program_stage');
 
             return redirect()
                 ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => match ($newStage) { 'application' => 'application', 'support' => 'support', default => 'match_visa' }])
@@ -831,6 +837,7 @@ class AuPairProfileController extends Controller
         if (!$process) return back()->with('error', 'Proceso Au Pair no encontrado.');
 
         $visa = $process->visaProcess ?? $process->visaProcess()->create([]);
+        $appointmentBefore = $visa->appointment_date?->toDateString();
 
         $boolFields = [
             'visa_email_sent', 'consular_fee_paid', 'appointment_scheduled',
@@ -887,10 +894,22 @@ class AuPairProfileController extends Controller
         unset($data['outbound_legs'], $data['return_legs']);
 
         $visa->update($data);
+        $this->notifyVisaAppointment($user->id, $appointmentBefore, $visa->fresh());
 
         return redirect()
             ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'match_visa'])
             ->with('success', 'Proceso de visa actualizado.');
+    }
+
+    /** Aviso al participante cuando se fija o cambia la fecha de la cita consular. */
+    private function notifyVisaAppointment(int $userId, ?string $before, $visa): void
+    {
+        $after = $visa->appointment_date?->toDateString();
+        if (! $after || $after === $before) {
+            return;
+        }
+        $when = \Carbon\Carbon::parse($after)->format('d/m/Y').($visa->appointment_time ? ' a las '.substr((string) $visa->appointment_time, 0, 5) : '').($visa->embassy ? ' en '.$visa->embassy : '');
+        app(\App\Services\ProgramEngine\Notifier::class)->toUser($userId, $before ? 'Cita de visa modificada' : 'Cita de visa agendada', "Tu cita en la embajada quedó fijada para el {$when}. Revisá la sección Visa.", 'visa');
     }
 
     /**
@@ -1000,8 +1019,10 @@ class AuPairProfileController extends Controller
         ]);
 
         $validated['logged_by'] = Auth::id();
+        $validated['source'] = 'staff';
 
-        $process->supportLogs()->create($validated);
+        $log = $process->supportLogs()->create($validated);
+        app(\App\Services\ProgramEngine\Notifier::class)->toUser($user->id, 'Nuevo seguimiento de tu coordinador', "Tu coordinador registró: \"{$log->title}\". Podés verlo en Soporte.", 'support');
 
         return redirect()
             ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'support'])

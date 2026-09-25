@@ -87,7 +87,7 @@ class ProgramDatesAutomation
             $this->notify('engine', 'start_soon', $p,
                 "Inicio de programa en {$days} días: {$p->user?->name}",
                 "{$p->user?->name} ({$p->program?->name}) inicia el programa el {$this->d($p->program_start_date)}. Verificá visa, documentos y viaje para que el paso automático a Support se realice ese día. ".$this->engineUrl($p, 'visa'),
-                self::FLAG_START_SOON);
+                self::FLAG_START_SOON, $this->participantStartSoon($days, $p->program?->name ?? 'programa', $this->d($p->program_start_date)));
         }
     }
 
@@ -158,7 +158,7 @@ class ProgramDatesAutomation
             $days = $this->daysUntil($today, $p->program_end_date);
             $this->notify('engine', 'end_soon', $p, "Fin de programa en {$days} días: {$p->user?->name}",
                 "El programa de {$p->user?->name} ({$p->program?->name}) termina el {$this->d($p->program_end_date)}. Coordiná el cierre y la evaluación final desde Support. ".$this->engineUrl($p, 'support'),
-                self::FLAG_END_SOON);
+                self::FLAG_END_SOON, $this->participantEndSoon($days, $p->program?->name ?? 'programa', $this->d($p->program_end_date)));
         }
     }
 
@@ -170,7 +170,7 @@ class ProgramDatesAutomation
         foreach ($q->get() as $p) {
             $this->notify('engine', 'end_today', $p, "Fin de programa: {$p->user?->name}",
                 "El programa de {$p->user?->name} ({$p->program?->name}) terminó el {$this->d($p->program_end_date)}. Registrá la finalización desde el tab Support. ".$this->engineUrl($p, 'support'),
-                self::FLAG_ENDED);
+                self::FLAG_ENDED, $this->participantEnded($p->program?->name ?? 'programa', $this->d($p->program_end_date)));
         }
     }
 
@@ -185,7 +185,7 @@ class ProgramDatesAutomation
             $days = $this->daysUntil($today, $p->program_start_date);
             $this->notify('au_pair', 'start_soon', $p, "Inicio de programa en {$days} días: {$p->user?->name}",
                 "{$p->user?->name} (Au Pair) inicia el programa el {$this->d($p->program_start_date)}. Verificá visa, documentos y viaje para que el paso automático a Support se realice ese día. ".$this->auPairUrl($p, 'match_visa'),
-                self::FLAG_START_SOON);
+                self::FLAG_START_SOON, $this->participantStartSoon($days, 'Au Pair', $this->d($p->program_start_date)));
         }
     }
 
@@ -239,7 +239,7 @@ class ProgramDatesAutomation
             $days = $this->daysUntil($today, $p->program_end_date);
             $this->notify('au_pair', 'end_soon', $p, "Fin de programa en {$days} días: {$p->user?->name}",
                 "El programa de {$p->user?->name} (Au Pair) termina el {$this->d($p->program_end_date)}. Coordiná el cierre y la evaluación final desde Support. ".$this->auPairUrl($p, 'support'),
-                self::FLAG_END_SOON);
+                self::FLAG_END_SOON, $this->participantEndSoon($days, 'Au Pair', $this->d($p->program_end_date)));
         }
     }
 
@@ -251,21 +251,40 @@ class ProgramDatesAutomation
         foreach ($q->get() as $p) {
             $this->notify('au_pair', 'end_today', $p, "Fin de programa: {$p->user?->name}",
                 "El programa de {$p->user?->name} (Au Pair) terminó el {$this->d($p->program_end_date)}. Registrá la finalización desde el tab Support. ".$this->auPairUrl($p, 'support'),
-                self::FLAG_ENDED);
+                self::FLAG_ENDED, $this->participantEnded('Au Pair', $this->d($p->program_end_date)));
         }
     }
 
     // ── Helpers ────────────────────────────────────────────────────────
 
     /** Alerta a IE + marca del flag (no escribe nada en dry-run). */
-    private function notify(string $scope, string $event, ProgramProcess|AuPairProcess $p, string $title, string $message, string $flag): void
+    private function notify(string $scope, string $event, ProgramProcess|AuPairProcess $p, string $title, string $message, string $flag, ?array $participant = null): void
     {
         $this->record($scope, $event, $p, $title);
         if ($this->dryRun) {
             return;
         }
         $this->notifier->toAdmins($title, $message, self::CATEGORY);
+        if ($participant && $p->user_id) {
+            $this->notifier->toUser($p->user_id, $participant[0], $participant[1], self::CATEGORY);
+        }
         $p->markAutomation($flag);
+    }
+
+    /** Textos para el participante (mismo flag de idempotencia que la alerta a IE). */
+    private function participantStartSoon(int $days, string $program, string $date): array
+    {
+        return ["Tu programa empieza en {$days} día(s)", "Tu programa {$program} inicia el {$date}. Revisá que tengas todo listo: documentos, visa y viaje."];
+    }
+
+    private function participantEndSoon(int $days, string $program, string $date): array
+    {
+        return ["Tu programa termina en {$days} día(s)", "Tu programa {$program} termina el {$date}. Tu coordinador te contactará para el cierre."];
+    }
+
+    private function participantEnded(string $program, string $date): array
+    {
+        return ['Tu programa finalizó', "Tu programa {$program} terminó el {$date}. ¡Gracias por participar! IE te contactará para la evaluación final."];
     }
 
     private function mark(ProgramProcess|AuPairProcess $p, string $flag, string $scope, string $event, string $detail): void

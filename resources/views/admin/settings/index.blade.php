@@ -14,8 +14,8 @@
                             <i class="fas fa-cogs"></i> Configuraciones del Sistema
                         </h3>
                         <div class="btn-group">
-                            <a href="{{ route('admin.settings.index') }}" class="btn btn-primary">
-                                <i class="fas fa-edit"></i> Configuración General
+                            <a href="{{ route('admin.settings.whatsapp') }}" class="btn btn-success">
+                                <i class="fab fa-whatsapp"></i> WhatsApp de soporte
                             </a>
                             <form action="{{ route('admin.settings.clearCache') }}" method="POST" class="d-inline">
                                 @csrf

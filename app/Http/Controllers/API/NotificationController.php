@@ -96,7 +96,10 @@ class NotificationController extends Controller
             'message' => $n->message,
             'category' => $n->category,
             'type' => match ($n->category) {
-                'job_pool' => 'success', 'program_stage' => 'info', 'payment' => 'warning', 'program_dates' => 'warning', default => 'info'
+                'job_pool' => 'success', 'program_stage' => 'info', 'program_dates' => 'warning', 'visa' => 'info', 'support' => 'info',
+                'payment' => str_starts_with($n->title, 'Pago verificado') ? 'success' : 'warning',
+                'documents' => str_starts_with($n->title, 'Documento aprobado') ? 'success' : 'warning',
+                default => 'info'
             },
             'is_read' => (bool) $n->is_read,
             'created_at' => optional($n->created_at)->toIso8601String(),

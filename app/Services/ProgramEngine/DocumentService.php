@@ -170,6 +170,15 @@ class DocumentService
             'document_id' => $doc->id, 'reason' => $reason,
         ]);
 
+        // Aviso al participante en la app
+        $label = ProgramDefinition::for($doc->process->program)->requirement($doc->requirement_key)?->label ?? $doc->requirement_key;
+        $notifier = app(Notifier::class);
+        if ($status === ProgramDocument::STATUS_APPROVED) {
+            $notifier->toUser($doc->process->user_id, "Documento aprobado: {$label}", "Tu documento \"{$label}\" fue aprobado.", 'documents');
+        } else {
+            $notifier->toUser($doc->process->user_id, "Documento rechazado: {$label}", "Tu documento \"{$label}\" fue rechazado. Motivo: {$reason}. Volvé a subirlo desde la app.", 'documents');
+        }
+
         return $doc;
     }
 

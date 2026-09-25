@@ -14,6 +14,7 @@ class AuPairSupportLog extends Model
         'description',
         'log_date',
         'follow_up_number',
+        'source',
         'severity',
         'resolution',
         'resolved_at',
@@ -36,6 +37,11 @@ class AuPairSupportLog extends Model
         return $this->belongsTo(User::class, 'logged_by');
     }
 
+    public function isFromParticipant(): bool
+    {
+        return $this->source === 'participant';
+    }
+
     public function getLogTypeLabelAttribute(): string
     {
         return match($this->log_type) {
@@ -43,6 +49,7 @@ class AuPairSupportLog extends Model
             'monthly_followup' => 'Seguimiento Mensual',
             'incident' => 'Incidente',
             'experience_evaluation' => 'Evaluación de Experiencia',
+            'participant_report' => 'Reporte del participante',
             default => '-',
         };
     }
@@ -54,6 +61,7 @@ class AuPairSupportLog extends Model
             'monthly_followup' => 'primary',
             'incident' => 'danger',
             'experience_evaluation' => 'success',
+            'participant_report' => 'warning',
             default => 'secondary',
         };
     }

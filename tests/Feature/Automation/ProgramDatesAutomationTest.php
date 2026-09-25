@@ -112,6 +112,10 @@ class ProgramDatesAutomationTest extends EngineTestCase
         $this->assertNotNull($endToday->fresh()->automationFlag('ended_alert_sent_at'));
         $this->assertSame('visa', $endToday->fresh()->current_stage_key, 'el fin no finaliza automáticamente');
 
+        // El participante también recibe sus avisos (mismo flag de idempotencia)
+        $this->assertDatabaseHas('notifications', ['user_id' => $soon->user_id, 'category' => 'program_dates', 'title' => 'Tu programa empieza en 7 día(s)']);
+        $this->assertDatabaseHas('notifications', ['user_id' => $endToday->user_id, 'category' => 'program_dates', 'title' => 'Tu programa finalizó']);
+
         $count = Notification::count();
         $this->runAutomation();
         $this->assertSame($count, Notification::count());

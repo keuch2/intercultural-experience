@@ -112,10 +112,10 @@ class ProgramProcessController extends Controller
         $entries = collect($this->documents->describe($process));
         $tabData = $this->tabData($activeTab, $tabs[$activeTab], $program, $process, $definition, $entries);
         $notes = ParticipantNote::where('user_id', $user->id)->forApplication(null)->with('admin:id,name')->latest()->get();
+        $participantReports = $process->supportLogs->where('source', 'participant')->whereNull('resolution')->count();
 
         return view('admin.program-process.show', compact(
-            'program', 'definition', 'process', 'user', 'application', 'tabs', 'activeTab', 'tabData', 'envelope', 'entries', 'notes'
-        ));
+            'program', 'definition', 'process', 'user', 'application', 'tabs', 'activeTab', 'tabData', 'envelope', 'entries', 'notes', 'participantReports'));
     }
 
     /** @return array<string, array{label:string,type:string,key:string}> */
@@ -197,7 +197,7 @@ class ProgramProcessController extends Controller
             ],
             'support' => [
                 'logs' => $process->supportLogs,
-                'types' => (array) $definition->rule('support_log_types', ['arrival_followup', 'program_followup', 'incident', 'final_evaluation']),
+                'types' => $this->supportLogTypes($definition),
             ],
             'payments' => array_merge($this->paymentPlans->summary($process->application), [
                 'gates' => $definition->gates(),
@@ -523,6 +523,7 @@ class ProgramProcessController extends Controller
     {
         $this->assertOwned($program, $process);
         $visa = $process->visaProcess ?? $process->visaProcess()->create([]);
+        $appointmentBefore = $visa->appointment_date?->toDateString();
         $bools = ['visa_email_sent', 'consular_fee_paid', 'appointment_scheduled', 'documents_sent_for_appointment', 'document_check_completed', 'pre_departure_orientation_completed'];
 
         $data = $request->validate([
@@ -553,22 +554,38 @@ class ProgramProcessController extends Controller
 
         $visa->update($data);
         $this->log($program, $process, 'visa_updated', 'Proceso de visa actualizado');
+        $visa->refresh();
+        $appointmentAfter = $visa->appointment_date?->toDateString();
+        if ($appointmentAfter && $appointmentAfter !== $appointmentBefore) {
+            $when = \Carbon\Carbon::parse($appointmentAfter)->format('d/m/Y').($visa->appointment_time ? ' a las '.substr((string) $visa->appointment_time, 0, 5) : '').($visa->embassy ? ' en '.$visa->embassy : '');
+            app(\App\Services\ProgramEngine\Notifier::class)->toUser($process->user_id, $appointmentBefore ? 'Cita de visa modificada' : 'Cita de visa agendada', "Tu cita en la embajada quedó fijada para el {$when}. Revisá la sección Visa.", 'visa');
+        }
 
         return $this->toTab($program, $process, 'visa', 'Proceso de visa actualizado.');
+    }
+
+    /** Tipos de registro del programa; 'participant_report' siempre está (lo crea el participante desde la app). */
+    private function supportLogTypes(ProgramDefinition $definition): array
+    {
+        $types = (array) $definition->rule('support_log_types', ['arrival_followup', 'program_followup', 'incident', 'final_evaluation']);
+
+        return array_values(array_unique(array_merge($types, ['participant_report'])));
     }
 
     // ── Acciones: support ──────────────────────────────────────────────
     public function storeSupportLog(Request $request, Program $program, ProgramProcess $process)
     {
         $this->assertOwned($program, $process);
-        $types = (array) ProgramDefinition::for($program)->rule('support_log_types', ['arrival_followup', 'program_followup', 'incident', 'final_evaluation']);
+        $types = $this->supportLogTypes(ProgramDefinition::for($program));
         $validated = $request->validate([
             'log_type' => ['required', Rule::in($types)], 'title' => 'required|string|max:255', 'description' => 'nullable|string|max:2000',
             'log_date' => 'required|date', 'follow_up_number' => 'nullable|integer|min:1', 'severity' => 'nullable|in:low,medium,high,critical',
             'resolution' => 'nullable|string|max:2000',
         ]);
         $validated['logged_by'] = $request->user()->id;
-        $process->supportLogs()->create($validated);
+        $validated['source'] = 'staff';
+        $log = $process->supportLogs()->create($validated);
+        app(\App\Services\ProgramEngine\Notifier::class)->toUser($process->user_id, 'Nuevo seguimiento de tu coordinador', "Tu coordinador registró: \"{$log->title}\". Podés verlo en Soporte.", 'support');
 
         return $this->toTab($program, $process, 'support', 'Registro de seguimiento creado.');
     }

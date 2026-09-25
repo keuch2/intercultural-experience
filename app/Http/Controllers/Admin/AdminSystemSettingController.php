@@ -65,8 +65,8 @@ class AdminSystemSettingController extends Controller
             $request->whatsapp_welcome_message,
             'string',
             'whatsapp',
-            'Mensaje de bienvenida para WhatsApp',
-            false
+            'Mensaje inicial del participante por WhatsApp (placeholders {nombre} y {programa})',
+            true
         );
 
         return redirect()->route('admin.settings.whatsapp')

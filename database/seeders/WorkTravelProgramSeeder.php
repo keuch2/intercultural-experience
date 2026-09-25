@@ -33,7 +33,7 @@ class WorkTravelProgramSeeder extends Seeder
                 'min_english_level' => 'B1',
                 'max_english_attempts' => 3,
                 'job_pool_allow_reselect' => false,
-                'support_log_types' => ['arrival_followup', 'program_followup', 'incident', 'employer_change', 'final_evaluation'],
+                'support_log_types' => ['arrival_followup', 'program_followup', 'incident', 'employer_change', 'final_evaluation', 'participant_report'],
                 'visa_sections' => ['c1', 'c2', 'c3', 'c4', 'c5', 'c6'],
             ]),
             'onboarding' => $program->onboarding ?: [

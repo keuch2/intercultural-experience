@@ -41,6 +41,8 @@ class SettingsController extends Controller
             $publicSettings = [
                 'whatsapp_support_number' => $whatsappSettings['whatsapp_support_number'] ?? null,
                 'whatsapp_support_enabled' => $whatsappSettings['whatsapp_support_enabled'] ?? false,
+                // Mensaje inicial configurable (placeholders {nombre} y {programa} se reemplazan en la app)
+                'whatsapp_support_message' => $whatsappSettings['whatsapp_welcome_message'] ?? null,
             ];
             
             return response()->json([

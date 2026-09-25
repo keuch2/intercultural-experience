@@ -7,7 +7,7 @@ import {
   JobPoolAssignment,
   PlacementData,
 } from '../../types/programEngine';
-import { AuPairVisaProcessData, AuPairSupportLog, AuPairResource } from '../../types/aupair';
+import { AuPairVisaProcessData, AuPairSupportLog, AuPairResource, SupportReportPayload } from '../../types/aupair';
 
 interface SingleResp<T> { status: string; data: T }
 interface ListResp<T> { status: string; data: T[]; locked?: boolean; reason?: string }
@@ -80,6 +80,12 @@ class ProgramEngineService {
   async getSupportLogs(slug: string): Promise<AuPairSupportLog[]> {
     const res = await apiClient.get<ListResp<AuPairSupportLog>>(`/programs/${slug}/support-logs`);
     return res.data?.data ?? [];
+  }
+
+  /** Reporte / consulta o incidente enviado por el participante (IE recibe un aviso). */
+  async createSupportLog(slug: string, payload: SupportReportPayload): Promise<AuPairSupportLog> {
+    const res = await apiClient.post<{ data: AuPairSupportLog }>(`/programs/${slug}/support-logs`, payload);
+    return res.data.data;
   }
 
   async getResources(slug: string): Promise<AuPairResource[]> {

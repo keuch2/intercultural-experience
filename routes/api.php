@@ -280,6 +280,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/english-tests', [\App\Http\Controllers\API\ProgramEngine\EnglishTestController::class, 'store'])->name('english-tests.store');
         Route::get('/visa-process', [\App\Http\Controllers\API\ProgramEngine\VisaController::class, 'show'])->name('visa');
         Route::get('/support-logs', [\App\Http\Controllers\API\ProgramEngine\SupportLogController::class, 'index'])->name('support-logs');
+        Route::middleware('throttle:10,1')->post('/support-logs', [\App\Http\Controllers\API\ProgramEngine\SupportLogController::class, 'store'])->name('support-logs.store');
         Route::get('/resources', [\App\Http\Controllers\API\ProgramEngine\ResourceController::class, 'index'])->name('resources.index');
         Route::get('/resources/{id}/download', [\App\Http\Controllers\API\ProgramEngine\ResourceController::class, 'download'])->name('resources.download');
         // Pool de Ofertas Laborales y Job Placement
@@ -320,6 +321,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Support logs visibles al participante
         Route::get('/support-logs', [\App\Http\Controllers\API\AuPairSupportLogController::class, 'index']);
+        Route::middleware('throttle:10,1')->post('/support-logs', [\App\Http\Controllers\API\AuPairSupportLogController::class, 'store']);
 
         // Recursos descargables (guías, PDFs)
         Route::get('/resources', [\App\Http\Controllers\API\AuPairResourceController::class, 'index']);

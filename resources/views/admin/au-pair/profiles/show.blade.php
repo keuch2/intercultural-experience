@@ -155,6 +155,7 @@
                 @endphp
                 <a href="{{ route('admin.aupair.profiles.show', ['id' => $user->id, 'tab' => $tabKey]) }}"
                    class="list-group-item list-group-item-action d-flex align-items-center {{ $isActive ? 'active' : '' }}">
+                    @php $apReportsCount = ($tabKey === 'support' && $process) ? $process->supportLogs->where('source', 'participant')->whereNull('resolution')->count() : 0; @endphp
                     <span class="me-2">
                         @switch($status)
                             @case('pending')
@@ -171,6 +172,7 @@
                         @endswitch
                     </span>
                     <span class="small fw-semibold">{{ $tabLabel }}</span>
+                    @if($apReportsCount > 0)<span class="ms-auto badge bg-warning text-dark" title="Reportes de la participante sin resolver" style="font-size:.65rem">{{ $apReportsCount }}</span>@endif
                     {{-- Módulo 16: Payment percentage badge instead of X/2 --}}
                     @if($tabKey === 'payments')
                         <span class="ms-auto badge {{ $paymentPercentage >= 100 ? 'bg-success' : ($paymentPercentage > 0 ? 'bg-warning text-dark' : 'bg-danger') }}" style="font-size: 0.65rem;">

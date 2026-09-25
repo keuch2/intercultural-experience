@@ -160,6 +160,8 @@ export interface Notification {
   title: string;
   message: string;
   type: 'info' | 'success' | 'warning' | 'error';
+  /** payment | documents | visa | support | program_stage | program_dates | job_pool | general */
+  category?: string;
   is_read: boolean;
   created_at: string;
   updated_at: string;

@@ -10,6 +10,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { auPairService } from '../../services/api';
 import { AuPairSupportLog } from '../../types/aupair';
 import EmptyState from '../../components/EmptyState';
+import NewSupportReportModal from '../../components/support/NewSupportReportModal';
+import SupportWhatsAppButton from '../../components/support/SupportWhatsAppButton';
+import { SupportReportPayload } from '../../types/aupair';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -23,6 +26,7 @@ const AuPairSupportScreen: React.FC = () => {
   const [logs, setLogs] = useState<AuPairSupportLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -35,6 +39,11 @@ const AuPairSupportScreen: React.FC = () => {
 
   useEffect(() => { load(); }, [load]);
 
+  const submitReport = async (payload: SupportReportPayload) => {
+    const created = await auPairService.createSupportLog(payload);
+    setLogs(prev => [created, ...prev]);
+  };
+
   if (loading) {
     return <SafeAreaView style={styles.safe}><ActivityIndicator size="large" color="#E52224" style={{ marginTop: 80 }} /></SafeAreaView>;
   }
@@ -46,24 +55,29 @@ const AuPairSupportScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color="#222" />
         </TouchableOpacity>
         <Text style={styles.title}>Soporte</Text>
-        <View style={{ width: 24 }} />
+        <TouchableOpacity onPress={() => setShowForm(true)} accessibilityLabel="Nuevo reporte"><Ionicons name="add-circle" size={26} color="#E52224" /></TouchableOpacity>
       </View>
+      <NewSupportReportModal visible={showForm} onClose={() => setShowForm(false)} onSubmit={submitReport} />
 
       <ScrollView
         contentContainerStyle={styles.scroll}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} />}
       >
+        <SupportWhatsAppButton programName="Au Pair" />
+        <TouchableOpacity style={styles.newBtn} onPress={() => setShowForm(true)}>
+          <Ionicons name="create-outline" size={18} color="#E52224" /><Text style={styles.newBtnText}>Nuevo reporte o consulta</Text>
+        </TouchableOpacity>
         {logs.length === 0 ? (
           <EmptyState
             icon="headset-outline"
             title="Sin registros de soporte"
-            message="Cuando ya estés en USA, los seguimientos del coordinador aparecerán acá."
+            message="Acá vas a ver los seguimientos de tu coordinadora. Si necesitás algo, enviá un reporte o consulta con el botón de arriba."
           />
         ) : (
           logs.map(log => (
-            <View key={log.id} style={styles.card}>
+            <View key={log.id} style={[styles.card, log.source === 'participant' && styles.cardMine]}>
               <View style={styles.cardHead}>
-                <Text style={styles.type}>{log.log_type_label}</Text>
+                <Text style={styles.type}>{log.log_type_label}{log.source === 'participant' ? ' · Tu reporte' : ''}</Text>
                 {log.severity && (
                   <View style={[styles.sevDot, { backgroundColor: SEVERITY_COLOR[log.severity] || '#777' }]}>
                     <Text style={styles.sevText}>{(log.severity || '').toUpperCase()}</Text>
@@ -93,6 +107,9 @@ const styles = StyleSheet.create({
   title: { fontSize: 17, fontWeight: '700' },
   scroll: { padding: 16, paddingBottom: 40 },
   card: { backgroundColor: '#fff', padding: 14, borderRadius: 10, marginBottom: 10 },
+  cardMine: { borderLeftWidth: 3, borderLeftColor: '#E52224' },
+  newBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1, borderColor: '#E52224', borderRadius: 12, paddingVertical: 12, marginBottom: 14, backgroundColor: '#fff' },
+  newBtnText: { color: '#E52224', fontWeight: '800', fontSize: 14 },
   cardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   type: { fontSize: 12, fontWeight: '700', color: '#777', letterSpacing: 0.3 },
   sevDot: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 },

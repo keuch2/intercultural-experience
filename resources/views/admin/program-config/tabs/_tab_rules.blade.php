@@ -10,7 +10,7 @@
                 <div class="col-md-4"><label class="form-label d-block">Pool de ofertas</label>
                     <div class="form-check form-switch"><input type="hidden" name="job_pool_allow_reselect" value="0"><input class="form-check-input" type="checkbox" name="job_pool_allow_reselect" value="1" id="jpr" {{ !empty($rules['job_pool_allow_reselect']) ? 'checked' : '' }}><label class="form-check-label" for="jpr">Permitir re-selección por defecto</label></div></div>
                 <div class="col-md-8"><label class="form-label">Tipos de registro de Support (claves separadas por coma)</label>
-                    <input name="support_log_types" class="form-control" value="{{ implode(', ', $rules['support_log_types'] ?? ['arrival_followup','program_followup','incident','final_evaluation']) }}">
+                    <input name="support_log_types" class="form-control" value="{{ implode(', ', $rules['support_log_types'] ?? ['arrival_followup','program_followup','incident','final_evaluation','participant_report']) }}">
                     <div class="form-text">Ej.: arrival_followup, program_followup, incident, employer_change, final_evaluation</div></div>
                 <div class="col-md-4"><label class="form-label d-block">Secciones de visa visibles</label>
                     @foreach(['c1'=>'C1 Aplicación','c2'=>'C2 Cita','c3'=>'C3 Docs IE','c4'=>'C4 Resultado','c5'=>'C5 Viaje','c6'=>'C6 Orientación'] as $k => $lbl)

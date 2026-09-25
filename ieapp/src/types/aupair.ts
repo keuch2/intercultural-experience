@@ -41,6 +41,9 @@ export interface AuPairProcess {
   enrollment_date: string | null;
   program_start_date: string | null;
   program_end_date: string | null;
+  /** Familia anfitriona (match activo) */
+  matches_count?: number;
+  active_match?: Pick<AuPairMatch, 'id' | 'match_type' | 'match_type_label' | 'match_date' | 'host_city' | 'host_state'> | null;
   statuses: {
     admission: string;
     application: string;
@@ -173,6 +176,8 @@ export interface AuPairSupportLog {
   severity_label: string | null;
   resolution: string | null;
   resolved_at: string | null;
+  /** staff = coordinador; participant = enviado desde la app */
+  source?: 'staff' | 'participant';
 }
 
 // Resources
@@ -185,4 +190,12 @@ export interface AuPairResource {
   file_size_formatted: string | null;
   external_url: string | null;
   download_url: string | null;
+}
+
+/** Reporte enviado por el participante desde Soporte */
+export interface SupportReportPayload {
+  log_type: 'participant_report' | 'incident';
+  title: string;
+  description: string;
+  urgent: boolean;
 }

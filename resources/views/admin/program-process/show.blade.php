@@ -92,6 +92,7 @@
                             @else<i class="fas {{ $tab['icon'] }} {{ $isActive ? '' : 'text-muted' }}" style="font-size:.8rem"></i>@endif
                         </span>
                         <span class="small fw-semibold">{{ $tab['label'] }}</span>
+                        @if($tabKey === 'support' && ($participantReports ?? 0) > 0)<span class="ms-auto badge bg-warning text-dark" title="Reportes del participante sin resolver" style="font-size:.65rem">{{ $participantReports }}</span>@endif
                         @if($tabKey === 'payments')<span class="ms-auto badge {{ $paymentPct >= 100 ? 'bg-success' : ($paymentPct > 0 ? 'bg-warning text-dark' : 'bg-danger') }}" style="font-size:.65rem">{{ $paymentPct }}%</span>@endif
                     </a>
                 @endforeach

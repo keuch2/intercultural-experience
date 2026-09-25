@@ -5,6 +5,7 @@
     $monthlyLogs = $logs->where('log_type', 'monthly_followup');
     $incidents = $logs->where('log_type', 'incident');
     $evaluations = $logs->where('log_type', 'experience_evaluation');
+    $participantReports = $logs->where('log_type', 'participant_report');
 @endphp
 
 @if(!in_array($stages['_meta']['current_stage'] ?? '', ['support', 'completed']))
@@ -28,6 +29,7 @@
             <div class="col"><div class="border rounded p-2"><div class="h5 mb-0 fw-bold text-primary">{{ $monthlyLogs->count() }}</div><small class="text-muted">Mensuales</small></div></div>
             <div class="col"><div class="border rounded p-2"><div class="h5 mb-0 fw-bold text-danger">{{ $incidents->count() }}</div><small class="text-muted">Incidentes</small></div></div>
             <div class="col"><div class="border rounded p-2"><div class="h5 mb-0 fw-bold text-success">{{ $evaluations->count() }}</div><small class="text-muted">Evaluaciones</small></div></div>
+            <div class="col"><div class="border rounded p-2"><div class="h5 mb-0 fw-bold text-warning">{{ $participantReports->count() }}</div><small class="text-muted">Reportes</small></div></div>
         </div>
     </div>
 </div>
@@ -85,6 +87,32 @@
     </div>
 </div>
 
+{{-- Reportes enviados por la participante desde la app --}}
+<div class="card shadow-sm mb-4 border-warning">
+    <div class="card-header bg-warning bg-opacity-10"><h6 class="mb-0"><i class="fas fa-comment-dots text-warning me-1"></i> Reportes del participante</h6></div>
+    <div class="card-body">
+        @if($participantReports->count() > 0)
+        @foreach($participantReports as $log)
+        <div class="border rounded p-3 mb-2 {{ $log->severity === 'high' ? 'border-warning' : '' }}">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <strong>{{ $log->title }}</strong>
+                    @if($log->severity === 'high')<span class="badge bg-warning text-dark ms-1">Urgente</span>@endif
+                    <small class="text-muted ms-2">{{ $log->log_date->format('d/m/Y') }}</small>
+                    <span class="badge bg-warning text-dark ms-1"><i class="fas fa-mobile-alt me-1"></i>Reportado por el participante</span>
+                </div>
+                <form method="POST" action="{{ route('admin.aupair.profiles.delete-support-log', [$user->id, $log->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-trash"></i></button></form>
+            </div>
+            @if($log->description)<p class="mb-0 mt-1 small">{{ $log->description }}</p>@endif
+            @if($log->resolution)<p class="mb-0 mt-1 small text-success"><i class="fas fa-check-circle me-1"></i><strong>Resolución:</strong> {{ $log->resolution }}</p>@endif
+        </div>
+        @endforeach
+        @else
+        <p class="text-muted small mb-0"><i class="fas fa-info-circle"></i> La participante no envió reportes desde la app.</p>
+        @endif
+    </div>
+</div>
+
 {{-- Incidentes --}}
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-exclamation-triangle text-danger me-1"></i> Incidentes</h6></div>
@@ -97,6 +125,7 @@
                     <strong>{{ $log->title }}</strong>
                     @if($log->severity) <span class="badge bg-{{ $log->severity_color }} ms-1">{{ $log->severity_label }}</span> @endif
                     <small class="text-muted ms-2">{{ $log->log_date->format('d/m/Y') }}</small>
+                    @if($log->source === 'participant')<span class="badge bg-warning text-dark ms-1"><i class="fas fa-mobile-alt me-1"></i>Reportado por el participante</span>@endif
                 </div>
                 <form method="POST" action="{{ route('admin.aupair.profiles.delete-support-log', [$user->id, $log->id]) }}" class="d-inline" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-outline-secondary py-0"><i class="fas fa-trash"></i></button></form>
             </div>

@@ -9,8 +9,13 @@ class ProgramSupportLog extends Model
 {
     protected $fillable = [
         'program_process_id', 'log_type', 'title', 'description', 'log_date', 'follow_up_number',
-        'severity', 'resolution', 'resolved_at', 'logged_by',
+        'severity', 'resolution', 'resolved_at', 'logged_by', 'source',
     ];
+
+    public function isFromParticipant(): bool
+    {
+        return $this->source === 'participant';
+    }
 
     protected $casts = [
         'log_date' => 'date',

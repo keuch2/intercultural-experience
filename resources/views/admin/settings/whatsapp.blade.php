@@ -109,7 +109,7 @@
                                       required>{{ old('whatsapp_welcome_message', $whatsappSettings->where('key', 'whatsapp_welcome_message')->first()?->value) }}</textarea>
                             <div class="form-text">
                                 <i class="fas fa-info-circle"></i> 
-                                Este mensaje se enviará automáticamente cuando un usuario haga clic en el botón de WhatsApp.
+                                Es el texto con el que el participante abre la conversación desde la app. Podés usar <code>{nombre}</code> y <code>{programa}</code>, que se reemplazan automáticamente.
                                 <span class="float-end">
                                     <span id="messageCount">0</span>/500 caracteres
                                 </span>

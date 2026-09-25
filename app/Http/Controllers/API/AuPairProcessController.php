@@ -56,7 +56,7 @@ class AuPairProcessController extends Controller
             ]
         );
 
-        $process->loadMissing('application');
+        $process->loadMissing(['application', 'matchesExtended']);
 
         return response()->json([
             'status' => 'success',
@@ -77,6 +77,12 @@ class AuPairProcessController extends Controller
             'enrollment_date' => optional($p->enrollment_date)->toDateString(),
             'program_start_date' => optional($p->program_start_date)->toDateString(),
             'program_end_date' => optional($p->program_end_date)->toDateString(),
+            // Familia anfitriona (match activo) para el dashboard de la app
+            'matches_count' => $p->matchesExtended->count(),
+            'active_match' => ($m = $p->matchesExtended->firstWhere('is_active', true)) ? [
+                'id' => $m->id, 'match_type' => $m->match_type, 'match_type_label' => $m->match_type_label,
+                'match_date' => optional($m->match_date)->toDateString(), 'host_city' => $m->host_city, 'host_state' => $m->host_state,
+            ] : null,
             'statuses' => [
                 'admission' => $p->admission_status,
                 'application' => $p->application_status,

@@ -346,7 +346,7 @@ class ProgramConfigController extends Controller
             'min_english_level' => $data['min_english_level'],
             'max_english_attempts' => (int) $data['max_english_attempts'],
             'job_pool_allow_reselect' => (bool) ($data['job_pool_allow_reselect'] ?? false),
-            'support_log_types' => $types ?: ['arrival_followup', 'program_followup', 'incident', 'final_evaluation'],
+            'support_log_types' => $types ?: ['arrival_followup', 'program_followup', 'incident', 'final_evaluation', 'participant_report'],
             'visa_sections' => array_values($data['visa_sections'] ?? ['c1', 'c2', 'c3', 'c4', 'c5', 'c6']),
         ])]);
 

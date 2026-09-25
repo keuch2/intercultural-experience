@@ -15,6 +15,8 @@ export interface WhatsAppSettings {
   data: {
     whatsapp_support_number: string;
     whatsapp_support_enabled: boolean;
+    /** Mensaje inicial configurado por IE; admite {nombre} y {programa} */
+    whatsapp_support_message?: string | null;
   };
 }
 
@@ -110,6 +112,13 @@ class SettingsService {
   /**
    * Genera un mensaje de WhatsApp personalizado
    */
+  /** Mensaje de soporte: la plantilla configurada por IE con {nombre}/{programa}, o el texto por defecto. */
+  buildSupportMessage(template: string | null | undefined, ctx: { name?: string; program?: string; email?: string }): string {
+    const tpl = (template || '').trim();
+    if (!tpl) return this.generateWhatsAppMessage(ctx.name, ctx.email);
+    return tpl.replace(/\{nombre\}/gi, ctx.name || 'participante').replace(/\{programa\}/gi, ctx.program || 'IE');
+  }
+
   generateWhatsAppMessage(userName?: string, userEmail?: string): string {
     const name = userName || 'Usuario';
     const email = userEmail || '';

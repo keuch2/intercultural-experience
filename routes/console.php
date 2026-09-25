@@ -14,3 +14,10 @@ Schedule::command('programs:process-dates')
     ->timezone('America/Asuncion')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/program-dates.log'));
+
+// Recordatorios al participante (cuotas, pagos, documentos, cita de visa) → Avisos en la app.
+Schedule::command('participants:send-reminders')
+    ->dailyAt('08:00')
+    ->timezone('America/Asuncion')
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/participant-reminders.log'));
