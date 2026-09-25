@@ -92,11 +92,33 @@
                 </div>
             </div>
 
-            <!-- Ofertas Laborales -->
+            <!-- Ofertas del Pool (motor de programas) -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Ofertas del Pool ({{ $sponsor->pool_offers_count ?? $sponsor->poolOffers->count() }})</h6></div>
+                <div class="card-body">
+                    @if($sponsor->poolOffers->count() > 0)
+                        <div class="table-responsive"><table class="table table-bordered">
+                            <thead><tr><th>Programa</th><th>Puesto / Empleador</th><th>Ubicación</th><th>Posiciones</th><th>Estado</th></tr></thead>
+                            <tbody>@foreach($sponsor->poolOffers as $po)<tr>
+                                <td>{{ $po->program?->name }}</td>
+                                <td><a href="{{ $po->program ? route('admin.program.job-pool.show', [$po->program->slug, $po->id]) : '#' }}"><strong>{{ $po->display_name }}</strong></a>@if($po->job_title)<div class="small text-muted">{{ $po->employer_name }}</div>@endif</td>
+                                <td>{{ $po->city }}, {{ $po->state }}</td>
+                                <td>{{ $po->positions_available }} / {{ $po->positions_total }}</td>
+                                <td><span class="badge bg-{{ $po->status_color }}">{{ $po->status_label }}</span></td>
+                            </tr>@endforeach</tbody>
+                        </table></div>
+                    @else
+                        <p class="text-muted mb-0">Este sponsor no tiene ofertas en el Pool. Asignalo desde el formulario de la oferta.</p>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Ofertas Laborales (módulo legacy, sin uso) -->
+            @if($sponsor->jobOffers->count() > 0)
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        Ofertas Laborales ({{ $sponsor->job_offers_count }})
+                        Ofertas legacy ({{ $sponsor->job_offers_count }}) <small class="text-muted fw-normal">— módulo anterior, sin uso</small>
                     </h6>
                 </div>
                 <div class="card-body">
@@ -146,6 +168,7 @@
                     @endif
                 </div>
             </div>
+            @endif
         </div>
 
         <div class="col-lg-4">

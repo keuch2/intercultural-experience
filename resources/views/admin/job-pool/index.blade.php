@@ -21,11 +21,12 @@
 </div></div>
 <div class="card shadow-sm"><div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
-        <thead class="table-light"><tr><th>Puesto / Empleador</th><th>Ubicación</th><th class="text-center">Posiciones</th><th class="text-center">Asignados</th><th>Fecha límite</th><th>Estado</th><th>PDF</th><th>Publicada</th><th></th></tr></thead>
+        <thead class="table-light"><tr><th>Puesto / Empleador</th><th>Sponsor</th><th>Ubicación</th><th class="text-center">Posiciones</th><th class="text-center">Asignados</th><th>Fecha límite</th><th>Estado</th><th>PDF</th><th>Publicada</th><th></th></tr></thead>
         <tbody>
         @forelse($offers as $offer)
         <tr>
             <td><a href="{{ route('admin.program.job-pool.show', [$program->slug, $offer->id]) }}" class="fw-semibold text-decoration-none">{{ $offer->display_name }}</a>@if($offer->job_title)<div class="small text-muted">{{ $offer->employer_name }}</div>@else<div class="small text-warning"><i class="fas fa-exclamation-triangle me-1"></i>sin puesto cargado</div>@endif</td>
+            <td>@if($offer->sponsor)<span class="badge bg-primary bg-opacity-75" title="{{ $offer->sponsor->name }}">{{ $offer->sponsor->code }}</span>@else<small class="text-muted">—</small>@endif</td>
             <td>{{ $offer->city }}, {{ $offer->state }}</td>
             <td class="text-center"><span class="badge {{ $offer->positions_available > 0 ? 'bg-success' : 'bg-secondary' }}">{{ $offer->positions_available }}</span> <small class="text-muted">/ {{ $offer->positions_total }}</small></td>
             <td class="text-center">{{ $offer->active_assignments_count }}</td>

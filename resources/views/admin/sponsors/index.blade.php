@@ -115,7 +115,7 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-info text-dark">{{ $sponsor->job_placements_count ?? 0 }} participantes</span>
-                                        @if($sponsor->job_offers_count)<span class="badge bg-secondary ms-1">{{ $sponsor->job_offers_count }} ofertas</span>@endif
+                                        <span class="badge bg-secondary ms-1">{{ $sponsor->pool_offers_count ?? 0 }} ofertas del Pool</span>
                                     </td>
                                     <td>
                                         @if($sponsor->is_active)
@@ -145,7 +145,7 @@
                                             </form>
                                             <form action="{{ route('admin.sponsors.destroy', $sponsor->id) }}" 
                                                   method="POST" class="d-inline"
-                                                  onsubmit="return confirm('{{ ($sponsor->job_placements_count ?? 0) + $sponsor->job_offers_count > 0 ? 'Este sponsor tiene participantes asociados: se desactivará (no se borra) y dejará de ofrecerse en Job Placement. ¿Continuar?' : '¿Eliminar este sponsor?' }}')">
+                                                  onsubmit="return confirm('{{ ($sponsor->job_placements_count ?? 0) + ($sponsor->pool_offers_count ?? 0) + $sponsor->job_offers_count > 0 ? 'Este sponsor tiene participantes asociados: se desactivará (no se borra) y dejará de ofrecerse en Job Placement. ¿Continuar?' : '¿Eliminar este sponsor?' }}')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">

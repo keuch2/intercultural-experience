@@ -34,7 +34,7 @@ class SponsorController extends Controller
             $query->byCountry($request->country);
         }
 
-        $sponsors = $query->withCount(['jobOffers', 'jobPlacements'])
+        $sponsors = $query->withCount(['jobOffers', 'jobPlacements', 'poolOffers'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -82,8 +82,8 @@ class SponsorController extends Controller
      */
     public function show($id)
     {
-        $sponsor = Sponsor::with('jobOffers.hostCompany')
-            ->withCount('jobOffers')
+        $sponsor = Sponsor::with(['jobOffers.hostCompany', 'poolOffers.program'])
+            ->withCount(['jobOffers', 'jobPlacements', 'poolOffers'])
             ->findOrFail($id);
 
         return view('admin.sponsors.show', compact('sponsor'));

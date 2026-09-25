@@ -27,6 +27,10 @@ class PlacementService
         if ($assignment && $placement->job_pool_assignment_id !== $assignment->id) {
             $placement->update(['job_pool_assignment_id' => $assignment->id, 'acceptance_date' => $placement->acceptance_date ?? $assignment->selected_at?->toDateString()]);
         }
+        // Sin sponsor cargado por el staff: hereda el de la oferta seleccionada.
+        if ($assignment && ! $placement->sponsor_id && $assignment->offer?->sponsor_id) {
+            $placement->update(['sponsor_id' => $assignment->offer->sponsor_id]);
+        }
 
         return $placement;
     }
@@ -112,7 +116,7 @@ class PlacementService
         return [
             'has_assignment' => $assignment !== null,
             'offer' => $offer ? [
-                'id' => $offer->id, 'job_title' => $offer->job_title, 'requirements' => $offer->requirements, 'image_url' => $offer->image_url, 'employer_name' => $offer->employer_name, 'state' => $offer->state, 'city' => $offer->city,
+                'id' => $offer->id, 'job_title' => $offer->job_title, 'requirements' => $offer->requirements, 'image_url' => $offer->image_url, 'sponsor_name' => $offer->sponsor?->name, 'employer_name' => $offer->employer_name, 'state' => $offer->state, 'city' => $offer->city,
                 'pdf_url' => $offer->hasPdf() ? route('api.programs.job-pool.pdf', ['engineProgram' => $process->program->slug, 'id' => $offer->id]) : null,
                 'selected_at' => $assignment->selected_at?->toIso8601String(),
             ] : null,

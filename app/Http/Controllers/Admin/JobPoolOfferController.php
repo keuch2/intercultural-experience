@@ -23,7 +23,7 @@ class JobPoolOfferController extends Controller
     public function index(Request $request, Program $program)
     {
         $this->assertModule($program);
-        $query = JobPoolOffer::forProgram($program)->withCount(['activeAssignments'])->orderByDesc('created_at');
+        $query = JobPoolOffer::forProgram($program)->with('sponsor')->withCount(['activeAssignments'])->orderByDesc('created_at');
 
         if ($request->filled('status')) {
             $request->status === 'exhausted'
@@ -51,7 +51,7 @@ class JobPoolOfferController extends Controller
     {
         $this->assertModule($program);
 
-        return view('admin.job-pool.form', ['program' => $program, 'offer' => null]);
+        return view('admin.job-pool.form', ['program' => $program, 'offer' => null, 'sponsors' => $this->sponsorOptions()]);
     }
 
     public function store(Request $request, Program $program)
@@ -79,7 +79,7 @@ class JobPoolOfferController extends Controller
     {
         $this->assertOwned($program, $offer);
 
-        return view('admin.job-pool.form', compact('program', 'offer'));
+        return view('admin.job-pool.form', ['program' => $program, 'offer' => $offer, 'sponsors' => $this->sponsorOptions($offer->sponsor_id)]);
     }
 
     public function update(Request $request, Program $program, JobPoolOffer $offer)
@@ -185,10 +185,17 @@ class JobPoolOfferController extends Controller
     }
 
     // ── Helpers ────────────────────────────────────────────────────────
+    /** Sponsors activos para el desplegable (más el ya asignado aunque esté inactivo). */
+    private function sponsorOptions(?int $currentId = null)
+    {
+        return \App\Models\Sponsor::query()->where(fn ($q) => $q->where('is_active', true)->orWhere('id', $currentId))->orderBy('name')->get(['id', 'name', 'code', 'is_active']);
+    }
+
     private function validateOffer(Request $request, bool $creating): array
     {
         return $request->validate([
             'job_title' => 'required|string|max:150',
+            'sponsor_id' => 'nullable|exists:sponsors,id',
             'requirements' => 'nullable|string|max:2000',
             'employer_name' => 'required|string|max:255',
             'state' => 'required|string|max:100',

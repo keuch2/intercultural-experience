@@ -35,6 +35,7 @@ class JobPoolService
             'program_id' => $program->id,
             'job_title' => $data['job_title'] ?? null,
             'requirements' => $data['requirements'] ?? null,
+            'sponsor_id' => $data['sponsor_id'] ?? null,
             'employer_name' => $data['employer_name'],
             'state' => $data['state'],
             'city' => $data['city'],
@@ -73,6 +74,7 @@ class JobPoolService
             $offer->fill([
                 'job_title' => array_key_exists('job_title', $data) ? $data['job_title'] : $offer->job_title,
                 'requirements' => array_key_exists('requirements', $data) ? $data['requirements'] : $offer->requirements,
+                'sponsor_id' => array_key_exists('sponsor_id', $data) ? ($data['sponsor_id'] ?: null) : $offer->sponsor_id,
                 'employer_name' => $data['employer_name'] ?? $offer->employer_name,
                 'state' => $data['state'] ?? $offer->state,
                 'city' => $data['city'] ?? $offer->city,

@@ -9,7 +9,7 @@
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
         <div>
             <h3 class="mb-1"><i class="fas fa-briefcase text-primary me-2"></i>{{ $offer->display_name }} <span class="badge bg-{{ $offer->status_color }} ms-2">{{ $offer->status_label }}</span></h3>
-            @if($offer->job_title)<div class="fw-semibold"><i class="fas fa-building me-1 text-muted"></i>{{ $offer->employer_name }}</div>@else<div class="small text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Esta oferta no tiene cargado el puesto laboral: editala para completarlo.</div>@endif
+            @if($offer->job_title)<div class="fw-semibold"><i class="fas fa-building me-1 text-muted"></i>{{ $offer->employer_name }}@if($offer->sponsor) <span class="badge bg-primary bg-opacity-75 ms-2"><i class="fas fa-handshake me-1"></i>{{ $offer->sponsor->name }} ({{ $offer->sponsor->code }})</span>@endif</div>@else<div class="small text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Esta oferta no tiene cargado el puesto laboral: editala para completarlo.</div>@endif
             <div class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ $offer->city }}, {{ $offer->state }} &middot; Publicada {{ $offer->published_at?->format('d/m/Y H:i') }} @if($offer->creator)por {{ $offer->creator->name }}@endif</div>
             <div class="mt-2 d-flex gap-3">
                 <div><small class="text-muted d-block">Posiciones</small><span class="h4 mb-0">{{ $offer->positions_available }}</span> <small class="text-muted">disponibles de {{ $offer->positions_total }}</small></div>

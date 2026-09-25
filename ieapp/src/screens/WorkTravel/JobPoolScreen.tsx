@@ -127,6 +127,7 @@ const JobPoolScreen: React.FC = () => {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.jobTitle}>{item.job_title || item.employer_name}</Text>
                   {!!item.job_title && <Text style={styles.employerSub}><Ionicons name="business-outline" size={13} color="#444" /> {item.employer_name}</Text>}
+                  {!!item.sponsor && <Text style={styles.employerSub}><Ionicons name="ribbon-outline" size={13} color="#444" /> Sponsor: {item.sponsor.name}</Text>}
                   <Text style={styles.location}><Ionicons name="location-outline" size={13} color="#666" /> {item.city}, {item.state}</Text>
                   {/* La fecha límite se muestra mientras la oferta siga abierta (sin seleccionado) */}
                   {!!item.application_deadline && item.positions_available > 0 && (

@@ -182,6 +182,8 @@ export interface JobPoolOffer {
   job_title: string | null;
   requirements: string | null;
   employer_name: string;
+  /** Sponsor de la oferta (opcional) */
+  sponsor?: { id: number; name: string; code: string } | null;
   state: string;
   city: string;
   positions_available: number;
@@ -216,6 +218,7 @@ export interface PlacementData {
     job_title?: string | null;
     requirements?: string | null;
     image_url?: string | null;
+    sponsor_name?: string | null;
     employer_name: string;
     state: string;
     city: string;

@@ -18,7 +18,7 @@ class JobPoolOffer extends Model
     public const STATUS_CLOSED = 'closed';
 
     protected $fillable = [
-        'program_id', 'job_title', 'requirements', 'employer_name', 'state', 'city', 'positions_total', 'positions_available', 'application_deadline',
+        'program_id', 'sponsor_id', 'job_title', 'requirements', 'employer_name', 'state', 'city', 'positions_total', 'positions_available', 'application_deadline',
         'pdf_path', 'pdf_original_filename', 'image_path', 'image_original_filename', 'status', 'published_at', 'closed_at', 'closed_by', 'created_by', 'notes',
     ];
 
@@ -33,6 +33,11 @@ class JobPoolOffer extends Model
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class);
+    }
+
+    public function sponsor(): BelongsTo
+    {
+        return $this->belongsTo(Sponsor::class);
     }
 
     public function assignments(): HasMany

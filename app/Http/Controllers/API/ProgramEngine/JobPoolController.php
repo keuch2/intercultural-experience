@@ -103,6 +103,7 @@ class JobPoolController extends Controller
             'job_title' => $o->job_title,
             'requirements' => $o->requirements,
             'employer_name' => $o->employer_name,
+            'sponsor' => $o->sponsor ? ['id' => $o->sponsor->id, 'name' => $o->sponsor->name, 'code' => $o->sponsor->code] : null,
             'state' => $o->state,
             'city' => $o->city,
             'positions_available' => $o->positions_available,
