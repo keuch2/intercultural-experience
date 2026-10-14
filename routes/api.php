@@ -16,13 +16,6 @@ use App\Http\Controllers\API\PasswordResetController;
 
 // Authentication Routes with Rate Limiting
 // Login: 5 attempts/minute (R4.8)
-// Programas del motor: {engineProgram} acepta slug o id numérico (solo engine_enabled)
-Route::bind('engineProgram', function (string $value) {
-    return \App\Models\Program::query()
-        ->where('engine_enabled', true)
-        ->where(fn ($q) => $q->where('slug', $value)->when(is_numeric($value), fn ($q) => $q->orWhere('id', (int) $value)))
-        ->firstOrFail();
-});
 
 Route::middleware(['throttle:5,1'])->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
