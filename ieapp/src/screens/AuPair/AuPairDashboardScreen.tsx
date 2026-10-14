@@ -110,11 +110,13 @@ const AuPairDashboardScreen: React.FC = () => {
           <View>
             <Text style={styles.hello}>Hola, {user?.name?.split(' ')[0] || 'participante'} 👋</Text>
             <Text style={styles.subtitle}>Tu proceso Au Pair</Text>
-            {!!programStart && <Text style={styles.startDate}><Ionicons name="airplane-outline" size={13} color="#0369A1" /> {programStart.label}</Text>}
+            {approved && !!programStart && <Text style={styles.startDate}><Ionicons name="airplane-outline" size={13} color="#0369A1" /> {programStart.label}</Text>}
           </View>
-          <View style={styles.progressBubble}>
-            <Text style={styles.progressNumber}>{process.progress_pct}%</Text>
-          </View>
+          {approved && (
+            <View style={styles.progressBubble}>
+              <Text style={styles.progressNumber}>{process.progress_pct}%</Text>
+            </View>
+          )}
         </View>
 
         {!approved && (
@@ -130,86 +132,87 @@ const AuPairDashboardScreen: React.FC = () => {
           </View>
         )}
 
+        {/* Mientras la postulación no esté aprobada solo se muestra el aviso. */}
         {approved && (
+          <>
           <NextActionCard
             action={process.next_action}
             stage={process.current_stage}
             onPress={handleNextAction}
           />
-        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tu recorrido</Text>
-          <View style={styles.stagesWrap}>
-            <StageProgressIndicator stages={process.stages} />
-          </View>
-        </View>
-
-        {!!process.active_match && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Tu familia anfitriona</Text>
-            <TouchableOpacity style={styles.familyCard} activeOpacity={0.9} onPress={() => navigation.navigate('AuPairMatchDetail', { id: process.active_match!.id })}>
-              <Ionicons name="home" size={26} color="#E52224" />
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.familyTitle}>{[process.active_match.host_city, process.active_match.host_state].filter(Boolean).join(', ') || 'Ubicación a confirmar'}</Text>
-                <Text style={styles.familyMeta}>{process.active_match.match_type_label}{process.active_match.match_date ? ` · desde ${process.active_match.match_date.slice(8, 10)}/${process.active_match.match_date.slice(5, 7)}/${process.active_match.match_date.slice(0, 4)}` : ''}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color="#E52224" />
-            </TouchableOpacity>
+            <Text style={styles.sectionTitle}>Tu recorrido</Text>
+            <View style={styles.stagesWrap}>
+              <StageProgressIndicator stages={process.stages} />
+            </View>
           </View>
-        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Accesos rápidos</Text>
-          <View style={styles.grid}>
-            {approved && (
+          {!!process.active_match && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Tu familia anfitriona</Text>
+              <TouchableOpacity style={styles.familyCard} activeOpacity={0.9} onPress={() => navigation.navigate('AuPairMatchDetail', { id: process.active_match!.id })}>
+                <Ionicons name="home" size={26} color="#E52224" />
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={styles.familyTitle}>{[process.active_match.host_city, process.active_match.host_state].filter(Boolean).join(', ') || 'Ubicación a confirmar'}</Text>
+                  <Text style={styles.familyMeta}>{process.active_match.match_type_label}{process.active_match.match_date ? ` · desde ${process.active_match.match_date.slice(8, 10)}/${process.active_match.match_date.slice(5, 7)}/${process.active_match.match_date.slice(0, 4)}` : ''}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#E52224" />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Accesos rápidos</Text>
+            <View style={styles.grid}>
               <Shortcut
                 icon="document-text-outline"
                 label="Documentos"
                 onPress={() => (navigation as any).navigate('AuPairDocuments', { stage: 'admission' })}
               />
-            )}
-            <Shortcut
-              icon="card-outline"
-              label="Pagos"
-              onPress={() => navigation.navigate('Payments')}
-            />
-            <Shortcut
-              icon="school-outline"
-              label="Test de inglés"
-              onPress={() => navigation.navigate('AuPairEnglishTest')}
-            />
-            <Shortcut
-              icon="airplane-outline"
-              label="Visa"
-              onPress={() => navigation.navigate('AuPairVisa')}
-            />
-            <Shortcut
-              icon="home-outline"
-              label="Mi familia"
-              onPress={() => navigation.navigate('AuPairMatches')}
-            />
-            <Shortcut
-              icon="folder-open-outline"
-              label="Recursos"
-              onPress={() => navigation.navigate('AuPairResources')}
-            />
-            <Shortcut
-              icon="headset-outline"
-              label="Soporte"
-              onPress={() => navigation.navigate('AuPairSupport')}
-            />
+              <Shortcut
+                icon="card-outline"
+                label="Pagos"
+                onPress={() => navigation.navigate('Payments')}
+              />
+              <Shortcut
+                icon="school-outline"
+                label="Test de inglés"
+                onPress={() => navigation.navigate('AuPairEnglishTest')}
+              />
+              <Shortcut
+                icon="airplane-outline"
+                label="Visa"
+                onPress={() => navigation.navigate('AuPairVisa')}
+              />
+              <Shortcut
+                icon="home-outline"
+                label="Mi familia"
+                onPress={() => navigation.navigate('AuPairMatches')}
+              />
+              <Shortcut
+                icon="folder-open-outline"
+                label="Recursos"
+                onPress={() => navigation.navigate('AuPairResources')}
+              />
+              <Shortcut
+                icon="headset-outline"
+                label="Soporte"
+                onPress={() => navigation.navigate('AuPairSupport')}
+              />
+            </View>
           </View>
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Estado actual</Text>
-          <View style={styles.statusList}>
-            <StatusRow label="Pago de inscripción" value={process.flags.payment_1_verified ? 'Verificado' : 'Pendiente'} ok={process.flags.payment_1_verified} />
-            <StatusRow label="Contrato firmado" value={process.flags.contract_signed ? 'Sí' : 'Pendiente'} ok={process.flags.contract_signed} />
-            <StatusRow label="ITEP (test inglés)" value={process.flags.itep_completed ? 'Completo' : 'Pendiente'} ok={process.flags.itep_completed} />
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Estado actual</Text>
+            <View style={styles.statusList}>
+              <StatusRow label="Pago de inscripción" value={process.flags.payment_1_verified ? 'Verificado' : 'Pendiente'} ok={process.flags.payment_1_verified} />
+              <StatusRow label="Contrato firmado" value={process.flags.contract_signed ? 'Sí' : 'Pendiente'} ok={process.flags.contract_signed} />
+              <StatusRow label="ITEP (test inglés)" value={process.flags.itep_completed ? 'Completo' : 'Pendiente'} ok={process.flags.itep_completed} />
+            </View>
           </View>
-        </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

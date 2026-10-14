@@ -35,6 +35,8 @@ const HomeScreen: React.FC = () => {
 
   const process = envelope ?? auPairProcess;
   const currentStage = process?.stages?.find(s => s.key === process.current_stage);
+  // Postulación aún no aprobada: no se muestra progreso ni próxima acción.
+  const pendingApproval = process?.application_approved === false;
   const processHome = screensFor(flow).home;
   const goProcess = () => navigation.navigate(flow === 'none' ? 'PublicPrograms' : processHome);
   const available = programs.filter(p => p.is_available_in_app);
@@ -66,17 +68,17 @@ const HomeScreen: React.FC = () => {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cardProgram}>{selectedApplication.program?.name}</Text>
                   <Text style={styles.cardMeta}>
-                    {process?.application_approved === false
+                    {pendingApproval
                       ? 'Aprobación pendiente'
                       : currentStage?.label ? `Etapa: ${currentStage.label}` : (APPLICATION_STATUS_LABELS[selectedApplication.status] ?? selectedApplication.status)}
                   </Text>
                 </View>
-                <View style={styles.progressBubble}><Text style={styles.progressNumber}>{process?.progress_pct ?? selectedApplication.progress_percentage ?? 0}%</Text></View>
+                {!pendingApproval && <View style={styles.progressBubble}><Text style={styles.progressNumber}>{process?.progress_pct ?? selectedApplication.progress_percentage ?? 0}%</Text></View>}
               </View>
-              {!!process?.program_start_date && (
+              {!pendingApproval && !!process?.program_start_date && (
                 <Text style={styles.startDate}><Ionicons name="airplane-outline" size={13} color="#0369A1" /> {describeProgramStart(process.program_start_date)?.label}</Text>
               )}
-              {process?.next_action?.label && (
+              {!pendingApproval && process?.next_action?.label && (
                 <View style={styles.nextAction}><Ionicons name="flash" size={14} color="#E52224" /><Text style={styles.nextActionText} numberOfLines={2}>{process.next_action.label}</Text></View>
               )}
               <View style={styles.cardCta}><Text style={styles.cardCtaText}>Ver mi proceso</Text><Ionicons name="arrow-forward" size={16} color="#E52224" /></View>

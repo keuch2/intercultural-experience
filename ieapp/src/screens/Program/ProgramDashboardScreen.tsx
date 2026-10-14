@@ -61,6 +61,8 @@ const ProgramDashboardScreen: React.FC = () => {
   const currentStage = envelope.stages[currentIdx];
   const programStart = describeProgramStart(envelope.program_start_date);
   const modules = Object.entries(envelope.modules).filter(([, m]) => m.enabled && m.implemented);
+  // Mientras la postulación no esté aprobada solo se muestra el aviso de aprobación pendiente.
+  const pendingApproval = envelope.status === 'active' && !approved;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -69,16 +71,16 @@ const ProgramDashboardScreen: React.FC = () => {
           <View style={{ flex: 1 }}>
             <Text style={styles.hello}>Hola, {user?.name?.split(' ')[0] || 'participante'} 👋</Text>
             <Text style={styles.subtitle}>{envelope.program.name}</Text>
-            {currentStage && <Text style={[styles.stageChip, { color }]}>● {currentStage.label}</Text>}
-            {!!programStart && <Text style={styles.startDate}><Ionicons name="airplane-outline" size={13} color="#0369A1" /> {programStart.label}</Text>}
+            {!pendingApproval && currentStage && <Text style={[styles.stageChip, { color }]}>● {currentStage.label}</Text>}
+            {!pendingApproval && !!programStart && <Text style={styles.startDate}><Ionicons name="airplane-outline" size={13} color="#0369A1" /> {programStart.label}</Text>}
           </View>
-          <View style={[styles.progressBubble, { borderColor: color }]}><Text style={[styles.progressNumber, { color }]}>{envelope.progress_pct}%</Text></View>
+          {!pendingApproval && <View style={[styles.progressBubble, { borderColor: color }]}><Text style={[styles.progressNumber, { color }]}>{envelope.progress_pct}%</Text></View>}
         </View>
 
         {envelope.status === 'cancelled' && (
           <View style={[styles.banner, styles.bannerDanger]}><Ionicons name="close-circle-outline" size={22} color="#991B1B" /><View style={{ flex: 1, marginLeft: 10 }}><Text style={[styles.bannerTitle, { color: '#991B1B' }]}>Proceso cancelado</Text><Text style={[styles.bannerText, { color: '#991B1B' }]}>Contactá al equipo IE para más información.</Text></View></View>
         )}
-        {envelope.status === 'active' && !approved && (
+        {pendingApproval && (
           <View style={styles.banner}>
             <Ionicons name="time-outline" size={22} color="#92400E" />
             <View style={{ flex: 1, marginLeft: 10 }}>
@@ -95,37 +97,41 @@ const ProgramDashboardScreen: React.FC = () => {
           <NextActionCard action={envelope.next_action} color={color} onPress={(a: EngineNextAction) => go(a.screen, a.params)} />
         )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tu recorrido</Text>
-          <View style={styles.stagesWrap}><StageProgress stages={envelope.stages} /></View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Accesos rápidos</Text>
-          <View style={styles.grid}>
-            {approved && <Shortcut icon="document-text-outline" label="Documentos" onPress={() => navigation.navigate('ProgramDocuments')} />}
-            <Shortcut icon="card-outline" label="Pagos" onPress={() => navigation.navigate('Payments')} />
-            {modules.map(([key, m]) => {
-              const screen = MODULE_SCREENS[key] || m.screen;
-              const locked = key === 'job_pool' && !m.access;
-              return (
-                <Shortcut key={key} icon={(MODULE_ICONS[key] as any) || 'apps-outline'} label={m.label} badge={locked ? 'lock-closed' : undefined} onPress={() => go(screen)} />
-              );
-            })}
-          </View>
-        </View>
-
-        {(envelope.gates.length > 0 || envelope.checklist.length > 0) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Estado actual</Text>
-            <View style={styles.statusList}>
-              {envelope.gates.map(g => <StatusRow key={g.key} label={g.label} value={g.verified ? 'Verificado' : 'Pendiente'} ok={g.verified} />)}
-              {envelope.checklist.filter(c => c.stage_key === envelope.current_stage || !c.stage_key).map(c => <StatusRow key={c.key} label={c.label} value={c.done ? 'Completo' : 'Pendiente'} ok={c.done} />)}
-              {envelope.modules.english_test?.enabled && (
-                <StatusRow label={`Inglés (mín. ${envelope.modules.english_test.min_level})`} value={envelope.modules.english_test.best_level || 'Sin evaluar'} ok={!!envelope.modules.english_test.meets_minimum} />
-              )}
+        {!pendingApproval && (
+          <>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Tu recorrido</Text>
+              <View style={styles.stagesWrap}><StageProgress stages={envelope.stages} /></View>
             </View>
-          </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Accesos rápidos</Text>
+              <View style={styles.grid}>
+                {approved && <Shortcut icon="document-text-outline" label="Documentos" onPress={() => navigation.navigate('ProgramDocuments')} />}
+                <Shortcut icon="card-outline" label="Pagos" onPress={() => navigation.navigate('Payments')} />
+                {modules.map(([key, m]) => {
+                  const screen = MODULE_SCREENS[key] || m.screen;
+                  const locked = key === 'job_pool' && !m.access;
+                  return (
+                    <Shortcut key={key} icon={(MODULE_ICONS[key] as any) || 'apps-outline'} label={m.label} badge={locked ? 'lock-closed' : undefined} onPress={() => go(screen)} />
+                  );
+                })}
+              </View>
+            </View>
+
+            {(envelope.gates.length > 0 || envelope.checklist.length > 0) && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Estado actual</Text>
+                <View style={styles.statusList}>
+                  {envelope.gates.map(g => <StatusRow key={g.key} label={g.label} value={g.verified ? 'Verificado' : 'Pendiente'} ok={g.verified} />)}
+                  {envelope.checklist.filter(c => c.stage_key === envelope.current_stage || !c.stage_key).map(c => <StatusRow key={c.key} label={c.label} value={c.done ? 'Completo' : 'Pendiente'} ok={c.done} />)}
+                  {envelope.modules.english_test?.enabled && (
+                    <StatusRow label={`Inglés (mín. ${envelope.modules.english_test.min_level})`} value={envelope.modules.english_test.best_level || 'Sin evaluar'} ok={!!envelope.modules.english_test.meets_minimum} />
+                  )}
+                </View>
+              </View>
+            )}
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
