@@ -11,10 +11,13 @@ import ScreenHeader from '../../components/program/ScreenHeader';
 import { downloadAndOpen } from '../../utils/downloadFile';
 import StatusPill from '../../components/aupair/StatusPill';
 
-const STATUS_STEPS = ['pending', 'in_progress', 'documents_complete', 'ds_shipped', 'completed'];
-const STATUS_COLOR: Record<string, string> = { pending: 'missing', in_progress: 'in_progress', documents_complete: 'pending', ds_shipped: 'in_progress', completed: 'complete', cancelled: 'rejected' };
+const STATUS_COLOR: Record<string, string> = { pending: 'missing', in_progress: 'in_progress', job_accepted: 'pending', documents_complete: 'pending', ds_shipped: 'pending', completed: 'complete', cancelled: 'rejected' };
+const INTERVIEW_COLOR: Record<string, string> = { pending: 'missing', approved: 'complete', not_approved: 'rejected', not_applicable: 'pending' };
 
-/** Job Placement (solo lectura): la oferta asignada, fechas, Sponsor y datos SEVIS / DS-2019. */
+/**
+ * Job Placement (solo lectura): la oferta elegida, las entrevistas (sponsor y empleador),
+ * la aceptación laboral, el Sponsor y los datos SEVIS / DS-2019.
+ */
 const JobPlacementScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { slug } = useProgram();
@@ -35,7 +38,7 @@ const JobPlacementScreen: React.FC = () => {
 
   const offer = data?.offer;
   const p = data?.placement;
-  const stepIdx = p ? STATUS_STEPS.indexOf(p.status) : -1;
+  const formatDate = (iso?: string | null) => (iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : null);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -58,10 +61,11 @@ const JobPlacementScreen: React.FC = () => {
                 {p && <StatusPill status={STATUS_COLOR[p.status] || 'missing'} label={p.status_label} small />}
               </View>
               <View style={styles.grid}>
-                <Field label="Fecha de aceptación" value={p?.acceptance_date || offer.selected_at?.slice(0, 10)} />
+                <Field label="Fecha de elección de oferta" value={formatDate(p?.offer_selected_date ?? p?.acceptance_date ?? offer.selected_at)} />
+                <Field label="Aceptación laboral" value={formatDate(p?.job_accepted_at)} />
                 <Field label="Sponsor" value={p?.sponsor} />
-                <Field label="Inicio del programa" value={p?.program_start_date} />
-                <Field label="Fin del programa" value={p?.program_end_date} />
+                <Field label="Inicio del programa" value={formatDate(p?.program_start_date)} />
+                <Field label="Fin del programa" value={formatDate(p?.program_end_date)} />
               </View>
               {offer.pdf_url && (
                 <TouchableOpacity style={styles.pdfBtn} onPress={() => downloadAndOpen(offer.pdf_url!, `oferta-${offer.job_title || offer.employer_name}.pdf`, 'application/pdf')}>
@@ -70,33 +74,48 @@ const JobPlacementScreen: React.FC = () => {
               )}
             </View>
 
+            {p?.interviews && (
+              <View style={styles.card}>
+                <Text style={styles.sectionTitle}>Entrevistas</Text>
+                {([['sponsor', 'Entrevista con el sponsor'], ['employer', 'Entrevista con el empleador']] as const).map(([k, label]) => {
+                  const iv = p.interviews![k];
+                  return (
+                    <View key={k} style={styles.interviewRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.interviewLabel}>{label}</Text>
+                        <Text style={styles.interviewDate}>{iv.date ? formatDate(iv.date) : 'Fecha a confirmar'}</Text>
+                      </View>
+                      <StatusPill status={INTERVIEW_COLOR[iv.result] || 'missing'} label={iv.result_label || 'Pendiente'} small />
+                    </View>
+                  );
+                })}
+                <Text style={styles.interviewHint}>Tu aceptación laboral se confirma cuando superás las entrevistas.</Text>
+              </View>
+            )}
+
             <View style={styles.card}>
               <Text style={styles.sectionTitle}>Estado del placement</Text>
-              {STATUS_STEPS.map((s, i) => {
-                const done = stepIdx >= i && p?.status !== 'cancelled';
-                const labels: Record<string, string> = { pending: 'Oferta asignada', in_progress: 'Sponsor y documentación en proceso', documents_complete: 'Documentación del Sponsor completa', ds_shipped: 'DS-2019 enviado', completed: 'DS-2019 recibido · Placement completo' };
+              {(p?.steps ?? []).map(step => {
+                const done = step.done && p?.status !== 'cancelled';
                 return (
-                  <View key={s} style={styles.stepRow}>
+                  <View key={step.key} style={styles.stepRow}>
                     <Ionicons name={done ? 'checkmark-circle' : 'ellipse-outline'} size={20} color={done ? '#10B981' : '#D1D5DB'} />
-                    <Text style={[styles.stepText, done && styles.stepDone]}>{labels[s]}</Text>
+                    <Text style={[styles.stepText, done && styles.stepDone]}>{step.label}</Text>
                   </View>
                 );
               })}
               {p?.status === 'cancelled' && <Text style={styles.cancelled}>Placement cancelado. Contactá al equipo IE.</Text>}
             </View>
 
-            {(p?.sevis_number || p?.ds2019_number || p?.ds_tracking_number) && (
+            {(p?.sevis_number || p?.ds2019_number) && (
               <View style={styles.card}>
                 <Text style={styles.sectionTitle}>SEVIS y DS-2019</Text>
                 <View style={styles.grid}>
                   <Field label="Número SEVIS" value={p?.sevis_number} mono />
                   <Field label="Número DS-2019" value={p?.ds2019_number} mono />
-                  <Field label="Envío del DS-2019" value={p?.ds_tracking_number ? `${p.ds_tracking_carrier ? p.ds_tracking_carrier + ' · ' : ''}${p.ds_tracking_number}` : null} mono />
-                  <Field label="Fecha de recepción" value={p?.ds_received_at} />
                 </View>
               </View>
             )}
-            {p?.terms_accepted_at && <Text style={styles.terms}><Ionicons name="checkmark" size={12} color="#10B981" /> Términos y condiciones del Sponsor aceptados el {p.terms_accepted_at.slice(0, 10)}.</Text>}
           </>
         )}
       </ScrollView>
@@ -130,7 +149,10 @@ const styles = StyleSheet.create({
   stepText: { color: '#9CA3AF', flex: 1 },
   stepDone: { color: '#222', fontWeight: '600' },
   cancelled: { color: '#991B1B', marginTop: 8, fontWeight: '600' },
-  terms: { color: '#555', fontSize: 12, marginTop: 4 },
+  interviewRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f4f4f5' },
+  interviewLabel: { color: '#222', fontWeight: '600' },
+  interviewDate: { color: '#666', fontSize: 12, marginTop: 2 },
+  interviewHint: { color: '#777', fontSize: 12, marginTop: 8 },
 });
 
 export default JobPlacementScreen;

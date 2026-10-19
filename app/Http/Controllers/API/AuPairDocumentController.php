@@ -223,6 +223,22 @@ class AuPairDocumentController extends Controller
         return $disk->download($doc->file_path, $doc->original_filename ?? basename($doc->file_path));
     }
 
+    /** Contrato cargado por IE (visualizar / descargar desde la app). */
+    public function contract(Request $request)
+    {
+        [$process, $err] = $this->resolveProcess($request);
+        if ($err) {
+            return $err;
+        }
+
+        $disk = Storage::disk('public');
+        if (! $process->contract_file_path || ! $disk->exists($process->contract_file_path)) {
+            return response()->json(['status' => 'error', 'message' => 'Tu contrato todavía no está disponible.'], 404);
+        }
+
+        return $disk->download($process->contract_file_path, $process->contract_original_filename ?? basename($process->contract_file_path));
+    }
+
     /**
      * Devuelve un item por tipo de documento del stage, combinando config + uploads.
      */

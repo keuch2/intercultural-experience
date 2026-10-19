@@ -14,6 +14,8 @@
     </div>
 </div>
 
+@include('admin.partials.support-reports._dashboard')
+
 {{-- Módulo 13: Differentiated user type metrics --}}
 <!-- Dashboard Cards -->
 <div class="row mb-4">

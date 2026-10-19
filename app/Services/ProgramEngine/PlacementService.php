@@ -3,6 +3,7 @@
 namespace App\Services\ProgramEngine;
 
 use App\Models\JobPlacement;
+use App\Models\JobPoolAssignment;
 use App\Models\ProgramDocument;
 use App\Models\ProgramProcess;
 use App\Models\User;
@@ -35,17 +36,77 @@ class PlacementService
         return $placement;
     }
 
+    /** Nueva oferta asignada (primera vez o cambio): fecha de elección, entrevistas a cero y sponsor de la oferta. */
+    public function attachAssignment(ProgramProcess $process, JobPoolAssignment $assignment): JobPlacement
+    {
+        $placement = JobPlacement::firstOrNew(['program_process_id' => $process->id]);
+        $isChange = $placement->exists && $placement->job_pool_assignment_id && $placement->job_pool_assignment_id !== $assignment->id;
+        $offerSponsor = $assignment->offer?->sponsor_id;
+
+        $placement->fill([
+            'job_pool_assignment_id' => $assignment->id,
+            'acceptance_date' => $assignment->selected_at?->toDateString() ?? today()->toDateString(),
+            'sponsor_interview_date' => null, 'sponsor_interview_result' => JobPlacement::INTERVIEW_PENDING,
+            'employer_interview_date' => null, 'employer_interview_result' => JobPlacement::INTERVIEW_PENDING,
+            'job_accepted_at' => null,
+            // Cambio de oferta: manda el sponsor de la nueva oferta; primera vez: solo si IE no cargó uno.
+            'sponsor_id' => $isChange ? ($offerSponsor ?? $placement->sponsor_id) : ($placement->sponsor_id ?? $offerSponsor),
+        ]);
+        if (in_array($placement->status, ['completed', 'cancelled'], true) || ! $placement->exists) {
+            $placement->status = 'pending';
+        }
+        $placement->status = $this->deriveStatus($process, $placement, ignoreManual: true);
+        $placement->save();
+
+        return $placement;
+    }
+
+    /** La asignación se liberó: el placement queda sin oferta hasta la próxima selección. */
+    public function detachAssignment(ProgramProcess $process, JobPoolAssignment $assignment): void
+    {
+        $placement = JobPlacement::where('program_process_id', $process->id)->first();
+        if (! $placement || $placement->job_pool_assignment_id !== $assignment->id) {
+            return;
+        }
+        $placement->job_pool_assignment_id = null;
+        $placement->job_accepted_at = null;
+        $placement->status = $this->deriveStatus($process, $placement, ignoreManual: true);
+        $placement->save();
+    }
+
     public function update(ProgramProcess $process, array $data, ?User $actor = null): JobPlacement
+    {
+        return $this->updateWithOutcome($process, $data, $actor)['placement'];
+    }
+
+    /** @return array{placement: JobPlacement, released: bool}  released = una entrevista no aprobada liberó la oferta */
+    public function updateWithOutcome(ProgramProcess $process, array $data, ?User $actor = null): array
     {
         $placement = $this->ensure($process);
         $placement->fill($data);
-        if (($data['terms_accepted'] ?? null) !== null) {
-            $placement->terms_accepted_at = $data['terms_accepted'] ? ($placement->terms_accepted_at ?? now()) : null;
+        // Aceptación laboral: con las entrevistas superadas se registra la fecha (IE puede corregirla);
+        // si dejan de estar superadas se borra, salvo que IE la cargue a mano en este mismo guardado.
+        if ($placement->interviewsPassed()) {
+            $placement->job_accepted_at ??= today();
+        } elseif (! $placement->isDirty('job_accepted_at')) {
+            $placement->job_accepted_at = null;
         }
         if (empty($data['status'])) {
-            $placement->status = $this->deriveStatus($process, $placement);
+            $placement->status = $this->deriveStatus($process, $placement, ignoreManual: true);
         }
         $placement->save();
+
+        // Entrevista no aprobada: se libera la oferta y el participante vuelve al pool.
+        $released = false;
+        if ($placement->interviewFailed()) {
+            $assignment = $process->activeJobAssignment()->first();
+            if ($assignment) {
+                $who = $placement->sponsor_interview_result === JobPlacement::INTERVIEW_NOT_APPROVED ? 'sponsor' : 'empleador';
+                app(JobPoolService::class)->release($assignment, $actor, "Entrevista con el {$who} no aprobada", JobPoolAssignment::STATUS_RELEASED, reenablePool: true);
+                $released = true;
+                $placement->refresh();
+            }
+        }
 
         // La fecha de inicio/fin del programa vive en el proceso (fuente para API y app);
         // la pestaña Job Placement es solo otro lugar desde donde cargarla.
@@ -59,7 +120,7 @@ class PlacementService
             $process->update($sync);
         }
 
-        return $placement;
+        return ['placement' => $placement, 'released' => $released];
     }
 
     /** Documentos del Sponsor aprobados + SEVIS + DS-2019 cargados. */
@@ -85,25 +146,45 @@ class PlacementService
         return $required->every(fn ($req) => $docs->where('requirement_key', $req->key)->count() >= max(1, (int) $req->min_count));
     }
 
-    public function deriveStatus(ProgramProcess $process, JobPlacement $placement): string
+    /**
+     * Pasos: Oferta elegida (entrevistas) → Aceptación laboral → Documentación del Sponsor
+     * completa → DS-2019 emitido (SEVIS + DS-2019 cargados) = Placement completo.
+     */
+    public function deriveStatus(ProgramProcess $process, JobPlacement $placement, bool $ignoreManual = false): string
     {
-        if (in_array($placement->status, ['completed', 'cancelled'], true)) {
+        if (! $ignoreManual && in_array($placement->status, ['completed', 'cancelled'], true)) {
             return $placement->status;
         }
-        if ($placement->ds_received_at) {
+        if ($placement->status === 'cancelled') {
+            return 'cancelled';
+        }
+        if (! $placement->job_pool_assignment_id) {
+            return 'pending';
+        }
+        $docs = $this->documentsComplete($process);
+        if ($docs && $placement->sevis_number && $placement->ds2019_number) {
             return 'completed';
         }
-        if ($placement->ds_tracking_number) {
-            return 'ds_shipped';
-        }
-        if ($placement->sponsor_id && $this->documentsComplete($process)) {
-            return 'documents_complete';
-        }
-        if ($placement->sponsor_id || $placement->job_pool_assignment_id) {
+        if (! $placement->job_accepted_at) {
             return 'in_progress';
         }
 
-        return 'pending';
+        return $docs ? 'documents_complete' : 'job_accepted';
+    }
+
+    /** Pasos para la app y el panel (clave, etiqueta, hecho). */
+    public function steps(ProgramProcess $process, ?JobPlacement $placement): array
+    {
+        $hasOffer = (bool) $placement?->job_pool_assignment_id;
+        $accepted = $hasOffer && (bool) $placement?->job_accepted_at;
+        $docs = $accepted && $this->documentsComplete($process);
+
+        return [
+            ['key' => 'offer_selected', 'label' => 'Oferta elegida', 'done' => $hasOffer],
+            ['key' => 'job_accepted', 'label' => 'Entrevistas aprobadas · aceptación laboral', 'done' => $accepted],
+            ['key' => 'documents_complete', 'label' => 'Documentación del Sponsor completa', 'done' => $docs],
+            ['key' => 'completed', 'label' => 'DS-2019 emitido · Placement completo', 'done' => $docs && $placement?->sevis_number && $placement?->ds2019_number],
+        ];
     }
 
     /** Payload para la app (solo lectura). */
@@ -124,7 +205,15 @@ class PlacementService
                 'status' => $placement->status,
                 'status_label' => $placement->status_label,
                 'sponsor' => $placement->sponsor?->name,
+                // acceptance_date = fecha de elección de la oferta (se mantiene la clave para apps viejas)
                 'acceptance_date' => $placement->acceptance_date?->toDateString(),
+                'offer_selected_date' => $placement->acceptance_date?->toDateString(),
+                'job_accepted_at' => $placement->job_accepted_at?->toDateString(),
+                'interviews' => [
+                    'sponsor' => ['date' => $placement->sponsor_interview_date?->toDateString(), 'result' => $placement->sponsor_interview_result, 'result_label' => JobPlacement::INTERVIEW_RESULTS[$placement->sponsor_interview_result] ?? null],
+                    'employer' => ['date' => $placement->employer_interview_date?->toDateString(), 'result' => $placement->employer_interview_result, 'result_label' => JobPlacement::INTERVIEW_RESULTS[$placement->employer_interview_result] ?? null],
+                ],
+                'steps' => $this->steps($process, $placement),
                 'program_start_date' => $placement->program_start_date?->toDateString(),
                 'program_end_date' => $placement->program_end_date?->toDateString(),
                 'terms_accepted_at' => $placement->terms_accepted_at?->toIso8601String(),

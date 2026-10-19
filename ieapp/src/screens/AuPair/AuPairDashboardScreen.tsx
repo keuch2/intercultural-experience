@@ -97,7 +97,7 @@ const AuPairDashboardScreen: React.FC = () => {
 
   const approved = process.application_approved;
 
-  const programStart = describeProgramStart(process.program_start_date);
+  const programStart = describeProgramStart(process.program_start_date, process.program_end_date);
 
 
   return (
@@ -203,14 +203,6 @@ const AuPairDashboardScreen: React.FC = () => {
             </View>
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Estado actual</Text>
-            <View style={styles.statusList}>
-              <StatusRow label="Pago de inscripción" value={process.flags.payment_1_verified ? 'Verificado' : 'Pendiente'} ok={process.flags.payment_1_verified} />
-              <StatusRow label="Contrato firmado" value={process.flags.contract_signed ? 'Sí' : 'Pendiente'} ok={process.flags.contract_signed} />
-              <StatusRow label="ITEP (test inglés)" value={process.flags.itep_completed ? 'Completo' : 'Pendiente'} ok={process.flags.itep_completed} />
-            </View>
-          </View>
           </>
         )}
       </ScrollView>
@@ -223,20 +215,6 @@ const Shortcut: React.FC<{ icon: keyof typeof Ionicons.glyphMap; label: string; 
     <Ionicons name={icon} size={24} color="#E52224" />
     <Text style={styles.shortcutLabel}>{label}</Text>
   </TouchableOpacity>
-);
-
-const StatusRow: React.FC<{ label: string; value: string; ok: boolean }> = ({ label, value, ok }) => (
-  <View style={styles.statusRow}>
-    <Text style={styles.statusLabel}>{label}</Text>
-    <View style={styles.statusRight}>
-      <Ionicons
-        name={ok ? 'checkmark-circle' : 'time-outline'}
-        size={16}
-        color={ok ? '#10B981' : '#F59E0B'}
-      />
-      <Text style={[styles.statusValue, { color: ok ? '#065F46' : '#92400E' }]}>{value}</Text>
-    </View>
-  </View>
 );
 
 const styles = StyleSheet.create({
@@ -287,19 +265,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   shortcutLabel: { marginTop: 6, fontWeight: '600', color: '#333' },
-  statusList: { backgroundColor: '#fff', borderRadius: 12, paddingVertical: 4 },
-  statusRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f4f4f5',
-  },
-  statusLabel: { color: '#444' },
-  statusRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  statusValue: { fontWeight: '600', fontSize: 13 },
 });
 
 export default AuPairDashboardScreen;

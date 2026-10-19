@@ -169,6 +169,30 @@ class JobPoolOfferController extends Controller
         return back()->with('success', 'Asignación liberada. El cupo volvió a estar disponible y el participante fue notificado.');
     }
 
+    /** "Trabajo cancelado": libera, rehabilita el pool del participante e IE decide qué pasa con la oferta. */
+    public function cancelJob(Request $request, Program $program, JobPoolOffer $offer, JobPoolAssignment $assignment)
+    {
+        $this->assertOwned($program, $offer);
+        abort_unless($assignment->job_pool_offer_id === $offer->id, 404);
+        $data = $request->validate(['reason' => 'nullable|string|max:500', 'offer_action' => 'required|in:keep,pause,delete']);
+        try {
+            $this->pool->cancelJob($assignment, $request->user(), $data['reason'] ?? null, $data['offer_action']);
+        } catch (JobPoolException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+        // Lo que efectivamente pasó (eliminar una oferta con otros asignados la deja suspendida).
+        $fresh = JobPoolOffer::find($offer->id);
+        $what = match (true) {
+            $fresh === null => 'La oferta fue eliminada',
+            $fresh->status === JobPoolOffer::STATUS_PAUSED => $data['offer_action'] === 'delete'
+                ? 'La oferta tiene otros participantes asignados: quedó suspendida en lugar de eliminarse'
+                : 'La oferta quedó suspendida',
+            default => 'La oferta sigue activa con el cupo devuelto',
+        };
+
+        return back()->with('success', "Trabajo cancelado registrado. {$what} y el participante puede volver a elegir en el Pool.");
+    }
+
     public function reassign(Request $request, Program $program, JobPoolOffer $offer, JobPoolAssignment $assignment)
     {
         $this->assertOwned($program, $offer);

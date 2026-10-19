@@ -105,6 +105,7 @@
             </div>
             @if($log->description)<p class="mb-0 mt-1 small">{{ $log->description }}</p>@endif
             @if($log->resolution)<p class="mb-0 mt-1 small text-success"><i class="fas fa-check-circle me-1"></i><strong>Resolución:</strong> {{ $log->resolution }}</p>@endif
+            @include('admin.partials.support-reports._actions', ['log' => $log, 'kind' => 'au-pair'])
         </div>
         @endforeach
         @else
@@ -131,6 +132,7 @@
             </div>
             @if($log->description)<p class="mb-0 mt-1 small">{{ $log->description }}</p>@endif
             @if($log->resolution)<p class="mb-0 mt-1 small text-success"><i class="fas fa-check-circle me-1"></i><strong>Resolución:</strong> {{ $log->resolution }}</p>@endif
+            @include('admin.partials.support-reports._actions', ['log' => $log, 'kind' => 'au-pair'])
         </div>
         @endforeach
         @else
@@ -279,3 +281,5 @@ document.getElementById('supportLogType')?.addEventListener('change', function()
     document.getElementById('severityField').style.display = this.value === 'incident' ? '' : 'none';
 });
 </script>
+
+@include('admin.partials.support-reports._resolve_modal')

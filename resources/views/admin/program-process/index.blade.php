@@ -3,6 +3,7 @@
 @section('title', 'Participantes — ' . $program->name)
 
 @section('content')
+@php $hasPool = $definition->hasModule(\App\Services\ProgramEngine\ModuleCatalog::JOB_POOL); @endphp
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">{{ $program->name }} — Participantes</h2>
@@ -52,15 +53,33 @@
                 <select name="english_level" class="form-select form-select-sm"><option value="">Todos</option>@foreach(['A1','A2','B1','B2','C1','C2'] as $l)<option value="{{ $l }}" {{ request('english_level') === $l ? 'selected' : '' }}>{{ $l }}</option>@endforeach</select></div>
             <div class="col-md-2"><label class="form-label small text-muted mb-1">Pago verificado</label>
                 <select name="gate" class="form-select form-select-sm"><option value="">—</option>@foreach($definition->gates() as $gate)<option value="{{ $gate->key }}" {{ request('gate') === $gate->key ? 'selected' : '' }}>{{ $gate->label }}</option>@endforeach</select></div>
+            @if($hasPool)
+            <div class="col-md-2"><label class="form-label small text-muted mb-1">Pool de ofertas</label>
+                <select name="pool" class="form-select form-select-sm"><option value="">Todos</option>@foreach(['disabled' => 'Sin habilitar', 'enabled' => 'Habilitado', 'assigned' => 'Con oferta asignada'] as $k => $l)<option value="{{ $k }}" {{ request('pool') === $k ? 'selected' : '' }}>{{ $l }}</option>@endforeach</select></div>
+            <div class="col-md-2"><label class="form-label small text-muted mb-1">Aprobación</label>
+                <select name="approval" class="form-select form-select-sm"><option value="">Todas</option><option value="approved" {{ request('approval') === 'approved' ? 'selected' : '' }}>Aprobada</option><option value="pending" {{ request('approval') === 'pending' ? 'selected' : '' }}>Pendiente</option></select></div>
+            @endif
+            <div class="col-md-1"><label class="form-label small text-muted mb-1">Por página</label>
+                <select name="per_page" class="form-select form-select-sm">@foreach([20, 50, 100, 200] as $n)<option value="{{ $n }}" {{ (int) request('per_page', 20) === $n ? 'selected' : '' }}>{{ $n }}</option>@endforeach</select></div>
             <div class="col-md-1"><button type="submit" class="btn btn-sm btn-primary w-100"><i class="fas fa-search"></i></button></div>
         </form>
     </div>
 </div>
 
+@if($hasPool)
+<form method="POST" action="{{ route('admin.program.participants.bulk-pool-access', $program->slug) }}" id="bulkPoolForm">@csrf
+<div class="card shadow-sm mb-2 d-none" id="bulkPoolBar"><div class="card-body py-2 d-flex flex-wrap align-items-center gap-2">
+    <strong><span id="bulkPoolCount">0</span> seleccionado(s)</strong>
+    <button type="submit" name="action" value="enable" class="btn btn-sm btn-success"><i class="fas fa-unlock me-1"></i> Habilitar acceso al Pool</button>
+    <button type="submit" name="action" value="disable" class="btn btn-sm btn-outline-danger"><i class="fas fa-lock me-1"></i> Deshabilitar acceso</button>
+    <small class="text-muted ms-auto">Solo se pueden seleccionar procesos activos con la postulación aprobada. Al habilitar se omiten los que ya tienen oferta.</small>
+</div></div>
+</form>
+@endif
 <div class="card shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle">
-            <thead class="table-light"><tr><th>Participante</th><th>Inscripción</th><th>Etapa</th><th class="text-center">Aprobado</th><th class="text-center">Docs</th><th class="text-center">Pagos</th><th class="text-center">Inglés</th><th>Actualizado</th><th></th></tr></thead>
+            <thead class="table-light"><tr>@if($hasPool)<th style="width:32px"><input type="checkbox" class="form-check-input" id="bulkPoolAll" title="Seleccionar los elegibles de esta página"></th>@endif<th>Participante</th><th>Inscripción</th><th>Etapa</th><th class="text-center">Aprobado</th><th class="text-center">Docs</th><th class="text-center">Pagos</th><th class="text-center">Inglés</th>@if($hasPool)<th class="text-center">Pool</th>@endif<th>Actualizado</th><th></th></tr></thead>
             <tbody>
             @forelse($processes as $proc)
                 @php
@@ -71,7 +90,12 @@
                     $gatesOk = $proc->gates->where('is_verified', true)->count();
                     $minLevel = $definition->minEnglishLevel();
                 @endphp
+                @php
+                    $poolEligible = $proc->status === 'active' && optional($proc->application)->status === 'approved';
+                    $poolOn = $proc->hasModuleAccess('job_pool');
+                @endphp
                 <tr>
+                    @if($hasPool)<td><input type="checkbox" class="form-check-input bulk-pool-item" form="bulkPoolForm" name="process_ids[]" value="{{ $proc->id }}" data-name="{{ $proc->user?->name }}" {{ $poolEligible ? '' : 'disabled' }} title="{{ $poolEligible ? '' : 'Requiere proceso activo y postulación aprobada' }}"></td>@endif
                     <td><div class="d-flex align-items-center"><img src="{{ $proc->user?->avatar_url }}" alt="" class="rounded-circle me-2" width="36" height="36"><div><div class="fw-semibold">{{ $proc->user?->name }}</div><small class="text-muted">{{ $proc->user?->email }}</small></div></div></td>
                     <td><small>{{ $proc->enrollment_date?->format('d/m/Y') ?? '-' }}</small>@if($proc->season)<br><small class="text-muted">{{ $proc->season }}</small>@endif</td>
                     <td>
@@ -83,12 +107,13 @@
                     <td class="text-center">@if($docs->count())<span class="badge {{ $docs->where('status', 'pending')->count() ? 'bg-warning text-dark' : 'bg-success' }}">{{ $docs->where('status', 'approved')->count() }}/{{ $docs->count() }}</span>@else<span class="text-muted">-</span>@endif</td>
                     <td class="text-center">@if($gatesTotal)<span class="badge {{ $gatesOk >= $gatesTotal ? 'bg-success' : ($gatesOk ? 'bg-warning text-dark' : 'bg-danger') }}">{{ $gatesOk }}/{{ $gatesTotal }}</span>@else<span class="text-muted">-</span>@endif</td>
                     <td class="text-center">@if($best)<span class="badge {{ \App\Models\ProgramEnglishTest::levelMeets($best, $minLevel) ? 'bg-success' : 'bg-warning text-dark' }}">{{ $best }}</span>@else<span class="text-muted">-</span>@endif</td>
+                    @if($hasPool)<td class="text-center">@if($proc->activeJobAssignment)<span class="badge bg-primary" title="Oferta asignada"><i class="fas fa-briefcase"></i> Asignada</span>@elseif($poolOn)<span class="badge bg-success">Habilitado</span>@else<span class="text-muted">-</span>@endif</td>@endif
                     <td><small class="text-muted">{{ $proc->updated_at?->diffForHumans() }}</small></td>
                     <td><a href="{{ route('admin.program.participants.show', [$program->slug, $proc->id]) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-arrow-right"></i></a></td>
                 </tr>
             @empty
-                <tr><td colspan="9" class="text-center py-5 text-muted"><i class="fas fa-search fa-3x mb-3 d-block opacity-25"></i>No se encontraron participantes.
-                    @if(request()->hasAny(['search', 'stage', 'status', 'season', 'english_level', 'gate']))<br><a href="{{ route('admin.program.participants.index', $program->slug) }}">Limpiar filtros</a>@endif</td></tr>
+                <tr><td colspan="{{ $hasPool ? 11 : 9 }}" class="text-center py-5 text-muted"><i class="fas fa-search fa-3x mb-3 d-block opacity-25"></i>No se encontraron participantes.
+                    @if(request()->hasAny(['search', 'stage', 'status', 'season', 'english_level', 'gate', 'pool', 'approval']))<br><a href="{{ route('admin.program.participants.index', $program->slug) }}">Limpiar filtros</a>@endif</td></tr>
             @endforelse
             </tbody>
         </table>
@@ -96,3 +121,27 @@
     @if($processes->hasPages())<div class="card-footer">{{ $processes->links() }}</div>@endif
 </div>
 @endsection
+
+@if($hasPool)
+@push('scripts')
+<script>
+(function () {
+    const items = () => [...document.querySelectorAll('.bulk-pool-item:not(:disabled)')];
+    const bar = document.getElementById('bulkPoolBar');
+    const sync = () => {
+        const n = items().filter(i => i.checked).length;
+        document.getElementById('bulkPoolCount').textContent = n;
+        bar.classList.toggle('d-none', n === 0);
+    };
+    document.getElementById('bulkPoolAll')?.addEventListener('change', e => { items().forEach(i => { i.checked = e.target.checked; }); sync(); });
+    document.addEventListener('change', e => { if (e.target.classList.contains('bulk-pool-item')) sync(); });
+    document.getElementById('bulkPoolForm').addEventListener('submit', e => {
+        const chosen = items().filter(i => i.checked).map(i => i.dataset.name);
+        const action = e.submitter?.value === 'disable' ? 'DESHABILITAR' : 'HABILITAR';
+        const list = chosen.slice(0, 15).join('\n• ') + (chosen.length > 15 ? `\n… y ${chosen.length - 15} más` : '');
+        if (!confirm(`¿${action} el acceso al Pool de Ofertas a ${chosen.length} participante(s)?\n\n• ${list}`)) e.preventDefault();
+    });
+})();
+</script>
+@endpush
+@endif

@@ -229,7 +229,12 @@ export interface PlacementData {
     status: string;
     status_label: string;
     sponsor: string | null;
+    /** Fecha de elección de la oferta (clave histórica). */
     acceptance_date: string | null;
+    offer_selected_date?: string | null;
+    job_accepted_at?: string | null;
+    interviews?: { sponsor: PlacementInterview; employer: PlacementInterview };
+    steps?: { key: string; label: string; done: boolean }[];
     program_start_date: string | null;
     program_end_date: string | null;
     terms_accepted_at: string | null;
@@ -241,4 +246,10 @@ export interface PlacementData {
     documents_complete: boolean;
     is_complete: boolean;
   } | null;
+}
+
+export interface PlacementInterview {
+  date: string | null;
+  result: 'pending' | 'approved' | 'not_approved' | 'not_applicable';
+  result_label: string | null;
 }

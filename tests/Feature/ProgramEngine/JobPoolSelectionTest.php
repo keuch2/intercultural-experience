@@ -57,9 +57,20 @@ class JobPoolSelectionTest extends EngineTestCase
         $process = $this->enabledProcess();
         $this->pool->select($offer, $process);
 
+        // Al elegir se cierra el acceso al pool.
+        $this->assertFalse($process->fresh()->hasModuleAccess('job_pool'));
         try {
             $this->pool->select($this->offer(3), $process);
             $this->fail('Debió rechazar la segunda selección');
+        } catch (JobPoolException $e) {
+            $this->assertSame('not_enabled', $e->errorCode);
+        }
+
+        // IE rehabilita el acceso sin autorizar el cambio: sigue sin poder elegir otra.
+        $this->pool->setPoolAccess($process->fresh(), true, $this->admin(), allowReselect: false);
+        try {
+            $this->pool->select($this->offer(3), $process->fresh());
+            $this->fail('Debió rechazar sin autorización de cambio');
         } catch (JobPoolException $e) {
             $this->assertSame('already_assigned', $e->errorCode);
         }
@@ -106,9 +117,85 @@ class JobPoolSelectionTest extends EngineTestCase
         $this->assertNull($assignment->fresh()->active_process_id);
         $this->assertFalse($process->fresh()->activeJobAssignment()->exists());
 
-        $again = $this->pool->select($offer, $process);
+        // Una liberación común no rehabilita el pool: lo decide IE.
+        $this->assertFalse($process->fresh()->hasModuleAccess('job_pool'));
+        $this->pool->setPoolAccess($process->fresh(), true, $this->admin());
+        $again = $this->pool->select($offer, $process->fresh());
         $this->assertSame('active', $again->status);
         $this->assertSame(0, $offer->fresh()->positions_available);
+    }
+
+    public function test_authorized_change_releases_previous_offer_automatically(): void
+    {
+        $first = $this->offer(1);
+        $second = $this->offer(1);
+        $process = $this->enabledProcess();
+        $old = $this->pool->select($first, $process);
+        $this->assertSame(0, $first->fresh()->positions_available);
+
+        // IE habilita el acceso con "Autorizar cambio de oferta"
+        $this->pool->setPoolAccess($process->fresh(), true, $this->admin(), allowReselect: true);
+        $new = $this->pool->select($second, $process->fresh());
+
+        $this->assertSame(JobPoolAssignment::STATUS_CHANGED, $old->fresh()->status);
+        $this->assertSame(1, $first->fresh()->positions_available, 'la oferta anterior queda libre');
+        $this->assertSame(0, $second->fresh()->positions_available);
+        $this->assertSame($process->id, $new->active_process_id);
+        $access = $process->fresh()->moduleAccess('job_pool');
+        $this->assertFalse($access['enabled']);
+        $this->assertFalse($access['allow_reselect']);
+        $this->assertDatabaseHas('job_placements', ['program_process_id' => $process->id, 'job_pool_assignment_id' => $new->id]);
+        $this->assertDatabaseHas('job_pool_events', ['program_process_id' => $process->id, 'event_type' => 'changed']);
+    }
+
+    public function test_job_cancelled_reenables_pool_and_applies_offer_action(): void
+    {
+        $offer = $this->offer(2);
+        $process = $this->enabledProcess();
+        $assignment = $this->pool->select($offer, $process);
+
+        $this->pool->cancelJob($assignment, $this->admin(), 'Cerró el hotel', 'pause');
+
+        $this->assertSame(JobPoolAssignment::STATUS_JOB_CANCELLED, $assignment->fresh()->status);
+        $this->assertSame('paused', $offer->fresh()->status);
+        $this->assertSame(2, $offer->fresh()->positions_available);
+        $this->assertTrue($process->fresh()->hasModuleAccess('job_pool'), 'vuelve a poder elegir');
+        $this->assertFalse($process->fresh()->activeJobAssignment()->exists());
+
+        $other = $this->offer(1);
+        $assignment2 = $this->pool->select($other, $process->fresh());
+        $this->pool->cancelJob($assignment2, $this->admin(), null, 'delete');
+        $this->assertSoftDeleted('job_pool_offers', ['id' => $other->id]);
+    }
+
+    public function test_failed_interview_releases_offer_and_reenables_pool(): void
+    {
+        $offer = $this->offer(1);
+        $process = $this->enabledProcess();
+        $this->pool->select($offer, $process);
+        $placements = app(\App\Services\ProgramEngine\PlacementService::class);
+
+        $outcome = $placements->updateWithOutcome($process->fresh(), ['sponsor_interview_result' => 'approved', 'employer_interview_result' => 'pending']);
+        $this->assertFalse($outcome['released']);
+        $this->assertNull($outcome['placement']->job_accepted_at);
+
+        $outcome = $placements->updateWithOutcome($process->fresh(), ['employer_interview_result' => 'not_approved']);
+        $this->assertTrue($outcome['released']);
+        $this->assertFalse($process->fresh()->activeJobAssignment()->exists());
+        $this->assertSame(1, $offer->fresh()->positions_available);
+        $this->assertTrue($process->fresh()->hasModuleAccess('job_pool'));
+    }
+
+    public function test_passed_interviews_record_job_acceptance_date(): void
+    {
+        $process = $this->enabledProcess();
+        $this->pool->select($this->offer(1), $process);
+        $placements = app(\App\Services\ProgramEngine\PlacementService::class);
+
+        $placement = $placements->update($process->fresh(), ['sponsor_interview_result' => 'not_applicable', 'employer_interview_result' => 'approved']);
+
+        $this->assertSame(today()->toDateString(), $placement->job_accepted_at->toDateString());
+        $this->assertSame('job_accepted', $placement->status);
     }
 
     public function test_reassign_moves_offer_to_other_participant(): void

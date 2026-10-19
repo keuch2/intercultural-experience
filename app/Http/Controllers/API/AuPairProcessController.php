@@ -28,11 +28,13 @@ class AuPairProcessController extends Controller
     {
         $user = $request->user();
 
-        $application = Application::query()
+        // Postulación seleccionada en la app (X-Application-Id) o la más reciente.
+        $base = Application::query()
             ->where('user_id', $user->id)
-            ->whereHas('program', fn ($q) => $q->where('subcategory', Program::SUBCATEGORY_AU_PAIR))
-            ->latest('id')
-            ->first();
+            ->whereHas('program', fn ($q) => $q->where('subcategory', Program::SUBCATEGORY_AU_PAIR));
+        $selectedId = (int) ($request->header('X-Application-Id') ?: $request->query('application_id'));
+        $application = ($selectedId ? (clone $base)->whereKey($selectedId)->first() : null)
+            ?? $base->latest('id')->first();
 
         if (! $application) {
             return response()->json([
@@ -98,8 +100,14 @@ class AuPairProcessController extends Controller
                 'payment_1_verified' => (bool) $p->payment_1_verified,
                 'payment_2_verified' => (bool) $p->payment_2_verified,
             ],
+            'contract' => [
+                'available' => (bool) $p->contract_file_path,
+                'signed' => (bool) $p->contract_signed,
+                'filename' => $p->contract_original_filename,
+                'download_url' => $p->contract_file_path ? route('api.au-pair.contract') : null,
+            ],
             'stages' => $this->stagesSummary($p),
-            'progress_pct' => $this->computeProgress($p),
+            'progress_pct' => $p->progressPercent(),
             'next_action' => $this->computeNextAction($p),
             'finalization' => $p->finalization_result ? [
                 'result' => $p->finalization_result,
@@ -126,59 +134,12 @@ class AuPairProcessController extends Controller
                 }
                 return [
                     'key' => $s,
-                    'label' => $this->stageLabel($s),
+                    'label' => AuPairProcess::stageLabel($s),
                     'state' => $state,
                 ];
             })
             ->values()
             ->all();
-    }
-
-    private function stageLabel(string $s): string
-    {
-        return [
-            'admission' => 'Admisión',
-            'application' => 'Aplicación',
-            'match_visa' => 'Match y Visa',
-            'support' => 'Soporte',
-            'completed' => 'Finalizado',
-        ][$s] ?? $s;
-    }
-
-    /**
-     * Progreso global aproximado: 25% por stage avanzado, +25% adicional cuando
-     * los documentos del stage actual están todos aprobados.
-     */
-    private function computeProgress(AuPairProcess $p): int
-    {
-        $base = match ($p->current_stage) {
-            'admission' => 0,
-            'application' => 25,
-            'match_visa' => 50,
-            'support' => 75,
-            'completed' => 100,
-            default => 0,
-        };
-
-        if ($p->current_stage === 'completed') {
-            return 100;
-        }
-
-        $stageDocsCfg = AuPairDocument::documentTypesForStage(
-            $p->current_stage === 'application' ? 'application_payment1' : $p->current_stage
-        );
-        $required = collect($stageDocsCfg)->filter(fn ($d) => $d['required'])->keys();
-        if ($required->isEmpty()) {
-            return $base;
-        }
-
-        $docs = $p->documents()->whereIn('document_type', $required)->get();
-        $approved = $required->filter(
-            fn ($type) => $docs->where('document_type', $type)->where('status', 'approved')->isNotEmpty()
-        )->count();
-
-        $extra = (int) round(($approved / $required->count()) * 25);
-        return min(100, $base + $extra);
     }
 
     private function computeNextAction(AuPairProcess $p): array

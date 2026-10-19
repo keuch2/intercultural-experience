@@ -298,6 +298,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/documents/{id}', [\App\Http\Controllers\API\AuPairDocumentController::class, 'destroy']);
         Route::get('/documents/{id}/download', [\App\Http\Controllers\API\AuPairDocumentController::class, 'download'])
             ->name('api.au-pair.documents.download');
+        Route::get('/contract', [\App\Http\Controllers\API\AuPairDocumentController::class, 'contract'])
+            ->name('api.au-pair.contract');
 
         // English tests específicos Au Pair (tabla au_pair_english_tests)
         Route::get('/english-tests', [\App\Http\Controllers\API\AuPairEnglishTestController::class, 'index']);

@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from '../components/SafeArea';
 import { useAuth } from '../contexts/AuthContext';
-import { useProgram, flowForApplication } from '../contexts/ProgramContext';
+import { useProgram, flowForApplication, activeApplicationFor } from '../contexts/ProgramContext';
 import { useTabNavigation } from '../contexts/NavigationContext';
 import { publicService } from '../services/api';
 import type { PublicProgram } from '../services/api';
@@ -76,7 +76,7 @@ const HomeScreen: React.FC = () => {
                 {!pendingApproval && <View style={styles.progressBubble}><Text style={styles.progressNumber}>{process?.progress_pct ?? selectedApplication.progress_percentage ?? 0}%</Text></View>}
               </View>
               {!pendingApproval && !!process?.program_start_date && (
-                <Text style={styles.startDate}><Ionicons name="airplane-outline" size={13} color="#0369A1" /> {describeProgramStart(process.program_start_date)?.label}</Text>
+                <Text style={styles.startDate}><Ionicons name="airplane-outline" size={13} color="#0369A1" /> {describeProgramStart(process.program_start_date, process.program_end_date)?.label}</Text>
               )}
               {!pendingApproval && process?.next_action?.label && (
                 <View style={styles.nextAction}><Ionicons name="flash" size={14} color="#E52224" /><Text style={styles.nextActionText} numberOfLines={2}>{process.next_action.label}</Text></View>
@@ -113,7 +113,7 @@ const HomeScreen: React.FC = () => {
           {loadingPrograms ? <ActivityIndicator color="#E52224" style={{ marginVertical: 20 }} /> : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 18 }}>
               {[...available, ...others].map(p => {
-                const mine = applications.find(a => a.program_id === p.id);
+                const mine = activeApplicationFor(applications, p.id);
                 return (
                   <TouchableOpacity key={p.id} style={styles.programCard} onPress={() => navigation.navigate('PublicProgramDetail', { id: p.id })} activeOpacity={0.9}>
                     {p.image_url ? <Image source={{ uri: p.image_url }} style={styles.programImage} /> : <View style={[styles.programImage, styles.programImageFallback]}><Ionicons name="earth-outline" size={30} color="#fff" /></View>}

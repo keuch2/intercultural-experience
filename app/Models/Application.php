@@ -190,9 +190,16 @@ class Application extends Model
      * Scope: Participantes IE Cue (Alumni)
      */
     /** Postulaciones vigentes del usuario a un programa (pending, in_review, approved). */
+    /**
+     * Postulación vigente del usuario en el programa (bloquea una nueva). Una postulación
+     * cuyo proceso IE finalizó (motor: completed/cancelled; Au Pair: etapa completed/cancelled)
+     * ya no cuenta: el participante puede postular a una nueva convocatoria.
+     */
     public function scopeActiveForProgram($query, int $userId, int $programId)
     {
-        return $query->where('user_id', $userId)->where('program_id', $programId)->whereIn('status', self::ACTIVE_STATUSES);
+        return $query->where('user_id', $userId)->where('program_id', $programId)->whereIn('status', self::ACTIVE_STATUSES)
+            ->whereDoesntHave('programProcess', fn ($q) => $q->whereIn('status', [ProgramProcess::STATUS_COMPLETED, ProgramProcess::STATUS_CANCELLED]))
+            ->whereDoesntHave('auPairProcess', fn ($q) => $q->whereIn('current_stage', ['completed', 'cancelled']));
     }
 
     public function scopeIeCue($query)

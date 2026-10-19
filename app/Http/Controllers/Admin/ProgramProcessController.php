@@ -77,8 +77,17 @@ class ProgramProcessController extends Controller
         if ($request->filled('approval')) {
             $query->whereHas('application', fn ($q) => $q->where('status', $request->approval === 'approved' ? '=' : '!=', 'approved'));
         }
+        // Pool de ofertas: habilitado / sin habilitar (y sin oferta) / con oferta asignada
+        match ($request->input('pool')) {
+            'enabled' => $query->where('module_access->job_pool->enabled', true),
+            'disabled' => $query->where(fn ($q) => $q->whereNull('module_access->job_pool->enabled')->orWhere('module_access->job_pool->enabled', false))
+                ->whereDoesntHave('activeJobAssignment'),
+            'assigned' => $query->whereHas('activeJobAssignment'),
+            default => null,
+        };
 
-        $processes = $query->orderByDesc('created_at')->paginate(20)->withQueryString();
+        $perPage = in_array((int) $request->input('per_page'), [20, 50, 100, 200], true) ? (int) $request->input('per_page') : 20;
+        $processes = $query->with('activeJobAssignment')->orderByDesc('created_at')->paginate($perPage)->withQueryString();
 
         $stats = ['total' => ProgramProcess::forProgram($program)->count()];
         foreach ($definition->stages() as $stage) {
@@ -112,7 +121,7 @@ class ProgramProcessController extends Controller
         $entries = collect($this->documents->describe($process));
         $tabData = $this->tabData($activeTab, $tabs[$activeTab], $program, $process, $definition, $entries);
         $notes = ParticipantNote::where('user_id', $user->id)->forApplication(null)->with('admin:id,name')->latest()->get();
-        $participantReports = $process->supportLogs->where('source', 'participant')->whereNull('resolution')->count();
+        $participantReports = $process->supportLogs->filter->isPendingReview()->count();
 
         return view('admin.program-process.show', compact(
             'program', 'definition', 'process', 'user', 'application', 'tabs', 'activeTab', 'tabData', 'envelope', 'entries', 'notes', 'participantReports'));
@@ -603,20 +612,25 @@ class ProgramProcessController extends Controller
     public function updatePlacement(Request $request, Program $program, ProgramProcess $process, \App\Services\ProgramEngine\PlacementService $placements)
     {
         $this->assertOwned($program, $process);
+        $results = array_keys(\App\Models\JobPlacement::INTERVIEW_RESULTS);
         $data = $request->validate([
             'sponsor_id' => 'nullable|exists:sponsors,id',
             'status' => ['nullable', Rule::in(array_keys(\App\Models\JobPlacement::STATUSES))],
             'acceptance_date' => 'nullable|date', 'program_start_date' => 'nullable|date', 'program_end_date' => 'nullable|date|after_or_equal:program_start_date',
-            'terms_accepted' => 'nullable|boolean',
+            'sponsor_interview_date' => 'nullable|date', 'sponsor_interview_result' => ['nullable', Rule::in($results)],
+            'employer_interview_date' => 'nullable|date', 'employer_interview_result' => ['nullable', Rule::in($results)],
+            'job_accepted_at' => 'nullable|date',
             'sevis_number' => 'nullable|string|max:30', 'ds2019_number' => 'nullable|string|max:30',
-            'ds_tracking_carrier' => 'nullable|string|max:50', 'ds_tracking_number' => 'nullable|string|max:80', 'ds_received_at' => 'nullable|date',
             'notes' => 'nullable|string|max:2000',
         ]);
-        $data['terms_accepted'] = $request->boolean('terms_accepted');
-        $placements->update($process, $data, $request->user());
+        // Resultado no enviado = se conserva el actual (columna NOT NULL, default 'pending').
+        $data = array_filter($data, fn ($v, $k) => $v !== null || ! str_ends_with($k, '_interview_result'), ARRAY_FILTER_USE_BOTH);
+        $outcome = $placements->updateWithOutcome($process, $data, $request->user());
         $this->log($program, $process, 'placement_updated', 'Job Placement actualizado');
 
-        return $this->toTab($program, $process, 'placement', 'Job Placement actualizado.');
+        return $this->toTab($program, $process, 'placement', $outcome['released']
+            ? 'Job Placement actualizado. La entrevista no fue aprobada: se liberó la oferta y se rehabilitó el acceso al Pool.'
+            : 'Job Placement actualizado.');
     }
 
     // ── Acciones: acceso a módulos ─────────────────────────────────────
@@ -628,17 +642,81 @@ class ProgramProcessController extends Controller
             'enabled' => 'required|boolean',
             'allow_reselect' => 'nullable|boolean',
         ]);
-        $access = $process->module_access ?? [];
-        $access[$data['module']] = [
-            'enabled' => (bool) $data['enabled'],
-            'enabled_at' => $data['enabled'] ? now()->toIso8601String() : null,
-            'enabled_by' => $data['enabled'] ? $request->user()->id : null,
-            'allow_reselect' => $request->boolean('allow_reselect'),
-        ];
-        $process->update(['module_access' => $access]);
+        if ($data['module'] === ModuleCatalog::JOB_POOL) {
+            app(\App\Services\ProgramEngine\JobPoolService::class)->setPoolAccess($process, (bool) $data['enabled'], $request->user(), $request->boolean('allow_reselect'));
+        } else {
+            $process->setModuleAccess($data['module'], [
+                'enabled' => (bool) $data['enabled'],
+                'enabled_at' => $data['enabled'] ? now()->toIso8601String() : null,
+                'enabled_by' => $data['enabled'] ? $request->user()->id : null,
+            ]);
+            $process->save();
+        }
         $this->log($program, $process, 'module_access_updated', "Acceso al módulo '{$data['module']}' ".($data['enabled'] ? 'habilitado' : 'deshabilitado'));
 
         return back()->with('success', 'Acceso actualizado.');
+    }
+
+    /**
+     * Habilitación / deshabilitación masiva del Pool de Ofertas para los participantes
+     * que IE seleccionó en el listado. Solo aplica a procesos activos con postulación
+     * aprobada; al habilitar se omiten los que ya tienen una oferta asignada.
+     */
+    public function bulkPoolAccess(Request $request, Program $program, \App\Services\ProgramEngine\JobPoolService $pool)
+    {
+        $this->assertEngine($program);
+        abort_unless(ProgramDefinition::for($program)->hasModule(ModuleCatalog::JOB_POOL), 404);
+        $data = $request->validate([
+            'process_ids' => 'required|array|min:1|max:500',
+            'process_ids.*' => 'integer',
+            'action' => 'required|in:enable,disable',
+        ]);
+        $enable = $data['action'] === 'enable';
+        $processes = ProgramProcess::forProgram($program)->whereIn('id', $data['process_ids'])->with(['application', 'activeJobAssignment', 'user'])->get();
+
+        $done = 0;
+        $skipped = [];
+        foreach ($processes as $process) {
+            $reason = match (true) {
+                ! $process->isActive() => 'proceso no activo',
+                ! $process->applicantApproved() => 'postulación no aprobada',
+                $enable && $process->activeJobAssignment !== null => 'ya tiene oferta asignada',
+                default => null,
+            };
+            if ($reason) {
+                $skipped[] = ($process->user?->name ?? "#{$process->id}")." ({$reason})";
+
+                continue;
+            }
+            if ($process->hasModuleAccess(ModuleCatalog::JOB_POOL) === $enable) {
+                continue;
+            }
+            $pool->setPoolAccess($process, $enable, $request->user(), allowReselect: false);
+            if ($enable) {
+                app(\App\Services\ProgramEngine\Notifier::class)->toUser($process->user_id, 'Pool de Ofertas habilitado', 'IE habilitó tu acceso al Pool de Ofertas Laborales. Ya podés revisar las ofertas y elegir la tuya desde la app.', 'job_pool');
+            }
+            $done++;
+        }
+        $this->logBulk($program, $request->user(), $enable, $done);
+
+        $msg = ($enable ? 'Pool habilitado' : 'Pool deshabilitado')." para {$done} participante(s).";
+        if ($skipped) {
+            $msg .= ' Omitidos: '.implode(', ', array_slice($skipped, 0, 10)).(count($skipped) > 10 ? ' y '.(count($skipped) - 10).' más' : '').'.';
+        }
+
+        return back()->with($done ? 'success' : 'warning', $msg);
+    }
+
+    private function logBulk(Program $program, \App\Models\User $actor, bool $enable, int $count): void
+    {
+        if ($count === 0) {
+            return;
+        }
+        ActivityLog::log($program->slug ?? 'program_engine')
+            ->causedBy($actor)
+            ->withAction('job_pool_bulk_access')
+            ->withProperties(['count' => $count, 'enabled' => $enable])
+            ->log(($enable ? 'Habilitación' : 'Deshabilitación')." masiva del Pool de Ofertas: {$count} participante(s)");
     }
 
     // ── Acciones: pagos ────────────────────────────────────────────────

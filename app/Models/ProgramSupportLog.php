@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSupportReviewState;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProgramSupportLog extends Model
 {
+    use HasSupportReviewState;
+
     protected $fillable = [
         'program_process_id', 'log_type', 'title', 'description', 'log_date', 'follow_up_number',
         'severity', 'resolution', 'resolved_at', 'logged_by', 'source',

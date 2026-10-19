@@ -2,6 +2,7 @@
 
 namespace App\Listeners\ProgramEngine;
 
+use App\Models\JobPoolAssignment;
 use App\Events\ProgramEngine\JobPoolAssignmentReleased;
 use App\Events\ProgramEngine\JobPoolOfferExhausted;
 use App\Events\ProgramEngine\JobPoolOfferPublished;
@@ -58,7 +59,12 @@ class SendJobPoolNotifications
     {
         $a = $event->assignment->loadMissing(['offer', 'process']);
         $offer = $a->offer;
-        $this->notifier->toUser($a->process->user_id, 'Asignación de oferta liberada', "El equipo IE liberó tu asignación a {$offer->headline} ({$offer->city}, {$offer->state}).".($event->reason ? " Motivo: {$event->reason}." : '').' Podés volver a elegir en el Pool de Ofertas.', self::CATEGORY);
+        $process = $a->process->fresh();
+        $next = $process?->hasModuleAccess(ModuleCatalog::JOB_POOL)
+            ? ' Ya podés elegir otra oferta en el Pool de Ofertas.'
+            : ' El equipo IE te avisará cuando puedas elegir otra oferta.';
+        $title = $a->status === JobPoolAssignment::STATUS_JOB_CANCELLED ? 'El empleador canceló el puesto' : 'Asignación de oferta liberada';
+        $this->notifier->toUser($a->process->user_id, $title, "Se liberó tu asignación a {$offer->headline} ({$offer->city}, {$offer->state}).".($event->reason ? " Motivo: {$event->reason}." : '').$next, self::CATEGORY);
     }
 
     public function onExhausted(JobPoolOfferExhausted $event): void

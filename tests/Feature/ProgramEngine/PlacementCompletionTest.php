@@ -35,7 +35,7 @@ class PlacementCompletionTest extends EngineTestCase
         $this->assertSame($offer->id, $placement->assignment->job_pool_offer_id);
         $this->assertFalse($placements->isComplete($process));
 
-        $placements->update($process, ['sponsor_id' => Sponsor::where('code', 'AAG')->first()->id, 'sevis_number' => 'N001', 'ds2019_number' => 'DS-1', 'terms_accepted' => true]);
+        $placements->update($process, ['sponsor_id' => Sponsor::where('code', 'AAG')->first()->id, 'sevis_number' => 'N001', 'ds2019_number' => 'DS-1']);
         $this->assertFalse($placements->isComplete($process->fresh()), 'faltan docs del sponsor');
         $this->assertSame('in_progress', $process->fresh()->placement->status);
 
@@ -46,9 +46,8 @@ class PlacementCompletionTest extends EngineTestCase
         $this->assertTrue($placements->isComplete($process));
         $this->assertTrue($evaluator->canAdvance($process));
 
-        $placements->update($process, ['ds_tracking_number' => 'TRK1']);
-        $this->assertSame('ds_shipped', $process->fresh()->placement->status);
-        $placements->update($process, ['ds_received_at' => now()->toDateString()]);
+        // Sin courier / tracking / recepción: con docs del sponsor + SEVIS + DS-2019 el placement queda completo.
+        $placements->update($process, []);
         $this->assertSame('completed', $process->fresh()->placement->status);
 
         $payload = $placements->toArray($process->fresh()->load('placement.sponsor', 'program'));

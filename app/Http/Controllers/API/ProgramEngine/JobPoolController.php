@@ -30,10 +30,18 @@ class JobPoolController extends Controller
         if ($err) {
             return $err;
         }
+        $assignment = $process->activeJobAssignment()->with('offer')->first();
         if (! $this->pool->canAccess($process)) {
+            // Con oferta asignada el acceso se cierra solo, pero el participante sigue viendo su oferta.
+            if ($assignment) {
+                return response()->json([
+                    'status' => 'success', 'access' => false, 'allow_reselect' => false,
+                    'my_assignment' => $this->serializeAssignment($assignment, $engineProgram), 'data' => [],
+                ]);
+            }
+
             return response()->json(['status' => 'error', 'code' => 'not_enabled', 'message' => 'Tu acceso al Pool de Ofertas aún no fue habilitado por IE.', 'data' => [], 'access' => false], 403);
         }
-        $assignment = $process->activeJobAssignment()->with('offer')->first();
 
         return response()->json([
             'status' => 'success',

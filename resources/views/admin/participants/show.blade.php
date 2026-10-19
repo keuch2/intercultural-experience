@@ -57,7 +57,9 @@
                             'approved' => 'Aprobado',
                             'rejected' => 'Rechazado',
                         ];
-                        $firstApp = $participant->applications->first();
+                        // Postulación que representa al participante: la actual (no la primera cargada).
+                        $firstApp = \App\Support\ApplicationProgress::currentApplication($participant->applications);
+                        $firstProgress = $firstApp ? \App\Support\ApplicationProgress::for($firstApp) : null;
                         $pStatus = $firstApp->status ?? null;
                         $color = $statusColors[$pStatus] ?? 'secondary';
                         $label = $statusLabels[$pStatus] ?? ($pStatus ? ucfirst($pStatus) : 'Sin aplicación');
@@ -76,23 +78,22 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <small class="text-muted">Programa</small>
-                        @php $firstApp = $firstApp ?? $participant->applications->first(); @endphp
                         <h6>{{ optional($firstApp)->program->name ?? 'Sin programa' }}</h6>
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Progreso</small>
                         <div class="progress" style="height: 20px;">
                             <div class="progress-bar" role="progressbar" 
-                                 style="width: {{ optional($firstApp)->progress_percentage ?? 0 }}%" 
-                                 aria-valuenow="{{ optional($firstApp)->progress_percentage ?? 0 }}" 
+                                 style="width: {{ $firstProgress['percent'] ?? 0 }}%" 
+                                 aria-valuenow="{{ $firstProgress['percent'] ?? 0 }}" 
                                  aria-valuemin="0" aria-valuemax="100">
-                                {{ optional($firstApp)->progress_percentage ?? 0 }}%
+                                {{ $firstProgress['percent'] ?? 0 }}%
                             </div>
                         </div>
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Etapa Actual</small>
-                        <p class="mb-0"><strong>{{ optional($firstApp)->current_stage ?? 'Sin definir' }}</strong></p>
+                        <p class="mb-0"><strong>{{ $firstProgress['label'] ?? 'Sin definir' }}</strong></p>
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Fecha de Inscripción</small>
@@ -225,11 +226,11 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Etapa Actual:</strong><br>
-                                    {{ optional($firstApp)->current_stage ?? 'Sin definir' }}
+                                    {{ $firstProgress['label'] ?? 'Sin definir' }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Progreso:</strong><br>
-                                    {{ optional($firstApp)->progress_percentage ?? 0 }}%
+                                    {{ $firstProgress['percent'] ?? 0 }}%
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Costo Total:</strong><br>
@@ -468,14 +469,14 @@
 
                                 @foreach($allApplications as $application)
                                     @php
-                                        $stageKey = $application->current_stage ?? 'registration';
-                                        [$stageColor, $stageLabel] = $stageColors[$stageKey] ?? ['secondary', ucfirst(str_replace('_', ' ', $stageKey))];
+                                        // Etapa y progreso del proceso real de esta postulación (motor o Au Pair).
+                                        $appProgress = \App\Support\ApplicationProgress::for($application);
+                                        $stageKey = $appProgress['key'];
+                                        [$stageColor, $stageLabel] = $stageColors[$stageKey] ?? ['secondary', $appProgress['label']];
+                                        $stageLabel = $appProgress['label'] ?: $stageLabel;
 
-                                        // Para Au Pair, preferir las fuentes del AuPairProcess (mismo valor que el perfil Au Pair).
                                         $isAuPair = optional($application->program)->subcategory === 'Au Pair';
-                                        $progress = $isAuPair
-                                            ? \App\Support\AuPairResolver::progressPercentage($application, $participant)
-                                            : (int) ($application->progress_percentage ?? 0);
+                                        $progress = $appProgress['percent'];
                                         $progressColor = $progress >= 90 ? 'success' : ($progress >= 50 ? 'info' : 'warning');
 
                                         $eng = $application->latestEnglishEvaluation;

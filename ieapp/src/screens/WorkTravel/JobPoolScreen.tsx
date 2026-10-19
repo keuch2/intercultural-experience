@@ -14,8 +14,9 @@ import { downloadAndOpen } from '../../utils/downloadFile';
 
 /**
  * Pool de Ofertas Laborales (Work & Travel). El participante habilitado por IE ve
- * las ofertas con cupo, descarga el PDF y selecciona una con confirmación. Una vez
- * asignada no puede elegir otra salvo autorización de IE.
+ * las ofertas con cupo, descarga el PDF y selecciona una con confirmación. Al elegir,
+ * el acceso al pool se cierra y solo ve su oferta; si IE autoriza el cambio, puede
+ * elegir otra y la anterior se libera sola.
  */
 const formatDeadline = (iso: string): string => {
   const [y, m, d] = iso.slice(0, 10).split('-');
@@ -52,9 +53,13 @@ const JobPoolScreen: React.FC = () => {
   };
 
   const select = (offer: JobPoolOffer) => {
+    const current = data?.my_assignment?.offer;
+    const changeNote = current
+      ? `\n\nAl confirmar se libera tu oferta actual (${current.job_title ? `${current.job_title} · ` : ''}${current.employer_name}).`
+      : '\n\nUna vez confirmada, no podrás elegir otra oferta salvo autorización de IE.';
     Alert.alert(
-      'Confirmar selección',
-      `¿Querés seleccionar la oferta ${offer.job_title ? `"${offer.job_title}" de ` : 'de '}${offer.employer_name} en ${offer.city}, ${offer.state}?\n\nUna vez confirmada, no podrás elegir otra oferta salvo autorización de IE.`,
+      current ? 'Confirmar cambio de oferta' : 'Confirmar selección',
+      `¿Querés seleccionar la oferta ${offer.job_title ? `"${offer.job_title}" de ` : 'de '}${offer.employer_name} en ${offer.city}, ${offer.state}?${changeNote}`,
       [
         { text: 'Cancelar', style: 'cancel' },
         { text: 'Sí, seleccionar', style: 'default', onPress: async () => {
@@ -89,7 +94,12 @@ const JobPoolScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safe}>
       <ScreenHeader title="Pool de Ofertas Laborales" />
-      {!data?.access ? (
+      {!data?.access && assignment ? (
+        <View style={styles.list}>
+          <AssignedCard assignment={assignment} hint="Tocá para ver tu Job Placement. Si necesitás cambiar de oferta, contactá al equipo IE." onPress={() => navigation.navigate('JobPlacement')} />
+          <Text style={styles.intro}>Con una oferta asignada ya no ves el resto del pool. Si IE autoriza un cambio, vas a poder elegir otra desde acá.</Text>
+        </View>
+      ) : !data?.access ? (
         <EmptyState icon="lock-closed-outline" title="Acceso no habilitado" message="El equipo IE habilitará tu acceso al Pool de Ofertas cuando completes los requisitos de tu proceso." actionLabel="Actualizar" onAction={() => { setLoading(true); load(); }} />
       ) : error ? (
         <EmptyState icon="cloud-offline-outline" title="Error al cargar" message={error} actionLabel="Reintentar" onAction={load} />
@@ -101,15 +111,11 @@ const JobPoolScreen: React.FC = () => {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} />}
           ListHeaderComponent={
             assignment ? (
-              <TouchableOpacity style={styles.assignedCard} onPress={() => navigation.navigate('JobPlacement')}>
-                <Ionicons name="checkmark-circle" size={26} color="#065F46" />
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={styles.assignedTitle}>Tu oferta asignada</Text>
-                  <Text style={styles.assignedText}>{assignment.offer.job_title ? `${assignment.offer.job_title} · ` : ''}{assignment.offer.employer_name} · {assignment.offer.city}, {assignment.offer.state}</Text>
-                  <Text style={styles.assignedHint}>{data.allow_reselect ? 'IE te autorizó a cambiar de oferta.' : 'Para cambiarla, contactá al equipo IE. Tocá para ver tu Job Placement.'}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#065F46" />
-              </TouchableOpacity>
+              <AssignedCard
+                assignment={assignment}
+                hint={data.allow_reselect ? 'IE te autorizó a cambiar de oferta: elegí la nueva y la actual se libera sola.' : 'Para cambiarla, contactá al equipo IE. Tocá para ver tu Job Placement.'}
+                onPress={() => navigation.navigate('JobPlacement')}
+              />
             ) : (
               <Text style={styles.intro}>Puestos de trabajo disponibles para la temporada. Revisá los requisitos de cada puesto; el detalle completo (salario, funciones, housing, fechas, beneficios) está en el PDF.</Text>
             )
@@ -170,6 +176,18 @@ const JobPoolScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+const AssignedCard: React.FC<{ assignment: NonNullable<JobPoolOffersResp['my_assignment']>; hint: string; onPress: () => void }> = ({ assignment, hint, onPress }) => (
+  <TouchableOpacity style={styles.assignedCard} onPress={onPress}>
+    <Ionicons name="checkmark-circle" size={26} color="#065F46" />
+    <View style={{ flex: 1, marginLeft: 10 }}>
+      <Text style={styles.assignedTitle}>Tu oferta asignada</Text>
+      <Text style={styles.assignedText}>{assignment.offer.job_title ? `${assignment.offer.job_title} · ` : ''}{assignment.offer.employer_name} · {assignment.offer.city}, {assignment.offer.state}</Text>
+      <Text style={styles.assignedHint}>{hint}</Text>
+    </View>
+    <Ionicons name="chevron-forward" size={18} color="#065F46" />
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#f4f4f5' },

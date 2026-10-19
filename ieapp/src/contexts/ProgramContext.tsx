@@ -6,6 +6,7 @@ import { ProgramEnvelope } from '../types/programEngine';
 import { AuPairProcess } from '../types/aupair';
 import { UserApplication } from '../types/applications';
 import { ProgramFlow } from '../navigation/programFlowRegistry';
+import { setSelectedApplicationId } from '../services/api/selectedApplication';
 
 const SELECTED_KEY = 'selected_application_id';
 const TERMINAL_STATUSES = ['rejected', 'cancelled', 'withdrawn', 'completed'];
@@ -18,8 +19,13 @@ export const flowForApplication = (app?: UserApplication | null): ProgramFlow =>
   return 'none';
 };
 
+// completed_at no sirve: la aprobación legacy lo carga al aprobar. Lo que cuenta es la finalización de IE.
 export const isApplicationActive = (app: UserApplication): boolean =>
-  !TERMINAL_STATUSES.includes(app.status) && !app.completed_at;
+  !TERMINAL_STATUSES.includes(app.status) && !app.is_finished;
+
+/** Postulación vigente (no finalizada) del usuario en un programa. */
+export const activeApplicationFor = (apps: UserApplication[], programId: number): UserApplication | null =>
+  apps.filter(a => a.program_id === programId && isApplicationActive(a)).sort((a, b) => b.id - a.id)[0] ?? null;
 
 interface ProgramCtx {
   flow: ProgramFlow;
@@ -43,8 +49,8 @@ const Ctx = createContext<ProgramCtx | undefined>(undefined);
 /**
  * Estado del participante: sus postulaciones (actuales y anteriores), cuál está
  * seleccionada como "Mi proceso" y el envelope/proceso de esa postulación.
- * Selección: la guardada por el usuario si sigue existiendo; si no, la postulación
- * activa más reciente; si no hay activas, la más reciente.
+ * Selección: la guardada por el usuario si sigue vigente (o si no hay otra vigente);
+ * si no, la postulación activa más reciente; si no hay activas, la más reciente.
  */
 export const ProgramProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -73,15 +79,17 @@ export const ProgramProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const pickSelected = (apps: UserApplication[], storedId: number | null): UserApplication | null => {
     if (apps.length === 0) return null;
-    const stored = storedId ? apps.find(a => a.id === storedId) : undefined;
-    if (stored) return stored;
     const sorted = [...apps].sort((a, b) => (b.applied_at || b.created_at || '').localeCompare(a.applied_at || a.created_at || ''));
-    return sorted.find(isApplicationActive) ?? sorted[0];
+    const latestActive = sorted.find(isApplicationActive);
+    const stored = storedId ? apps.find(a => a.id === storedId) : undefined;
+    // Una participación finalizada guardada cede ante una postulación vigente (p. ej. tras volver a postular).
+    if (stored && (isApplicationActive(stored) || !latestActive)) return stored;
+    return latestActive ?? sorted[0];
   };
 
   const refresh = useCallback(async () => {
     if (!isAuthenticated) {
-      setApplications([]); setSelectedId(null); setFlow('none'); setEnvelope(null); setAuPairProcess(null); setLoading(false); setReady(false);
+      setApplications([]); setSelectedId(null); setSelectedApplicationId(null); setFlow('none'); setEnvelope(null); setAuPairProcess(null); setLoading(false); setReady(false);
       return;
     }
     setLoading(true);
@@ -93,6 +101,7 @@ export const ProgramProvider: React.FC<{ children: ReactNode }> = ({ children })
       try { const raw = await AsyncStorage.getItem(SELECTED_KEY); storedId = raw ? Number(raw) : null; } catch {}
       const chosen = pickSelected(apps, storedId);
       setSelectedId(chosen?.id ?? null);
+      setSelectedApplicationId(chosen?.id ?? null);
       await loadProcessFor(chosen);
     } catch {
       // Sin red u otro error: se conserva el estado resuelto previamente.
@@ -108,6 +117,7 @@ export const ProgramProvider: React.FC<{ children: ReactNode }> = ({ children })
     // Ya seleccionada y con proceso cargado: no hay nada que recargar (evita parpadeos y navegaciones perdidas).
     if (id === selectedId && (envelope || auPairProcess)) return;
     setSelectedId(id);
+    setSelectedApplicationId(id);
     try { await AsyncStorage.setItem(SELECTED_KEY, String(id)); } catch {}
     setLoading(true);
     try { await loadProcessFor(app); } finally { setLoading(false); }

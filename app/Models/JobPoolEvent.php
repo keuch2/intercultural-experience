@@ -18,6 +18,7 @@ class JobPoolEvent extends Model
         'offer_paused' => 'Oferta pausada', 'offer_reactivated' => 'Oferta reactivada', 'offer_closed' => 'Oferta cerrada',
         'offer_deleted' => 'Oferta eliminada', 'selected' => 'Oferta seleccionada', 'released' => 'Asignación liberada',
         'reassigned' => 'Oferta reasignada', 'positions_exhausted' => 'Cupos agotados',
+        'changed' => 'Cambio de oferta (liberada)', 'job_cancelled' => 'Trabajo cancelado',
     ];
 
     public function offer(): BelongsTo

@@ -174,13 +174,25 @@ class JobPoolService
                 if (! $staff && $offer->isDeadlinePassed()) {
                     throw new JobPoolException('deadline_passed', 'La fecha límite para postular a esta oferta ya pasó.', 409);
                 }
-                if (JobPoolAssignment::where('active_process_id', $proc->id)->exists()) {
-                    throw new JobPoolException('already_assigned', 'Ya tenés una oferta asignada. Para cambiarla, contactá al equipo IE.', 409);
+                // Con oferta asignada solo puede elegir otra el participante autorizado por IE (cambio de oferta).
+                $current = JobPoolAssignment::where('active_process_id', $proc->id)->lockForUpdate()->first();
+                if ($current) {
+                    if ($staff || ! $this->canChangeOffer($proc)) {
+                        throw new JobPoolException('already_assigned', 'Ya tenés una oferta asignada. Para cambiarla, contactá al equipo IE.', 409);
+                    }
+                    if ($current->job_pool_offer_id === $offer->id) {
+                        throw new JobPoolException('same_offer', 'Esta oferta ya es la que tenés asignada.', 409);
+                    }
                 }
 
                 $affected = JobPoolOffer::whereKey($offer->id)->where('positions_available', '>', 0)->decrement('positions_available');
                 if ($affected === 0) {
                     throw new JobPoolException('no_positions', 'Esta oferta ya no tiene posiciones disponibles.', 409);
+                }
+
+                // Cambio de oferta: la anterior se libera (vuelve el cupo) antes de crear la nueva (UNIQUE active_process_id).
+                if ($current) {
+                    $this->releaseLocked($current, $proc->user, 'Cambio de oferta autorizado por IE', JobPoolAssignment::STATUS_CHANGED);
                 }
 
                 $assignment = JobPoolAssignment::create([
@@ -191,6 +203,13 @@ class JobPoolService
                     'selected_at' => now(),
                     'assigned_by' => $staff?->id,
                 ]);
+
+                // Con una oferta asignada el participante deja de ver el pool; IE puede rehabilitarlo.
+                $proc->setModuleAccess(ModuleCatalog::JOB_POOL, [
+                    'enabled' => false, 'allow_reselect' => false,
+                    'disabled_at' => now()->toIso8601String(), 'disabled_reason' => 'offer_selected',
+                ]);
+                $proc->save();
 
                 $offer->refresh();
                 $this->event($offer, $proc, 'selected', $staff ?? $proc->user, ['assignment_id' => $assignment->id, 'positions_available' => $offer->positions_available], $staff ? 'staff' : 'participant');
@@ -207,6 +226,7 @@ class JobPoolService
         }
 
         $offer = $assignment->offer;
+        app(PlacementService::class)->attachAssignment($process->fresh(), $assignment);
         event(new JobPoolOfferSelected($assignment, $staff));
         if ($offer->positions_available === 0) {
             $this->event($offer, null, 'positions_exhausted', null, [], 'system');
@@ -216,33 +236,102 @@ class JobPoolService
         return $assignment;
     }
 
-    /** Libera una asignación y devuelve el cupo (capado al total). */
-    public function release(JobPoolAssignment $assignment, ?User $actor, ?string $reason = null, string $newStatus = JobPoolAssignment::STATUS_RELEASED): JobPoolAssignment
+    /**
+     * Libera una asignación y devuelve el cupo (capado al total).
+     * $reenablePool = true rehabilita el acceso del participante al pool (trabajo cancelado, entrevista no aprobada).
+     */
+    public function release(JobPoolAssignment $assignment, ?User $actor, ?string $reason = null, string $newStatus = JobPoolAssignment::STATUS_RELEASED, bool $reenablePool = false): JobPoolAssignment
     {
-        DB::transaction(function () use ($assignment, $actor, $reason, $newStatus) {
-            $offer = JobPoolOffer::whereKey($assignment->job_pool_offer_id)->lockForUpdate()->firstOrFail();
-            $assignment = JobPoolAssignment::whereKey($assignment->id)->lockForUpdate()->firstOrFail();
-            if (! $assignment->isActive()) {
-                throw new JobPoolException('not_active', 'La asignación ya no está activa.', 409);
+        DB::transaction(function () use ($assignment, $actor, $reason, $newStatus, $reenablePool) {
+            $assignment = $this->releaseLocked($assignment, $actor, $reason, $newStatus);
+            if ($reenablePool && $assignment->process) {
+                $this->setPoolAccess($assignment->process, true, $actor);
             }
-
-            $assignment->update([
-                'status' => $newStatus,
-                'active_process_id' => null,
-                'released_at' => now(),
-                'released_by' => $actor?->id,
-                'release_reason' => $reason,
-            ]);
-            if ($offer->positions_available < $offer->positions_total) {
-                $offer->increment('positions_available');
-            }
-
-            $this->event($offer, $assignment->process, $newStatus === JobPoolAssignment::STATUS_REASSIGNED ? 'reassigned' : 'released', $actor, ['assignment_id' => $assignment->id, 'reason' => $reason]);
-            $this->log($offer->program, $actor, 'job_assignment_released', "Asignación liberada: {$offer->employer_name}".($reason ? " — {$reason}" : ''), $assignment->process?->user);
         });
 
         $assignment->refresh();
+        if ($assignment->process) {
+            app(PlacementService::class)->detachAssignment($assignment->process, $assignment);
+        }
         event(new JobPoolAssignmentReleased($assignment, $actor, $reason));
+
+        return $assignment;
+    }
+
+    /**
+     * "Trabajo cancelado": el empleador canceló el puesto. Libera la asignación,
+     * rehabilita el pool del participante y aplica lo que IE decida sobre la oferta.
+     *
+     * @param  string  $offerAction  keep (sigue activa con el cupo devuelto) | pause (suspendida) | delete
+     */
+    public function cancelJob(JobPoolAssignment $assignment, ?User $actor, ?string $reason, string $offerAction = 'keep'): JobPoolAssignment
+    {
+        $text = 'Trabajo cancelado por el empleador'.($reason ? ": {$reason}" : '');
+        $assignment = $this->release($assignment, $actor, $text, JobPoolAssignment::STATUS_JOB_CANCELLED, reenablePool: true);
+        $offer = $assignment->offer()->first();
+        if ($offer) {
+            match ($offerAction) {
+                'pause' => $offer->status === JobPoolOffer::STATUS_ACTIVE ? $this->pause($offer, $actor) : null,
+                'delete' => $offer->activeAssignments()->exists() ? $this->pause($offer, $actor) : $this->delete($offer, $actor),
+                default => null,
+            };
+        }
+
+        return $assignment;
+    }
+
+    /** Habilita / deshabilita el acceso de un participante al pool (individual o masivo). */
+    public function setPoolAccess(ProgramProcess $process, bool $enabled, ?User $actor, ?bool $allowReselect = null): void
+    {
+        $changes = [
+            'enabled' => $enabled,
+            'enabled_at' => $enabled ? now()->toIso8601String() : null,
+            'enabled_by' => $enabled ? $actor?->id : null,
+            'disabled_reason' => null,
+        ];
+        if ($allowReselect !== null) {
+            $changes['allow_reselect'] = $allowReselect;
+        } elseif ($enabled) {
+            // Rehabilitar con una oferta activa implica autorizar el cambio; sin oferta no aplica.
+            $changes['allow_reselect'] = $process->activeJobAssignment()->exists();
+        }
+        $process->setModuleAccess(ModuleCatalog::JOB_POOL, $changes);
+        $process->save();
+    }
+
+    /** El participante tiene oferta activa y IE lo autorizó a cambiarla. */
+    public function canChangeOffer(ProgramProcess $process): bool
+    {
+        return $this->canAccess($process) && (bool) ($process->moduleAccess(ModuleCatalog::JOB_POOL)['allow_reselect'] ?? false);
+    }
+
+    /** Liberación dentro de una transacción abierta (bloquea oferta y asignación). */
+    private function releaseLocked(JobPoolAssignment $assignment, ?User $actor, ?string $reason, string $newStatus): JobPoolAssignment
+    {
+        $offer = JobPoolOffer::whereKey($assignment->job_pool_offer_id)->lockForUpdate()->firstOrFail();
+        $assignment = JobPoolAssignment::whereKey($assignment->id)->lockForUpdate()->firstOrFail();
+        if (! $assignment->isActive()) {
+            throw new JobPoolException('not_active', 'La asignación ya no está activa.', 409);
+        }
+
+        $assignment->update([
+            'status' => $newStatus,
+            'active_process_id' => null,
+            'released_at' => now(),
+            'released_by' => $actor?->id,
+            'release_reason' => $reason,
+        ]);
+        if ($offer->positions_available < $offer->positions_total) {
+            $offer->increment('positions_available');
+        }
+
+        $eventType = [
+            JobPoolAssignment::STATUS_REASSIGNED => 'reassigned',
+            JobPoolAssignment::STATUS_CHANGED => 'changed',
+            JobPoolAssignment::STATUS_JOB_CANCELLED => 'job_cancelled',
+        ][$newStatus] ?? 'released';
+        $this->event($offer, $assignment->process, $eventType, $actor, ['assignment_id' => $assignment->id, 'reason' => $reason]);
+        $this->log($offer->program, $actor, 'job_assignment_released', "Asignación liberada: {$offer->employer_name}".($reason ? " — {$reason}" : ''), $assignment->process?->user);
 
         return $assignment;
     }

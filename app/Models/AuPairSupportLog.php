@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSupportReviewState;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AuPairSupportLog extends Model
 {
+    use HasSupportReviewState;
+
     protected $fillable = [
         'au_pair_process_id',
         'log_type',

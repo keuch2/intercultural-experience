@@ -257,4 +257,47 @@ class AuPairProcess extends Model
     {
         return $query->whereNotIn('current_stage', ['completed', 'cancelled']);
     }
+
+    public static function stageLabel(string $stage): string
+    {
+        return [
+            'admission' => 'Admisión',
+            'application' => 'Aplicación',
+            'match_visa' => 'Match y Visa',
+            'support' => 'Soporte',
+            'completed' => 'Finalizado',
+        ][$stage] ?? $stage;
+    }
+
+    /**
+     * Progreso global aproximado: 25% por stage avanzado, +25% adicional cuando
+     * los documentos del stage actual están todos aprobados.
+     */
+    public function progressPercent(): int
+    {
+        if ($this->current_stage === 'completed') {
+            return 100;
+        }
+
+        $base = match ($this->current_stage) {
+            'application' => 25,
+            'match_visa' => 50,
+            'support' => 75,
+            default => 0,
+        };
+
+        $required = collect(AuPairDocument::documentTypesForStage(
+            $this->current_stage === 'application' ? 'application_payment1' : $this->current_stage
+        ))->filter(fn ($d) => $d['required'])->keys();
+        if ($required->isEmpty()) {
+            return $base;
+        }
+
+        $docs = $this->documents()->whereIn('document_type', $required)->get();
+        $approved = $required->filter(
+            fn ($type) => $docs->where('document_type', $type)->where('status', 'approved')->isNotEmpty()
+        )->count();
+
+        return min(100, $base + (int) round(($approved / $required->count()) * 25));
+    }
 }

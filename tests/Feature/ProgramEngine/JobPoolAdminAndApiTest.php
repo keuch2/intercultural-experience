@@ -61,7 +61,7 @@ class JobPoolAdminAndApiTest extends EngineTestCase
         $this->assertSame(3, $offer->fresh()->positions_available);
 
         // hub tabs de pool y placement renderizan con el módulo (no la etapa genérica)
-        $this->actingAs($admin)->get(route('admin.program.participants.show', ['program' => $slug, 'process' => $p1->id, 'tab' => 'job_pool']))->assertOk()->assertSee('Acceso habilitado')->assertSee('Deshabilitar acceso')->assertSee('Pool de Ofertas Laborales');
+        $this->actingAs($admin)->get(route('admin.program.participants.show', ['program' => $slug, 'process' => $p1->id, 'tab' => 'job_pool']))->assertOk()->assertSee('Acceso no habilitado')->assertSee('deshabilitado automáticamente al elegir oferta')->assertSee('Pool de Ofertas Laborales');
         $this->actingAs($admin)->get(route('admin.program.participants.show', ['program' => $slug, 'process' => $p1->id, 'tab' => 'placement']))->assertOk()->assertSee('Job Placement')->assertSee('Número SEVIS');
         $this->actingAs($admin)->put(route('admin.program.placement.update', [$slug, $p1->id]), ['sevis_number' => 'N1'])->assertRedirect();
         $this->assertDatabaseHas('job_placements', ['program_process_id' => $p1->id, 'sevis_number' => 'N1']);
@@ -91,11 +91,14 @@ class JobPoolAdminAndApiTest extends EngineTestCase
 
         $this->postJson("/api/programs/work-travel/job-pool/offers/{$offer->id}/select", [])->assertStatus(422)->assertJsonPath('code', 'confirmation_required');
         $this->postJson("/api/programs/work-travel/job-pool/offers/{$offer->id}/select", ['confirm' => true])->assertStatus(201)->assertJsonPath('data.offer.id', $offer->id);
-        $this->postJson("/api/programs/work-travel/job-pool/offers/{$offer->id}/select", ['confirm' => true])->assertStatus(409)->assertJsonPath('code', 'already_assigned');
+        // Al elegir, el acceso al pool se cierra solo: no puede volver a elegir, pero sigue viendo su oferta.
+        $this->assertFalse($process->fresh()->hasModuleAccess('job_pool'));
+        $this->postJson("/api/programs/work-travel/job-pool/offers/{$offer->id}/select", ['confirm' => true])->assertStatus(403)->assertJsonPath('code', 'not_enabled');
 
-        $this->getJson('/api/programs/work-travel/job-pool/offers')->assertOk()->assertJsonCount(0, 'data')->assertJsonPath('my_assignment.offer.employer_name', 'Kings Island');
+        $this->getJson('/api/programs/work-travel/job-pool/offers')->assertOk()->assertJsonPath('access', false)->assertJsonCount(0, 'data')->assertJsonPath('my_assignment.offer.employer_name', 'Kings Island');
         $this->getJson('/api/programs/work-travel/job-pool/assignment')->assertOk()->assertJsonPath('data.status', 'active');
-        $this->getJson('/api/programs/work-travel/placement')->assertOk()->assertJsonPath('data.has_assignment', true)->assertJsonPath('data.placement', null);
+        $this->getJson('/api/programs/work-travel/placement')->assertOk()->assertJsonPath('data.has_assignment', true)->assertJsonPath('data.placement.status', 'in_progress')
+            ->assertJsonPath('data.placement.interviews.sponsor.result', 'pending');
         $this->getJson('/api/programs/work-travel/process')->assertOk()->assertJsonPath('data.modules.job_pool.has_active_assignment', true);
 
         // Otro participante no ve el cupo agotado

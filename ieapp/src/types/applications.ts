@@ -22,6 +22,9 @@ export interface UserApplication {
   applied_at?: string | null;
   started_at?: string | null;
   completed_at?: string | null;
+  /** IE finalizó el programa de esta postulación (permite volver a postular). */
+  is_finished?: boolean;
+  current_stage_label?: string;
   created_at?: string;
   program: UserApplicationProgram;
 }

@@ -51,6 +51,8 @@ export interface AuPairProcess {
     support: string;
   };
   flags: AuPairFlags;
+  /** Contrato cargado por IE (servidores viejos no lo envían). */
+  contract?: { available: boolean; signed: boolean; filename: string | null; download_url: string | null };
   stages: AuPairStageSummary[];
   progress_pct: number;
   next_action: AuPairNextAction;

@@ -117,7 +117,7 @@
                     </div>
                     <div class="col-md-3">
                         <h6 class="text-muted mb-1">Etapa</h6>
-                        <p class="mb-0">{{ ucfirst(str_replace('_', ' ', $currentApplication->current_stage ?? 'N/A')) }}</p>
+                        <p class="mb-0">{{ \App\Support\ApplicationProgress::for($currentApplication)['label'] }}</p>
                     </div>
                     <div class="col-md-2 text-end">
                         <a href="{{ route('admin.participants.edit', $currentApplication->id) }}" class="btn btn-sm btn-warning">
@@ -192,7 +192,7 @@
                                                         </div>
                                                         <div class="col-md-4">
                                                             <i class="bi bi-graph-up me-1 text-muted"></i>
-                                                            {{ ucfirst(str_replace('_', ' ', $application->current_stage ?? 'N/A')) }}
+                                                            {{ \App\Support\ApplicationProgress::for($application)['label'] }}
                                                         </div>
                                                     </div>
 

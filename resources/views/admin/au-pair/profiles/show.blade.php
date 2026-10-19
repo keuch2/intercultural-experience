@@ -155,7 +155,7 @@
                 @endphp
                 <a href="{{ route('admin.aupair.profiles.show', ['id' => $user->id, 'tab' => $tabKey]) }}"
                    class="list-group-item list-group-item-action d-flex align-items-center {{ $isActive ? 'active' : '' }}">
-                    @php $apReportsCount = ($tabKey === 'support' && $process) ? $process->supportLogs->where('source', 'participant')->whereNull('resolution')->count() : 0; @endphp
+                    @php $apReportsCount = ($tabKey === 'support' && $process) ? $process->supportLogs->filter->isPendingReview()->count() : 0; @endphp
                     <span class="me-2">
                         @switch($status)
                             @case('pending')

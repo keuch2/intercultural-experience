@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { auPairService } from '../../services/api';
-import { AuPairDocumentEntry, DocStage } from '../../types/aupair';
+import { AuPairDocumentEntry, AuPairProcess, DocStage } from '../../types/aupair';
 import DocumentCard from '../../components/aupair/DocumentCard';
 import EmptyState from '../../components/EmptyState';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -33,6 +33,7 @@ const AuPairDocumentsScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [approved, setApproved] = useState<boolean | null>(null);
+  const [contract, setContract] = useState<AuPairProcess['contract'] | null>(null);
 
   const load = useCallback(async (s: DocStage) => {
     try {
@@ -41,6 +42,7 @@ const AuPairDocumentsScreen: React.FC = () => {
       const proc = await auPairService.getProcess();
       const isApproved = !!proc?.application_approved;
       setApproved(isApproved);
+      setContract(proc?.contract ?? null);
       if (!isApproved) {
         setEntries([]);
         return;
@@ -147,6 +149,20 @@ const AuPairDocumentsScreen: React.FC = () => {
           contentContainerStyle={styles.list}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
+          {!!contract?.available && contract.download_url && (
+            <TouchableOpacity
+              style={styles.contractCard}
+              onPress={() => downloadAndOpen(contract.download_url!, contract.filename || 'contrato.pdf')}
+              accessibilityLabel="Ver o descargar mi contrato"
+            >
+              <Ionicons name="document-text" size={26} color="#E52224" />
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.contractTitle}>Mi contrato</Text>
+                <Text style={styles.contractMeta}>{contract.signed ? 'Firmado · ' : ''}Tocá para ver o descargar</Text>
+              </View>
+              <Ionicons name="download-outline" size={20} color="#E52224" />
+            </TouchableOpacity>
+          )}
           {entries.length === 0 ? (
             <EmptyState icon="folder-open-outline" title="Sin documentos en esta etapa" />
           ) : (
@@ -163,6 +179,9 @@ const AuPairDocumentsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  contractCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#FECACA' },
+  contractTitle: { fontWeight: '700', color: '#222' },
+  contractMeta: { color: '#666', fontSize: 12, marginTop: 2 },
   safe: { flex: 1, backgroundColor: '#f4f4f5' },
   headerBar: {
     flexDirection: 'row',

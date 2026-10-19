@@ -62,7 +62,14 @@ class AdminDashboardController extends Controller
             ->take(5)
             ->get();
         
+        // Reportes enviados por participantes desde la app (motor + Au Pair) sin revisar
+        $inbox = app(\App\Services\SupportInbox::class);
+        $supportReports = $inbox->pending(10);
+        $supportReportsCount = $inbox->pendingCount();
+
         return view('admin.dashboard', compact(
+            'supportReports',
+            'supportReportsCount',
             'userCount',
             'participantCount',
             'adminCount',

@@ -19,11 +19,13 @@ trait ResolvesAuPairProcess
     protected function resolveProcess(Request $request): array
     {
         $user = $request->user();
-        $application = Application::query()
+        // Postulación seleccionada en la app (X-Application-Id) o la más reciente.
+        $base = Application::query()
             ->where('user_id', $user->id)
-            ->whereHas('program', fn ($q) => $q->where('subcategory', Program::SUBCATEGORY_AU_PAIR))
-            ->latest('id')
-            ->first();
+            ->whereHas('program', fn ($q) => $q->where('subcategory', Program::SUBCATEGORY_AU_PAIR));
+        $selectedId = (int) ($request->header('X-Application-Id') ?: $request->query('application_id'));
+        $application = ($selectedId ? (clone $base)->whereKey($selectedId)->first() : null)
+            ?? $base->latest('id')->first();
 
         if (! $application) {
             return [null, response()->json([

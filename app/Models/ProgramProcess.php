@@ -147,6 +147,14 @@ class ProgramProcess extends Model
         return ($this->module_access ?? [])[$module] ?? [];
     }
 
+    /** Mezcla cambios en el acceso de un módulo (p. ej. job_pool) sin pisar el resto. No guarda. */
+    public function setModuleAccess(string $module, array $changes): void
+    {
+        $access = $this->module_access ?? [];
+        $access[$module] = array_merge($access[$module] ?? [], $changes);
+        $this->module_access = $access;
+    }
+
     public function hasModuleAccess(string $module): bool
     {
         return (bool) ($this->moduleAccess($module)['enabled'] ?? false);

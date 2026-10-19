@@ -29,6 +29,7 @@
             </div>
             @if($log->description)<p class="mb-0 mt-1 small">{{ $log->description }}</p>@endif
             @if($log->resolution)<p class="mb-0 mt-1 small text-success"><i class="fas fa-check-circle me-1"></i><strong>Resolución:</strong> {{ $log->resolution }}</p>@endif
+            @include('admin.partials.support-reports._actions', ['log' => $log, 'kind' => 'program'])
         </div>
         @empty
         <p class="text-muted small mb-0"><i class="fas fa-info-circle"></i> Sin registros.</p>
@@ -59,3 +60,5 @@
         @include('admin.program-process.tabs.partials._finalization')
     @endif
 @endif
+
+@include('admin.partials.support-reports._resolve_modal')

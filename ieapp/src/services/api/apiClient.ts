@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import Constants from 'expo-constants';
 import { OfflineManager } from '../../utils/OfflineUtils';
+import { getSelectedApplicationId } from './selectedApplication';
 
 /**
  * URL del API. Por defecto apunta a PRODUCCIÓN para que la app funcione desde
@@ -127,6 +128,12 @@ apiClient.interceptors.request.use(
       const token = await AsyncStorage.getItem('auth_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+      }
+
+      // Proceso de la postulación seleccionada (motor y Au Pair)
+      const applicationId = getSelectedApplicationId();
+      if (applicationId && /^\/?(programs|au-pair)\//.test(config.url || '')) {
+        config.headers['X-Application-Id'] = String(applicationId);
       }
 
       // Check network connectivity

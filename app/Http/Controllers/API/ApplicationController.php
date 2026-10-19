@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Application;
+use App\Support\ApplicationProgress;
 use App\Models\Program;
 use App\Models\ProgramRequisite;
 use App\Models\UserProgramRequisite;
@@ -23,8 +24,10 @@ class ApplicationController extends Controller
         $applications = Application::where('user_id', auth()->id())
             ->with(['program'])
             ->orderBy('applied_at', 'desc')
-            ->get();
-            
+            ->get()
+            // Etapa y progreso reales del proceso (motor / Au Pair), no las columnas legacy.
+            ->each(fn ($a) => ApplicationProgress::apply($a));
+
         return response()->json([
             'success' => true,
             'data' => $applications

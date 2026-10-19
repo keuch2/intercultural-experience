@@ -457,9 +457,15 @@ class User extends Authenticatable
     /**
      * Get Au Pair process for the user
      */
+    /** Proceso Au Pair vigente: el más reciente (tras re-postular, el de la nueva convocatoria). */
     public function auPairProcess()
     {
-        return $this->hasOne(AuPairProcess::class);
+        return $this->hasOne(AuPairProcess::class)->latestOfMany();
+    }
+
+    public function auPairProcesses()
+    {
+        return $this->hasMany(AuPairProcess::class);
     }
 
     /**

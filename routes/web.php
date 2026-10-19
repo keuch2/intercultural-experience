@@ -267,6 +267,12 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::put('/support/{ticket}/close', [AdminSupportTicketController::class, 'close'])->name('admin.support.close');
         Route::put('/support/{ticket}/reopen', [AdminSupportTicketController::class, 'reopen'])->name('admin.support.reopen');
         Route::get('/support/export', [AdminSupportTicketController::class, 'export'])->name('admin.support.export');
+
+        // Reportes del participante desde la app (motor + Au Pair): leído / solucionado
+        Route::post('/support-reports/{kind}/{id}/read', [\App\Http\Controllers\Admin\SupportReportController::class, 'markRead'])
+            ->whereIn('kind', ['program', 'au-pair'])->whereNumber('id')->name('admin.support-reports.read');
+        Route::post('/support-reports/{kind}/{id}/resolve', [\App\Http\Controllers\Admin\SupportReportController::class, 'resolve'])
+            ->whereIn('kind', ['program', 'au-pair'])->whereNumber('id')->name('admin.support-reports.resolve');
         
         // Notifications Management
         Route::get('/notifications', [AdminSupportTicketController::class, 'notifications'])->name('admin.notifications.index');
@@ -474,6 +480,7 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         // ========================================
         Route::prefix('programas/{program:slug}')->name('admin.program.')->group(function () {
             Route::get('/participantes', [ProgramProcessController::class, 'index'])->name('participants.index');
+            Route::post('/participantes/pool-access', [ProgramProcessController::class, 'bulkPoolAccess'])->name('participants.bulk-pool-access');
             Route::get('/participantes/{process}', [ProgramProcessController::class, 'show'])->name('participants.show');
             Route::post('/participantes/{process}/approve', [ProgramProcessController::class, 'approveApplicant'])->name('participants.approve');
             Route::put('/participantes/{process}/personal', [ProgramProcessController::class, 'updatePersonal'])->name('participants.update-personal');
@@ -525,6 +532,7 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             Route::post('/ofertas/{offer}/close', [JobPoolOfferController::class, 'close'])->name('job-pool.close');
             Route::post('/ofertas/{offer}/assign', [JobPoolOfferController::class, 'assign'])->name('job-pool.assign');
             Route::post('/ofertas/{offer}/assignments/{assignment}/release', [JobPoolOfferController::class, 'release'])->name('job-pool.release');
+            Route::post('/ofertas/{offer}/assignments/{assignment}/cancel-job', [JobPoolOfferController::class, 'cancelJob'])->name('job-pool.cancel-job');
             Route::post('/ofertas/{offer}/assignments/{assignment}/reassign', [JobPoolOfferController::class, 'reassign'])->name('job-pool.reassign');
             // Informes y planillas
             Route::get('/informes', [ProgramReportController::class, 'index'])->name('reports.index');

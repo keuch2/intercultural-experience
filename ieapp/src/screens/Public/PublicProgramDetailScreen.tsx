@@ -13,7 +13,7 @@ import { onboardingScreenFor } from '../../navigation/programFlowRegistry';
 import { PublicStackParamList } from '../../navigation/PublicNavigator';
 import { usePublicAuth } from '../../contexts/PublicAuthContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useOptionalProgram, flowForApplication } from '../../contexts/ProgramContext';
+import { useOptionalProgram, flowForApplication, activeApplicationFor } from '../../contexts/ProgramContext';
 import { screensFor } from '../../navigation/programFlowRegistry';
 
 type Nav = NativeStackNavigationProp<PublicStackParamList>;
@@ -26,7 +26,11 @@ const PublicProgramDetailScreen: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const programCtx = useOptionalProgram();
   const { id } = route.params;
-  const existing = programCtx?.applications.find(a => a.program_id === id) ?? null;
+  // Vigente = no finalizada por IE. Con solo participaciones finalizadas puede postular a una nueva convocatoria.
+  const existing = programCtx ? activeApplicationFor(programCtx.applications, id) : null;
+  const previous = !existing
+    ? programCtx?.applications.filter(a => a.program_id === id).sort((a, b) => b.id - a.id)[0] ?? null
+    : null;
 
   const [program, setProgram] = useState<PublicProgram | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,6 +89,14 @@ const PublicProgramDetailScreen: React.FC = () => {
     }
     // Sin sesión: AppNavigator monta el AuthStack y retoma la intención tras el login.
     requestAuth({ redirectTo: onboarding, programId: id });
+  };
+
+  const openPrevious = async () => {
+    if (!previous || !programCtx) return;
+    const flow = flowForApplication(previous);
+    if (flow === 'none') return;
+    await programCtx.selectApplication(previous.id);
+    (navigation as any).navigate(screensFor(flow).home);
   };
 
   if (loading) {
@@ -188,10 +200,16 @@ const PublicProgramDetailScreen: React.FC = () => {
       </ScrollView>
 
       <View style={styles.footer}>
+        {!!previous && programCtx && (
+          <TouchableOpacity style={styles.previousLink} onPress={openPrevious}>
+            <Ionicons name="time-outline" size={14} color="#E52224" />
+            <Text style={styles.previousLinkText}>Ver mi participación anterior</Text>
+          </TouchableOpacity>
+        )}
         {available ? (
           <TouchableOpacity style={styles.primaryBtn} onPress={handleApply}>
             <Ionicons name="rocket-outline" size={18} color="#fff" />
-            <Text style={styles.primaryBtnText}>{existing ? 'Ver mi proceso' : isAuthenticated ? 'Postular ahora' : 'Postular (iniciar sesión)'}</Text>
+            <Text style={styles.primaryBtnText}>{existing ? 'Ver mi proceso' : previous ? 'Volver a postular' : isAuthenticated ? 'Postular ahora' : 'Postular (iniciar sesión)'}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={styles.whatsappBtn} onPress={openWhatsApp}>
@@ -205,6 +223,8 @@ const PublicProgramDetailScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  previousLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingBottom: 10 },
+  previousLinkText: { color: '#E52224', fontWeight: '600', fontSize: 13 },
   safe: { flex: 1, backgroundColor: '#fafafa' },
   scroll: { paddingBottom: 100 },
   headerBar: {

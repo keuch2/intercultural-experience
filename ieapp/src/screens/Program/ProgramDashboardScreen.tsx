@@ -59,7 +59,7 @@ const ProgramDashboardScreen: React.FC = () => {
   const currentIdx = Math.max(0, envelope.stages.findIndex(s => s.key === envelope.current_stage));
   const color = stageColor(currentIdx);
   const currentStage = envelope.stages[currentIdx];
-  const programStart = describeProgramStart(envelope.program_start_date);
+  const programStart = describeProgramStart(envelope.program_start_date, envelope.program_end_date);
   const modules = Object.entries(envelope.modules).filter(([, m]) => m.enabled && m.implemented);
   // Mientras la postulación no esté aprobada solo se muestra el aviso de aprobación pendiente.
   const pendingApproval = envelope.status === 'active' && !approved;
@@ -119,18 +119,6 @@ const ProgramDashboardScreen: React.FC = () => {
               </View>
             </View>
 
-            {(envelope.gates.length > 0 || envelope.checklist.length > 0) && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Estado actual</Text>
-                <View style={styles.statusList}>
-                  {envelope.gates.map(g => <StatusRow key={g.key} label={g.label} value={g.verified ? 'Verificado' : 'Pendiente'} ok={g.verified} />)}
-                  {envelope.checklist.filter(c => c.stage_key === envelope.current_stage || !c.stage_key).map(c => <StatusRow key={c.key} label={c.label} value={c.done ? 'Completo' : 'Pendiente'} ok={c.done} />)}
-                  {envelope.modules.english_test?.enabled && (
-                    <StatusRow label={`Inglés (mín. ${envelope.modules.english_test.min_level})`} value={envelope.modules.english_test.best_level || 'Sin evaluar'} ok={!!envelope.modules.english_test.meets_minimum} />
-                  )}
-                </View>
-              </View>
-            )}
           </>
         )}
       </ScrollView>
@@ -144,16 +132,6 @@ const Shortcut: React.FC<{ icon: keyof typeof Ionicons.glyphMap; label: string; 
     <Text style={styles.shortcutLabel} numberOfLines={1}>{label}</Text>
     {badge && <Ionicons name={badge} size={12} color="#9CA3AF" style={styles.shortcutBadge} />}
   </TouchableOpacity>
-);
-
-const StatusRow: React.FC<{ label: string; value: string; ok: boolean }> = ({ label, value, ok }) => (
-  <View style={styles.statusRow}>
-    <Text style={styles.statusLabel} numberOfLines={1}>{label}</Text>
-    <View style={styles.statusRight}>
-      <Ionicons name={ok ? 'checkmark-circle' : 'time-outline'} size={16} color={ok ? '#10B981' : '#F59E0B'} />
-      <Text style={[styles.statusValue, { color: ok ? '#065F46' : '#92400E' }]}>{value}</Text>
-    </View>
-  </View>
 );
 
 const styles = StyleSheet.create({
@@ -178,11 +156,6 @@ const styles = StyleSheet.create({
   shortcut: { width: '48%', backgroundColor: '#fff', paddingVertical: 18, borderRadius: 12, alignItems: 'center', position: 'relative' },
   shortcutLabel: { marginTop: 6, fontWeight: '600', color: '#333', fontSize: 13 },
   shortcutBadge: { position: 'absolute', top: 8, right: 8 },
-  statusList: { backgroundColor: '#fff', borderRadius: 12, paddingVertical: 4 },
-  statusRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f4f4f5' },
-  statusLabel: { color: '#444', flex: 1, marginRight: 8 },
-  statusRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  statusValue: { fontWeight: '600', fontSize: 13 },
 });
 
 export default ProgramDashboardScreen;
