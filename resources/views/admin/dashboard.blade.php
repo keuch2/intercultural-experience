@@ -15,6 +15,7 @@
 </div>
 
 @include('admin.partials.support-reports._dashboard')
+@include('admin.partials._pending_documents')
 
 {{-- Módulo 13: Differentiated user type metrics --}}
 <!-- Dashboard Cards -->

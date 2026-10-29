@@ -10,7 +10,6 @@ use App\Models\Application;
 use App\Models\Reward;
 use App\Models\Redemption;
 use App\Models\SupportTicket;
-use App\Models\AuPairDocument;
 use App\Models\Payment;
 
 class AdminDashboardController extends Controller
@@ -37,7 +36,10 @@ class AdminDashboardController extends Controller
         
         // Centralizar todas las solicitudes pendientes de aprobación
         $pendingApps = Application::where('status', 'pending')->count();
-        $pendingDocs = AuPairDocument::where('status', 'pending')->count();
+        // Documentos cargados (motor + Au Pair) que esperan revisión de IE
+        $docsInbox = app(\App\Services\PendingDocumentsInbox::class);
+        $pendingDocs = $docsInbox->pendingCount();
+        $pendingDocuments = $docsInbox->pending(10);
         $pendingPayments = Payment::where('status', 'pending')->count();
         $pendingApplications = $pendingApps + $pendingDocs + $pendingPayments;
         
@@ -80,6 +82,7 @@ class AdminDashboardController extends Controller
             'pendingApplications',
             'pendingApps',
             'pendingDocs',
+            'pendingDocuments',
             'pendingPayments',
             'openTickets',
             'pendingRedemptions',
