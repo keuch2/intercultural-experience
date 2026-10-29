@@ -50,7 +50,7 @@ const HomeScreen: React.FC = () => {
           <Image source={require('../../assets/images/ie-icon.png')} style={styles.brandLogo} resizeMode="contain" />
           <View style={{ flex: 1 }}>
             <Text style={styles.hello}>Hola, {firstName} 👋</Text>
-            <Text style={styles.subtitle}>Bienvenido a ie · intercultural experience</Text>
+            <Text style={styles.subtitle}>Bienvenido a IE · intercultural experience</Text>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('Profile')} accessibilityLabel="Mi perfil">
             {user?.avatar_url ? <Image source={{ uri: user.avatar_url }} style={styles.avatar} /> : <View style={[styles.avatar, styles.avatarFallback]}><Ionicons name="person" size={22} color="#E52224" /></View>}
