@@ -97,7 +97,7 @@
                                     <div class="mb-3">
                                         <label class="form-label text-muted">Duración</label>
                                         <div class="fw-bold">
-                                            {{ $program->duration ?? 'No definida' }}
+                                            {{ $program->duration_label ?? 'No definida' }}
                                         </div>
                                     </div>
                                 </div>

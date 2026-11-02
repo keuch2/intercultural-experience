@@ -64,7 +64,7 @@ class AssignmentController extends Controller
                         'location' => $assignment->program->location,
                         'start_date' => $assignment->program->start_date,
                         'end_date' => $assignment->program->end_date,
-                        'duration' => $assignment->program->duration,
+                        'duration' => $assignment->program->duration_label,
                         'image_url' => $assignment->program->image ? asset('storage/' . $assignment->program->image) : null,
                         'cost_display' => $assignment->program->currency 
                             ? $assignment->program->currency->symbol . ' ' . number_format($assignment->program->cost, 2)
@@ -142,7 +142,7 @@ class AssignmentController extends Controller
                         'start_date' => $assignment->program->start_date,
                         'end_date' => $assignment->program->end_date,
                         'application_deadline' => $assignment->program->application_deadline,
-                        'duration' => $assignment->program->duration,
+                        'duration' => $assignment->program->duration_label,
                         'credits' => $assignment->program->credits,
                         'capacity' => $assignment->program->capacity,
                         'available_spots' => $assignment->program->available_slots ?? 0,
@@ -289,7 +289,7 @@ class AssignmentController extends Controller
                     'start_date' => $program->start_date,
                     'end_date' => $program->end_date,
                     'application_deadline' => $program->application_deadline,
-                    'duration' => $program->duration,
+                    'duration' => $program->duration_label,
                     'credits' => $program->credits,
                     'capacity' => $program->capacity,
                     'available_spots' => $program->available_slots ?? 0,

@@ -52,7 +52,7 @@
                                                 @endif
                                             </p>
                                             <p><strong>Capacidad:</strong> {{ $program->capacity ?: 'Sin límite' }}</p>
-                                            <p><strong>Duración:</strong> {{ $program->duration ? $program->duration . ' días' : 'No especificada' }}</p>
+                                            <p><strong>Duración:</strong> {{ $program->duration_label ?? 'No especificada' }}</p>
                                         </div>
                                     </div>
                                     

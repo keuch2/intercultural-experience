@@ -192,20 +192,7 @@
                                 
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="duration" class="form-label">Duración (días)</label>
-                                            <input type="number" 
-                                                   class="form-control @error('duration') is-invalid @enderror" 
-                                                   id="duration" 
-                                                   name="duration" 
-                                                   value="{{ old('duration', $program->duration) }}" 
-                                                   min="1"
-                                                   readonly>
-                                            <div class="form-text">Se calcula automáticamente al seleccionar las fechas</div>
-                                            @error('duration')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                        @include('admin.partials._program_duration', ['program' => $program])
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
@@ -393,35 +380,5 @@
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-// Calcular duración automáticamente
-function calculateDuration() {
-    const startDate = document.getElementById('start_date').value;
-    const endDate = document.getElementById('end_date').value;
-    
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        
-        if (end >= start) {
-            const diffTime = Math.abs(end - start);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            document.getElementById('duration').value = diffDays;
-        } else {
-            document.getElementById('duration').value = '';
-        }
-    }
-}
-
-// Agregar event listeners
-document.getElementById('start_date').addEventListener('change', calculateDuration);
-document.getElementById('end_date').addEventListener('change', calculateDuration);
-
-// Calcular al cargar si hay valores
-document.addEventListener('DOMContentLoaded', calculateDuration);
-</script>
-@endpush
 
 @endsection

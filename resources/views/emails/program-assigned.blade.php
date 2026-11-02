@@ -97,7 +97,7 @@
             @if($program->duration)
             <div class="program-detail">
                 <span class="label">⏱️ Duración:</span>
-                <span>{{ $program->duration }}</span>
+                <span>{{ $program->duration_label }}</span>
             </div>
             @endif
 

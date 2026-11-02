@@ -55,7 +55,7 @@ class PublicProgramController extends Controller
             'main_category' => $program->main_category,
             'subcategory' => $program->subcategory,
             'image_url' => $program->image_url,
-            'duration' => $program->duration,
+            'duration' => $program->duration_label,
             'is_available_in_app' => $program->is_available_in_app,
             // Motor de programas: la app decide el flujo (Au Pair vs genérico) con estos campos.
             'slug' => $program->slug,
