@@ -50,6 +50,11 @@ const ProfileScreen: React.FC = () => {
   });
   
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Eliminación de cuenta
+  const [deleteVisible, setDeleteVisible] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
   
   // Cargar datos del usuario en el formulario cuando está disponible
   useEffect(() => {
@@ -232,6 +237,30 @@ const ProfileScreen: React.FC = () => {
     }
   };
   
+  const closeDeleteModal = () => {
+    setDeleteVisible(false);
+    setDeletePassword('');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      Alert.alert('Contraseña requerida', 'Ingresá tu contraseña para confirmar.');
+      return;
+    }
+    try {
+      setDeleting(true);
+      await profileService.deleteAccount(deletePassword);
+      closeDeleteModal();
+      Alert.alert('Cuenta eliminada', 'Tu cuenta y tus datos personales fueron eliminados.');
+      await logout();
+    } catch (error: any) {
+      const message = error?.response?.data?.message || 'No se pudo eliminar la cuenta. Por favor intentá de nuevo.';
+      Alert.alert('Error', message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <View style={[styles.container, styles.centered]}>
@@ -329,6 +358,59 @@ const ProfileScreen: React.FC = () => {
       <TouchableOpacity style={styles.orangeButton}>
         <Text style={styles.orangeButtonText}>Ver mis Requisitos Pendientes</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.deleteAccountButton} onPress={() => setDeleteVisible(true)}>
+        <Text style={styles.deleteAccountText}>Eliminar mi cuenta</Text>
+      </TouchableOpacity>
+
+      {/* Modal para eliminar la cuenta */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={deleteVisible}
+        onRequestClose={closeDeleteModal}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={closeDeleteModal} />
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Eliminar mi cuenta</Text>
+              <Text style={styles.deleteWarning}>
+                Se eliminarán tus datos personales, tu foto y los documentos que subiste, y se cancelarán tus
+                procesos en curso. Esta acción no se puede deshacer. Los registros de pagos se conservan sin
+                tus datos personales por obligaciones contables.
+              </Text>
+              <Text style={styles.formLabel}>Ingresá tu contraseña para confirmar:</Text>
+              <TextInput
+                style={styles.input}
+                value={deletePassword}
+                onChangeText={setDeletePassword}
+                placeholder="Contraseña"
+                secureTextEntry
+                autoCapitalize="none"
+              />
+              <View style={styles.modalButtons}>
+                <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={closeDeleteModal}>
+                  <Text style={styles.modalButtonText}>CANCELAR</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.saveButton]}
+                  onPress={handleDeleteAccount}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.modalButtonText}>ELIMINAR</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
       
       {/* Modal para editar información personal */}
       <Modal
@@ -581,6 +663,9 @@ const styles = StyleSheet.create({
   purpleButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
   orangeButton: { backgroundColor: '#F8B400', borderRadius: 8, padding: 15, marginBottom: 10, alignItems: 'center' },
   orangeButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  deleteAccountButton: { padding: 15, marginTop: 10, marginBottom: 20, alignItems: 'center' },
+  deleteAccountText: { color: '#E52224', fontWeight: 'bold', fontSize: 15, textDecorationLine: 'underline' },
+  deleteWarning: { fontSize: 14, color: '#444', lineHeight: 20, marginBottom: 5 },
   bottomNav: { flexDirection: 'row', justifyContent: 'space-around', padding: 10, borderTopWidth: 1, borderColor: '#eee' },
   
   // Estilos para modales

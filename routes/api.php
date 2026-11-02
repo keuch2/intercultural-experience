@@ -119,6 +119,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/profile', [\App\Http\Controllers\API\ProfileController::class, 'apiUpdate']);
         Route::post('/profile/avatar', [\App\Http\Controllers\API\ProfileController::class, 'apiUpdateAvatar']);
         Route::put('/profile/password', [\App\Http\Controllers\API\ProfileController::class, 'changePassword']);
+        Route::delete('/me', [AuthController::class, 'deleteAccount'])->name('api.me.delete');
     });
 
     // Authentication - no rate limiting needed for these

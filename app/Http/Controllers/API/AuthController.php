@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AccountDeletionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -265,6 +266,45 @@ class AuthController extends Controller
                 'errors' => ['general' => ['Error interno del servidor']]
             ], 500);
         }
+    }
+
+    /**
+     * Elimina (anonimiza) la cuenta del participante autenticado. Requisito App Store 5.1.1(v).
+     */
+    public function deleteAccount(Request $request, AccountDeletionService $service)
+    {
+        $request->validate(['password' => 'required|string']);
+
+        $user = $request->user();
+        if ($user->role !== 'user') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Esta cuenta no puede eliminarse desde la app.',
+            ], 403);
+        }
+        if (! Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'La contraseña no es correcta.',
+                'errors' => ['password' => ['La contraseña no es correcta.']],
+            ], 422);
+        }
+
+        try {
+            $service->anonymize($user);
+        } catch (\Throwable $e) {
+            Log::error('Error al eliminar cuenta', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No pudimos eliminar tu cuenta. Intentá de nuevo o escribinos a info@ie.org.py.',
+            ], 500);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Tu cuenta fue eliminada.',
+        ]);
     }
 
     public function me(Request $request)

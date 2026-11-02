@@ -90,7 +90,7 @@ Antes de "Submit for Review" necesitás:
       corriendo la app en el simulador y capturando pantallas clave (login, dashboard, subir documento).
 - [ ] **Descripción, keywords, categoría** → ya están en `store.config.json`; podés publicarlos con
       `npx eas-cli metadata:push` o cargarlos a mano.
-- [ ] **URL de Política de Privacidad** → publicá `POLITICA_PRIVACIDAD.md` en `https://ie.org.py/privacidad`
+- [ ] **URL de Política de Privacidad** → ya publicada en `https://ie.org.py/app/public/privacidad` (fuente: `resources/legal/politica-privacidad.md`)
       y pegá esa URL en el campo "Privacy Policy URL".
 - [ ] **App Privacy** (cuestionario "Data Collection"): declará que la app recopila:
       - Datos de contacto (nombre, email) — vinculados a identidad, para funcionalidad de la app.
@@ -111,5 +111,5 @@ La revisión de Apple suele tardar **1 a 3 días**.
 | `appleId` | Tu email de Apple Developer |
 | `ascAppId` | App Store Connect → tu app → App Information (número) |
 | `appleTeamId` | developer.apple.com → Membership |
-| URL privacidad | Publicar POLITICA_PRIVACIDAD.md en ie.org.py |
+| URL privacidad | https://ie.org.py/app/public/privacidad |
 | Screenshots | Simulador iOS |

@@ -30,6 +30,13 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Política de privacidad pública (URL declarada en App Store Connect / Google Play)
+Route::get('privacidad', function () {
+    $content = \Illuminate\Support\Str::markdown(file_get_contents(resource_path('legal/politica-privacidad.md')), ['html_input' => 'strip']);
+
+    return view('legal.privacy', compact('content'));
+})->name('privacy');
+
 // Only admin authentication routes needed
 Route::get('login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [App\Http\Controllers\Auth\LoginController::class, 'login']);

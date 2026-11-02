@@ -96,6 +96,14 @@ const profileService = {
   changePassword: async (passwordData: { current_password: string; password: string; password_confirmation: string }) => {
     const response = await apiClient.put('/password', passwordData);
     return response.data;
+  },
+
+  /**
+   * Eliminar (anonimizar) la cuenta del usuario autenticado. Requiere la contraseña actual.
+   */
+  deleteAccount: async (password: string) => {
+    const response = await apiClient.delete('/me', { data: { password } });
+    return response.data;
   }
 };
 

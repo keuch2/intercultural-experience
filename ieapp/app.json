@@ -31,7 +31,15 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Usamos tu galería para que puedas seleccionar y subir tu foto de perfil y los documentos requeridos en tu proceso de admisión.",
+          "cameraPermission": "La app puede usar la cámara solo si elegís sacar una foto para tu perfil o tus documentos.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "extra": {
       "eas": {
