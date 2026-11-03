@@ -11,13 +11,6 @@ class Program extends Model
 
     public const SUBCATEGORY_AU_PAIR = 'Au Pair';
 
-    /** Unidades admitidas para programs.duration (etiqueta en singular|plural). */
-    public const DURATION_UNITS = [
-        'days' => ['día', 'días'],
-        'weeks' => ['semana', 'semanas'],
-        'months' => ['mes', 'meses'],
-        'years' => ['año', 'años'],
-    ];
 
     protected $fillable = [
         'name',
@@ -32,7 +25,6 @@ class Program extends Model
         'end_date', 
         'application_deadline',
         'duration', 
-        'duration_unit',
         'credits', 
         'capacity', 
         'available_spots', 
@@ -200,54 +192,12 @@ class Program extends Model
 
     // Accessors
 
-    /**
-     * Duración legible para la app/admin, expresada en años y meses
-     * ("1 año y 6 meses"). Duraciones menores a 4 semanas se muestran en semanas o días.
-     * Si `duration` tiene texto libre (programas legacy) se devuelve tal cual.
-     */
+    /** Duración informativa en texto libre ("3 meses", "4 a 6 meses", "Variable"). */
     public function getDurationLabelAttribute(): ?string
     {
-        return self::formatDuration($this->attributes['duration'] ?? null, $this->attributes['duration_unit'] ?? 'days');
-    }
+        $value = trim((string) ($this->attributes['duration'] ?? ''));
 
-    public static function formatDuration($value, ?string $unit = 'days'): ?string
-    {
-        if ($value === null || trim((string) $value) === '') {
-            return null;
-        }
-        if (!is_numeric($value)) {
-            return trim((string) $value);
-        }
-
-        $value = (int) $value;
-        if ($value <= 0) {
-            return null;
-        }
-
-        $unit = array_key_exists($unit, self::DURATION_UNITS) ? $unit : 'days';
-        $plural = fn (int $n, string $u) => $n . ' ' . self::DURATION_UNITS[$u][$n === 1 ? 0 : 1];
-
-        if ($unit === 'years') {
-            return $plural($value, 'years');
-        }
-
-        if ($unit === 'months') {
-            $months = $value;
-        } else {
-            $days = $unit === 'weeks' ? $value * 7 : $value;
-            if ($days < 28) {
-                return $plural($value, $unit);
-            }
-            $months = max(1, (int) round($days / 30.4375));
-        }
-
-        $years = intdiv($months, 12);
-        $months %= 12;
-
-        return collect([
-            $years ? $plural($years, 'years') : null,
-            $months ? $plural($months, 'months') : null,
-        ])->filter()->implode(' y ');
+        return $value === '' ? null : $value;
     }
 
     public function getFormattedCostAttribute()
