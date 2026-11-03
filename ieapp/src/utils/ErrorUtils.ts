@@ -66,9 +66,12 @@ export const handleApiError = (error: any, context?: string): AppError => {
 
   // Authentication errors (401)
   if (error.response?.status === 401) {
+    // En el login un 401 es credenciales incorrectas, no sesión vencida.
     return createAppError(
       'AUTH_ERROR',
-      'Tu sesión ha expirado. Por favor inicia sesión nuevamente.',
+      context === 'LOGIN'
+        ? error.response?.data?.message || 'El email o la contraseña no son correctos.'
+        : 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.',
       error.response?.data,
       context
     );
