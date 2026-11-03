@@ -55,6 +55,7 @@ return [
         'X-Auth-Token',
         'Origin',
         'Cache-Control',
+        'X-Application-Id', // postulación seleccionada en la app (/programs/*, /au-pair/*)
     ],
     
     'exposed_headers' => [],
