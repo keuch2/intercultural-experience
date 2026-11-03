@@ -1,6 +1,5 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import Constants from 'expo-constants';
 import { OfflineManager } from '../../utils/OfflineUtils';
@@ -18,7 +17,6 @@ import { getSelectedApplicationId } from './selectedApplication';
  * Eso solo afecta el binario de Expo Go local; el QR/URL prod sigue limpio.
  */
 const PRODUCTION_API_URL = 'https://ie.org.py/app/public/api';
-const LOCAL_API_PATH = '/intercultural-experience/public/api';
 
 const getBaseUrl = () => {
   // 1. Override por variable de entorno (npm run web:local apunta a la API de la Mac).
@@ -33,12 +31,7 @@ const getBaseUrl = () => {
     return extraUrl;
   }
 
-  // 3. Web servido desde la Mac → API local (mismo origen).
-  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
-    return `http://localhost${LOCAL_API_PATH}`;
-  }
-
-  // 4. Default: producción. Funciona desde cualquier red, sin LAN tricks.
+  // 3. Default: producción (también en web: `npm run web`; para la API local usar `npm run web:local`).
   return PRODUCTION_API_URL;
 };
 
