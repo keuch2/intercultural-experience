@@ -169,8 +169,22 @@ const programService = {
   /**
    * Complete a requisite
    */
-  completeRequisite: async (requisiteId: number, data: any) => {
-    const response = await apiClient.post(`/requisites/${requisiteId}/complete`, data);
+  completeRequisite: async (
+    requisiteId: number,
+    data: { file?: { uri: string; name: string; type: string }; notes?: string } = {},
+  ) => {
+    // Los requisitos de tipo documento exigen el archivo (multipart, igual que los documentos del motor).
+    const form = new FormData();
+    if (data.file) {
+      form.append('file', data.file as any);
+    }
+    if (data.notes) {
+      form.append('notes', data.notes);
+    }
+    const response = await apiClient.post(`/requisites/${requisiteId}/complete`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      transformRequest: (d) => d,
+    });
     return response.data;
   },
   

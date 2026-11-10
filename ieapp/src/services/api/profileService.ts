@@ -93,8 +93,8 @@ const profileService = {
   /**
    * Change user password
    */
-  changePassword: async (passwordData: { current_password: string; password: string; password_confirmation: string }) => {
-    const response = await apiClient.put('/password', passwordData);
+  changePassword: async (passwordData: { current_password: string; new_password: string; new_password_confirmation: string }) => {
+    const response = await apiClient.put('/profile/password', passwordData);
     return response.data;
   },
 

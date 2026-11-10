@@ -51,6 +51,11 @@ const ProfileScreen: React.FC = () => {
   
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  // Cambio de contraseña
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' });
+  const [changingPassword, setChangingPassword] = useState(false);
+
   // Eliminación de cuenta
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
@@ -237,6 +242,39 @@ const ProfileScreen: React.FC = () => {
     }
   };
   
+  const closePasswordModal = () => {
+    setPasswordVisible(false);
+    setPasswordForm({ current: '', next: '', confirm: '' });
+  };
+
+  const handleChangePassword = async () => {
+    const { current, next, confirm } = passwordForm;
+    if (!current || !next || !confirm) {
+      Alert.alert('Campos incompletos', 'Completá los tres campos.');
+      return;
+    }
+    if (next !== confirm) {
+      Alert.alert('Error', 'Las contraseñas nuevas no coinciden.');
+      return;
+    }
+    try {
+      setChangingPassword(true);
+      await profileService.changePassword({
+        current_password: current,
+        new_password: next,
+        new_password_confirmation: confirm,
+      });
+      closePasswordModal();
+      Alert.alert('Listo', 'Tu contraseña fue actualizada.');
+    } catch (error: any) {
+      const data = error?.response?.data;
+      const firstError = data?.errors ? (Object.values(data.errors)[0] as string[] | undefined)?.[0] : undefined;
+      Alert.alert('Error', firstError || data?.message || 'No se pudo cambiar la contraseña. Por favor intentá de nuevo.');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   const closeDeleteModal = () => {
     setDeleteVisible(false);
     setDeletePassword('');
@@ -334,7 +372,7 @@ const ProfileScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.row}>
-        <TouchableOpacity style={styles.purpleButton}>
+        <TouchableOpacity style={styles.purpleButton} onPress={() => setPasswordVisible(true)}>
           <Text style={styles.purpleButtonText}>CAMBIAR MI CONTRASEÑA</Text>
         </TouchableOpacity>
         <TouchableOpacity 
@@ -355,9 +393,67 @@ const ProfileScreen: React.FC = () => {
       >
         <Text style={styles.orangeButtonText}>Ver mis Postulaciones</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.orangeButton}>
-        <Text style={styles.orangeButtonText}>Ver mis Requisitos Pendientes</Text>
-      </TouchableOpacity>
+
+      {/* Modal para cambiar la contraseña */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={passwordVisible}
+        onRequestClose={closePasswordModal}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={closePasswordModal} />
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Cambiar mi contraseña</Text>
+              <Text style={styles.formLabel}>Contraseña actual:</Text>
+              <TextInput
+                style={styles.input}
+                value={passwordForm.current}
+                onChangeText={(value) => setPasswordForm(f => ({ ...f, current: value }))}
+                secureTextEntry
+                autoCapitalize="none"
+              />
+              <Text style={styles.formLabel}>Nueva contraseña:</Text>
+              <TextInput
+                style={styles.input}
+                value={passwordForm.next}
+                onChangeText={(value) => setPasswordForm(f => ({ ...f, next: value }))}
+                secureTextEntry
+                autoCapitalize="none"
+              />
+              <Text style={styles.passwordHint}>Mínimo 8 caracteres, con una mayúscula, una minúscula y un número.</Text>
+              <Text style={styles.formLabel}>Repetir nueva contraseña:</Text>
+              <TextInput
+                style={styles.input}
+                value={passwordForm.confirm}
+                onChangeText={(value) => setPasswordForm(f => ({ ...f, confirm: value }))}
+                secureTextEntry
+                autoCapitalize="none"
+              />
+              <View style={styles.modalButtons}>
+                <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={closePasswordModal}>
+                  <Text style={styles.modalButtonText}>CANCELAR</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.saveButton]}
+                  onPress={handleChangePassword}
+                  disabled={changingPassword}
+                >
+                  {changingPassword ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.modalButtonText}>GUARDAR</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
       <TouchableOpacity style={styles.deleteAccountButton} onPress={() => setDeleteVisible(true)}>
         <Text style={styles.deleteAccountText}>Eliminar mi cuenta</Text>
       </TouchableOpacity>
@@ -665,6 +761,7 @@ const styles = StyleSheet.create({
   orangeButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   deleteAccountButton: { padding: 15, marginTop: 10, marginBottom: 20, alignItems: 'center' },
   deleteAccountText: { color: '#E52224', fontWeight: 'bold', fontSize: 15, textDecorationLine: 'underline' },
+  passwordHint: { fontSize: 12, color: '#888', marginTop: 4 },
   deleteWarning: { fontSize: 14, color: '#444', lineHeight: 20, marginBottom: 5 },
   bottomNav: { flexDirection: 'row', justifyContent: 'space-around', padding: 10, borderTopWidth: 1, borderColor: '#eee' },
   

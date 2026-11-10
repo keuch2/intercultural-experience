@@ -147,29 +147,15 @@ const ApplicationDetailScreen: React.FC = () => {
         return;
       }
       
-      const fileUri = result.assets[0].uri;
-      const fileType = result.assets[0].mimeType;
-      const fileName = result.assets[0].name;
-      
-      // For implementation, we'd need to upload the file to a server
-      // But for now, let's simulate a successful document upload
-      
-      // TODO: When integrating with an actual server, use FormData to upload the file
-      // const formData = new FormData();
-      // formData.append('document', {
-      //   uri: fileUri,
-      //   name: fileName,
-      //   type: fileType,
-      // });
-      
-      // Call the API to mark the requisite as completed
+      const asset = result.assets[0];
       await programService.completeRequisite(requisiteId, {
-        application_id: applicationId,
-        name: fileName,
-        document_type: fileType,
-        // In a real implementation, we'd pass the file or its URL after upload
+        file: {
+          uri: asset.uri,
+          name: asset.name || `documento-${Date.now()}`,
+          type: asset.mimeType || 'application/octet-stream',
+        },
       });
-      
+
       // Update the local state to reflect the change
       setRequisites(prevRequisites => 
         prevRequisites.map(req => 
@@ -232,9 +218,7 @@ const ApplicationDetailScreen: React.FC = () => {
               setProcessingRequisite(requisiteId);
               
               // Call the API to mark the requisite as completed
-              await programService.completeRequisite(requisiteId, {
-                application_id: applicationId,
-              });
+              await programService.completeRequisite(requisiteId);
               
               // Update the local state to reflect the change
               setRequisites(prevRequisites => 
