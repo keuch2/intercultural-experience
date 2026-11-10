@@ -1,4 +1,31 @@
-# Publicar en Apple App Store — ie · intercultural experience
+# Publicar en Apple App Store — IE - intercultural experience
+
+## Estado (10/11/2026)
+
+Hecho:
+- App creada en App Store Connect (ascAppId 6807643028), bundle `com.intercultural.experience`, solo iPhone.
+- Builds con EAS y subida automática a TestFlight (`eas build --platform ios --profile production --auto-submit`),
+  usando la API Key de App Store Connect `7SPSJ46JHJ` ya asignada al proyecto.
+- Eliminación de cuenta en la app (Mi Perfil → Eliminar mi cuenta) — requisito 5.1.1(v).
+- Política de privacidad: https://ie.org.py/app/public/privacidad
+- Cuenta demo en producción para la revisión: `appreview@ie.org.py` (contraseña en App Review Information).
+- Capturas iPhone 6.7" (1290×2796) en `store/screenshots/iphone-6.7/`.
+- Textos de la ficha (descripción, keywords, categorías) en `store.config.json`.
+
+Pendiente en App Store Connect (manual):
+- [ ] Versión 1.0.0 → Build: elegir la última build (solo iPhone).
+- [ ] Subir las capturas de `store/screenshots/iphone-6.7/`.
+- [ ] Precios y disponibilidad → desmarcar "Apple Silicon Macs" y "Apple Vision Pro".
+- [ ] App Privacy (ver Paso 5) y Privacy Policy URL.
+- [ ] App Review Information: cuenta demo + nota "La cuenta puede eliminarse desde Mi Perfil → Eliminar mi cuenta".
+- [ ] Submit for Review.
+
+> Si el revisor elimina la cuenta demo, queda anonimizada: recrearla antes de re-enviar.
+
+---
+
+## Guía original (primer alta)
+
 
 Guía de los pasos que **ejecutás vos** en tu terminal (requieren login con Apple / 2FA, que no puede
 hacerse desde una sesión automatizada). Todo el código de la app ya quedó preparado (Parte A).
