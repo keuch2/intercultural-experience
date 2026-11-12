@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Política de Privacidad — IE - intercultural experience</title>
+    <title>{{ $title ?? 'Política de Privacidad' }} — IE - intercultural experience</title>
     <style>
         body { margin: 0; background: #f7f7f9; color: #222; font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         main { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; background: #fff; }

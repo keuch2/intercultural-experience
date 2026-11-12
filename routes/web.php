@@ -37,6 +37,13 @@ Route::get('privacidad', function () {
     return view('legal.privacy', compact('content'));
 })->name('privacy');
 
+// Instrucciones públicas para eliminar la cuenta (URL de eliminación declarada en Google Play)
+Route::get('eliminar-cuenta', function () {
+    $content = \Illuminate\Support\Str::markdown(file_get_contents(resource_path('legal/eliminar-cuenta.md')), ['html_input' => 'strip']);
+
+    return view('legal.privacy', ['content' => $content, 'title' => 'Eliminar tu cuenta']);
+})->name('account-deletion');
+
 // Only admin authentication routes needed
 Route::get('login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
