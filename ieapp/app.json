@@ -25,7 +25,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.intercultural.experience",
+      "package": "com.ieorgpy",
       "permissions": [
         "android.permission.INTERNET"
       ],

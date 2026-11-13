@@ -45,3 +45,7 @@ qr-expo-go.svg
 qr-apk.png
 qr-devserver.png
 qr-devserver.html
+
+# Keystore de subida Android (descargado de EAS)
+credentials.json
+*.jks

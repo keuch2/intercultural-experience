@@ -1,9 +1,16 @@
 # Publicar en Google Play — IE - intercultural experience
 
-Paquete: `com.intercultural.experience` · Solo smartphones · Textos y gráficos en `store/google-play/`.
+Paquete: `com.ieorgpy` (exigido por Play Console; iOS sigue con `com.intercultural.experience`) · Solo smartphones · Textos y gráficos en `store/google-play/`.
 
 Camino: **EAS Build** genera el `.aab` firmado y **EAS Submit** lo sube a Play con una cuenta de servicio de Google.
 La única subida manual es la primera (Google no permite crear la primera versión por API).
+
+## Clave de subida (importante)
+
+Play Console tiene registrada la clave de subida **SHA1 E2:D5:16:46:A7:7A:F5:4E:9D:CA:76:51:B8:67:B9:E0:C8:AB:E7:28**.
+Está en `credentials.json` + `credentials/android/keystore.jks` (fuera de git; guardar copia segura) y
+`eas.json` (production.android) usa `credentialsSource: local`. Si se pierde, pedir el restablecimiento de la clave
+de subida en Play Console → Integridad de la app.
 
 ## 1. Crear la app en Play Console
 
