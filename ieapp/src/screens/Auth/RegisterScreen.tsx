@@ -96,7 +96,18 @@ const RegisterScreen: React.FC = () => {
     
     console.log('Attempting registration with:', { name, email, password: '***', passwordConfirmation: '***' });
     
-    const result = await register(name, email, password, passwordConfirmation);
+    // Solo se envían los campos opcionales que el usuario completó.
+    const profile = Object.fromEntries(
+      Object.entries({
+        city: city.trim(),
+        // Se guarda el nombre del país ("Paraguay"), igual que en Mi Perfil y el panel.
+        country: allCountries.find((c) => c.value === country)?.label ?? country,
+        academic_level: academicLevel,
+        english_level: englishLevel,
+      }).filter(([, value]) => value !== '')
+    );
+
+    const result = await register(name, email, password, passwordConfirmation, profile);
     
     if (result.success) {
       Alert.alert('Registro exitoso', 'Tu cuenta ha sido creada correctamente');
@@ -269,7 +280,7 @@ const RegisterScreen: React.FC = () => {
         value={academicLevel}
         onSelect={setAcademicLevel}
         placeholder="Selecciona tu nivel académico"
-        error={getErrorMessage('academicLevel')}
+        error={getErrorMessage('academic_level')}
       />
       
       <DropdownField
@@ -278,7 +289,7 @@ const RegisterScreen: React.FC = () => {
         value={englishLevel}
         onSelect={setEnglishLevel}
         placeholder="Selecciona tu nivel de inglés"
-        error={getErrorMessage('englishLevel')}
+        error={getErrorMessage('english_level')}
       />
       
       <TouchableOpacity 

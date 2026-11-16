@@ -16,13 +16,27 @@ interface AuthContextType {
   isAuthenticated: boolean;
   error: AppError | null;
   login: (email: string, password: string) => Promise<AuthResult>;
-  register: (name: string, email: string, password: string, passwordConfirmation: string) => Promise<AuthResult>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    passwordConfirmation: string,
+    profile?: RegisterProfileData
+  ) => Promise<AuthResult>;
   setupPassword: (email: string, password: string, passwordConfirmation: string) => Promise<AuthResult>;
   logout: () => Promise<void>;
   clearError: () => void;
   refreshUser: () => Promise<void>;
   updateUserData: (userData: any) => void;
   retryAuth: () => Promise<void>;
+}
+
+/** Datos opcionales del formulario de registro que se guardan en el perfil. */
+export interface RegisterProfileData {
+  city?: string;
+  country?: string;
+  academic_level?: string;
+  english_level?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -107,7 +121,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     name: string, 
     email: string, 
     password: string, 
-    passwordConfirmation: string
+    passwordConfirmation: string,
+    profile: RegisterProfileData = {}
   ): Promise<AuthResult> => {
     setIsLoading(true);
     setError(null);
@@ -118,7 +133,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           name, 
           email, 
           password, 
-          password_confirmation: passwordConfirmation 
+          password_confirmation: passwordConfirmation,
+          ...profile,
         }),
         1, // No retry for registration to prevent duplicate accounts
         0

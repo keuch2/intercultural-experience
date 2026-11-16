@@ -11,6 +11,10 @@ export interface RegisterData {
   email: string;
   password: string;
   password_confirmation: string;
+  city?: string;
+  country?: string;
+  academic_level?: string;
+  english_level?: string;
 }
 
 export interface AuthResponse {

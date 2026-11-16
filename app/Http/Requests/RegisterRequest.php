@@ -12,14 +12,18 @@ class RegisterRequest extends BaseFormRequest
     public function rules(): array
     {
         $commonRules = $this->getCommonRules();
-        
+
         return [
             'name' => $commonRules['name'],
-            'email' => $commonRules['email'] . '|unique:users',
-            'password' => ['required', 'string', 'confirmed', new StrongPassword()],
+            'email' => $commonRules['email'].'|unique:users',
+            'password' => ['required', 'string', 'confirmed', new StrongPassword],
             'phone' => $commonRules['phone'],
             'nationality' => $commonRules['nationality'],
             'birth_date' => $commonRules['birth_date'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'country' => ['nullable', 'string', 'max:100'],
+            'academic_level' => ['nullable', 'in:bachiller,licenciatura,maestria,posgrado,doctorado'],
+            'english_level' => ['nullable', 'in:basico,intermedio,avanzado,nativo'],
         ];
     }
 }

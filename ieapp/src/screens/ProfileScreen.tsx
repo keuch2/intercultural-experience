@@ -79,6 +79,22 @@ const ProfileScreen: React.FC = () => {
   }, [user]);
   
   // Format date if available
+  const ACADEMIC_LEVEL_LABELS: Record<string, string> = {
+    bachiller: 'Bachiller',
+    licenciatura: 'Licenciatura',
+    maestria: 'Maestría',
+    posgrado: 'Posgrado',
+    doctorado: 'Doctorado',
+  };
+  const ENGLISH_LEVEL_LABELS: Record<string, string> = {
+    basico: 'Básico',
+    intermedio: 'Intermedio',
+    avanzado: 'Avanzado',
+    nativo: 'Nativo',
+  };
+  const labelOf = (labels: Record<string, string>, value?: string) =>
+    value ? labels[value] ?? value : 'No disponible';
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'No disponible';
     try {
@@ -346,9 +362,9 @@ const ProfileScreen: React.FC = () => {
         <Text style={styles.infoLabel}>País:</Text>
         <Text style={styles.infoValue}>{user?.country || 'No disponible'}</Text>
         <Text style={styles.infoLabel}>Nivel Académico:</Text>
-        <Text style={styles.infoValue}>{user?.academic_level || 'No disponible'}</Text>
+        <Text style={styles.infoValue}>{labelOf(ACADEMIC_LEVEL_LABELS, user?.academic_level)}</Text>
         <Text style={styles.infoLabel}>Nivel de Inglés:</Text>
-        <Text style={styles.infoValue}>{user?.english_level || 'No disponible'}</Text>
+        <Text style={styles.infoValue}>{labelOf(ENGLISH_LEVEL_LABELS, user?.english_level)}</Text>
         <TouchableOpacity 
           style={styles.editButton}
           onPress={() => setPersonalInfoVisible(true)}
