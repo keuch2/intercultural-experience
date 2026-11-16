@@ -15,16 +15,58 @@ import {
   Keyboard,
   Image
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import DropdownField from '../components/DropdownField';
+import { allCountries } from '../data/countries';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../contexts/AuthContext';
 import { profileService } from '../services/api';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import Header from '../components/Header';
+
+// Fecha de nacimiento: se edita como DD/MM/AAAA y se guarda como AAAA-MM-DD.
+// Se toman las partes del texto (sin new Date) para no correr un día por la zona horaria.
+const isoToDisplayDate = (value?: string | null): string => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value || '');
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
+};
+
+const displayToIsoDate = (value: string): string | null => {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
+  if (!m) return null;
+  const [, dd, mm, yyyy] = m;
+  const date = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+  const valid = date.getFullYear() === Number(yyyy) && date.getMonth() === Number(mm) - 1
+    && date.getDate() === Number(dd) && date < new Date();
+  return valid ? `${yyyy}-${mm}-${dd}` : null;
+};
+
+// Inserta las barras mientras se escribe: 13061971 → 13/06/1971
+const maskDate = (value: string): string => {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+};
+
+const ACADEMIC_LEVEL_OPTIONS = [
+  { label: 'Bachiller', value: 'bachiller' },
+  { label: 'Licenciatura', value: 'licenciatura' },
+  { label: 'Maestría', value: 'maestria' },
+  { label: 'Posgrado', value: 'posgrado' },
+  { label: 'Doctorado', value: 'doctorado' },
+];
+
+const ENGLISH_LEVEL_OPTIONS = [
+  { label: 'Básico', value: 'basico' },
+  { label: 'Intermedio', value: 'intermedio' },
+  { label: 'Avanzado', value: 'avanzado' },
+  { label: 'Nativo', value: 'nativo' },
+];
+
+// El perfil guarda el nombre del país ("Paraguay").
+const COUNTRY_OPTIONS = allCountries.map((c) => ({ label: c.label, value: c.label }));
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -66,7 +108,7 @@ const ProfileScreen: React.FC = () => {
     if (user) {
       setFormData({
         name: user.name || '',
-        birth_date: user.birth_date || '',
+        birth_date: isoToDisplayDate(user.birth_date),
         nationality: user.nationality || '',
         phone: user.phone || '',
         address: user.address || '',
@@ -78,32 +120,9 @@ const ProfileScreen: React.FC = () => {
     }
   }, [user]);
   
-  // Format date if available
-  const ACADEMIC_LEVEL_LABELS: Record<string, string> = {
-    bachiller: 'Bachiller',
-    licenciatura: 'Licenciatura',
-    maestria: 'Maestría',
-    posgrado: 'Posgrado',
-    doctorado: 'Doctorado',
-  };
-  const ENGLISH_LEVEL_LABELS: Record<string, string> = {
-    basico: 'Básico',
-    intermedio: 'Intermedio',
-    avanzado: 'Avanzado',
-    nativo: 'Nativo',
-  };
-  const labelOf = (labels: Record<string, string>, value?: string) =>
-    value ? labels[value] ?? value : 'No disponible';
+  const labelOf = (options: { label: string; value: string }[], value?: string) =>
+    value ? options.find((o) => o.value === value)?.label ?? value : 'No disponible';
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'No disponible';
-    try {
-      return format(new Date(dateString), 'dd/MM/yyyy', { locale: es });
-    } catch (error) {
-      return 'Fecha inválida';
-    }
-  };
-  
   // Manejar cambios en los campos del formulario
   const handleChange = (name: string, value: string) => {
     setFormData(prevState => ({
@@ -117,10 +136,15 @@ const ProfileScreen: React.FC = () => {
     try {
       setRefreshing(true);
       
-      // Aseguramos que los campos tengan los valores correctos
+      const birthDate = formData.birth_date.trim() === '' ? '' : displayToIsoDate(formData.birth_date);
+      if (birthDate === null) {
+        Alert.alert('Fecha de nacimiento', 'Ingresá una fecha válida con el formato DD/MM/AAAA (por ejemplo 13/06/1971).');
+        return;
+      }
+
       const dataToUpdate = {
         name: formData.name,
-        birth_date: formData.birth_date,
+        birth_date: birthDate,
         nationality: formData.nationality,
         city: formData.city,
         country: formData.country,
@@ -147,9 +171,11 @@ const ProfileScreen: React.FC = () => {
       
       Alert.alert('Éxito', 'Información personal actualizada correctamente');
       setPersonalInfoVisible(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al actualizar información personal:', error);
-      Alert.alert('Error', 'No se pudo actualizar la información. Por favor intente de nuevo.');
+      const serverErrors = error?.response?.data?.errors;
+      const firstError = serverErrors ? (Object.values(serverErrors)[0] as string[])?.[0] : null;
+      Alert.alert('Error', firstError || 'No se pudo actualizar la información. Por favor intente de nuevo.');
     } finally {
       setRefreshing(false);
     }
@@ -356,15 +382,15 @@ const ProfileScreen: React.FC = () => {
         <Text style={styles.infoLabel}>Nombre:</Text>
         <Text style={styles.infoValue}>{user?.name || 'No disponible'}</Text>
         <Text style={styles.infoLabel}>Fecha de Nacimiento:</Text>
-        <Text style={styles.infoValue}>{formatDate(user?.birth_date)}</Text>
+        <Text style={styles.infoValue}>{isoToDisplayDate(user?.birth_date) || 'No disponible'}</Text>
         <Text style={styles.infoLabel}>Ciudad:</Text>
         <Text style={styles.infoValue}>{user?.city || 'No disponible'}</Text>
         <Text style={styles.infoLabel}>País:</Text>
         <Text style={styles.infoValue}>{user?.country || 'No disponible'}</Text>
         <Text style={styles.infoLabel}>Nivel Académico:</Text>
-        <Text style={styles.infoValue}>{labelOf(ACADEMIC_LEVEL_LABELS, user?.academic_level)}</Text>
+        <Text style={styles.infoValue}>{labelOf(ACADEMIC_LEVEL_OPTIONS, user?.academic_level)}</Text>
         <Text style={styles.infoLabel}>Nivel de Inglés:</Text>
-        <Text style={styles.infoValue}>{labelOf(ENGLISH_LEVEL_LABELS, user?.english_level)}</Text>
+        <Text style={styles.infoValue}>{labelOf(ENGLISH_LEVEL_OPTIONS, user?.english_level)}</Text>
         <TouchableOpacity 
           style={styles.editButton}
           onPress={() => setPersonalInfoVisible(true)}
@@ -543,85 +569,70 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Editar Información Personal</Text>
-              
-              <Text style={styles.formLabel}>Nombre:</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.name}
-                onChangeText={(value) => handleChange('name', value)}
-                placeholder="Ingresa tu nombre completo"
-                autoCapitalize="words"
-              />
-              
-              <Text style={styles.formLabel}>Fecha de Nacimiento:</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.birth_date}
-                onChangeText={(value) => handleChange('birth_date', value)}
-                placeholder="YYYY-MM-DD"
-                keyboardType="numbers-and-punctuation"
-              />
-              
-              <Text style={styles.formLabel}>Ciudad:</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.city}
-                onChangeText={(value) => handleChange('city', value)}
-                placeholder="Ingresa tu ciudad"
-                autoCapitalize="words"
-              />
-              
-              <Text style={styles.formLabel}>País:</Text>
-              <Picker
-                selectedValue={formData.country}
-                style={styles.picker}
-                onValueChange={(value) => handleChange('country', value)}
+              <ScrollView
+                style={styles.modalScroll}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator
               >
-                <Picker.Item label="Selecciona tu país" value="" />
-                <Picker.Item label="Paraguay" value="Paraguay" />
-                <Picker.Item label="Argentina" value="Argentina" />
-                <Picker.Item label="Brasil" value="Brasil" />
-                <Picker.Item label="Uruguay" value="Uruguay" />
-                <Picker.Item label="Chile" value="Chile" />
-                <Picker.Item label="Bolivia" value="Bolivia" />
-                <Picker.Item label="Perú" value="Perú" />
-                <Picker.Item label="Colombia" value="Colombia" />
-                <Picker.Item label="Ecuador" value="Ecuador" />
-                <Picker.Item label="Venezuela" value="Venezuela" />
-                <Picker.Item label="México" value="México" />
-                <Picker.Item label="Estados Unidos" value="Estados Unidos" />
-                <Picker.Item label="Canadá" value="Canadá" />
-                <Picker.Item label="España" value="España" />
-                <Picker.Item label="Otro" value="Otro" />
-              </Picker>
-              
-              <Text style={styles.formLabel}>Nivel Académico:</Text>
-              <Picker
-                selectedValue={formData.academic_level}
-                style={styles.picker}
-                onValueChange={(value) => handleChange('academic_level', value)}
-              >
-                <Picker.Item label="Selecciona tu nivel" value="" />
-                <Picker.Item label="Bachiller" value="bachiller" />
-                <Picker.Item label="Licenciatura" value="licenciatura" />
-                <Picker.Item label="Maestría" value="maestria" />
-                <Picker.Item label="Posgrado" value="posgrado" />
-                <Picker.Item label="Doctorado" value="doctorado" />
-              </Picker>
-              
-              <Text style={styles.formLabel}>Nivel de Inglés:</Text>
-              <Picker
-                selectedValue={formData.english_level}
-                style={styles.picker}
-                onValueChange={(value) => handleChange('english_level', value)}
-              >
-                <Picker.Item label="Selecciona tu nivel" value="" />
-                <Picker.Item label="Básico" value="basico" />
-                <Picker.Item label="Intermedio" value="intermedio" />
-                <Picker.Item label="Avanzado" value="avanzado" />
-                <Picker.Item label="Nativo" value="nativo" />
-              </Picker>
-                
+                <Text style={styles.formLabel}>Nombre:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.name}
+                  onChangeText={(value) => handleChange('name', value)}
+                  placeholder="Ingresa tu nombre completo"
+                  autoCapitalize="words"
+                />
+
+                <Text style={styles.formLabel}>Fecha de Nacimiento:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.birth_date}
+                  onChangeText={(value) => handleChange('birth_date', maskDate(value))}
+                  placeholder="DD/MM/AAAA"
+                  keyboardType="number-pad"
+                  maxLength={10}
+                />
+
+                <Text style={styles.formLabel}>Ciudad:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.city}
+                  onChangeText={(value) => handleChange('city', value)}
+                  placeholder="Ingresa tu ciudad"
+                  autoCapitalize="words"
+                />
+
+                <DropdownField
+                  label="País:"
+                  options={
+                    formData.country && !COUNTRY_OPTIONS.some((o) => o.value === formData.country)
+                      ? [{ label: formData.country, value: formData.country }, ...COUNTRY_OPTIONS]
+                      : COUNTRY_OPTIONS
+                  }
+                  value={formData.country}
+                  onSelect={(value) => handleChange('country', value)}
+                  placeholder="Selecciona tu país"
+                  searchable
+                  maxHeight={250}
+                />
+
+                <DropdownField
+                  label="Nivel Académico:"
+                  options={ACADEMIC_LEVEL_OPTIONS}
+                  value={formData.academic_level}
+                  onSelect={(value) => handleChange('academic_level', value)}
+                  placeholder="Selecciona tu nivel"
+                />
+
+                <DropdownField
+                  label="Nivel de Inglés:"
+                  options={ENGLISH_LEVEL_OPTIONS}
+                  value={formData.english_level}
+                  onSelect={(value) => handleChange('english_level', value)}
+                  placeholder="Selecciona tu nivel"
+                />
+              </ScrollView>
+
               <View style={styles.modalButtons}>
                 <TouchableOpacity 
                   style={[styles.modalButton, styles.cancelButton]}
@@ -801,7 +812,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     width: '100%',
-    maxHeight: '80%'
+    maxHeight: '85%'
+  },
+  modalScroll: {
+    flexGrow: 0,
   },
   modalTitle: {
     fontSize: 18,
@@ -823,13 +837,6 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     backgroundColor: '#f9f9f9'
-  },
-  picker: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    backgroundColor: '#f9f9f9',
-    marginBottom: 10
   },
   modalButtons: {
     flexDirection: 'row',
