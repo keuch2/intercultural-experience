@@ -516,10 +516,9 @@ const ProfileScreen: React.FC = () => {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Eliminar mi cuenta</Text>
               <Text style={styles.deleteWarning}>
-                Se eliminará tu cuenta de la app: se cerrará tu sesión y ya no podrás ingresar con este correo y
-                contraseña. Tu legajo en IE (datos, documentos, postulaciones y pagos) se conserva por fines de
-                transparencia, administración y seguimiento de los programas. Si querés volver a usar la app,
-                escribinos a info@ie.org.py.
+                Se borrarán tu usuario, tu contraseña y tus datos de la app móvil, y se cerrarán todas tus
+                sesiones. Para volver a obtener acceso, deberás contactar con IE - intercultural experience
+                (info@ie.org.py).
               </Text>
               <Text style={styles.formLabel}>Ingresá tu contraseña para confirmar:</Text>
               <TextInput
