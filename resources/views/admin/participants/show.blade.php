@@ -3,6 +3,23 @@
 @section('content')
 @if($errors->has('application'))<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-1"></i> {{ $errors->first('application') }}</div>@endif
 <div class="container-fluid">
+    @if($participant->app_account_deleted_at)
+        <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <i class="fas fa-mobile-alt me-1"></i>
+                <strong>Cuenta de la app eliminada</strong> por el participante el
+                {{ $participant->app_account_deleted_at->format('d/m/Y H:i') }}. No puede ingresar a la app;
+                su ficha, documentos, postulaciones y pagos se conservan.
+            </div>
+            <form method="POST" action="{{ route('admin.participants.restore-app-access', $participant->id) }}"
+                  onsubmit="return confirm('¿Restaurar el acceso a la app? El participante deberá crear una contraseña nueva al ingresar.')">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-dark">
+                    <i class="fas fa-undo me-1"></i> Restaurar acceso a la app
+                </button>
+            </form>
+        </div>
+    @endif
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">
             Participante: {{ $participant->full_name }}

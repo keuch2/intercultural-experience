@@ -97,6 +97,7 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::post('/participants/{participant}/applications', [AdminParticipantController::class, 'storeApplication'])->name('admin.participants.applications.store');
         Route::delete('/participants/{participant}/applications/{application}', [AdminParticipantController::class, 'destroyApplication'])->name('admin.participants.applications.destroy');
         Route::delete('/participants/{participant}', [AdminParticipantController::class, 'destroy'])->name('admin.participants.destroy');
+        Route::post('/participants/{participant}/restore-app-access', [AdminParticipantController::class, 'restoreAppAccess'])->name('admin.participants.restore-app-access');
         
         // Agents Management
         Route::get('/agents', [AdminAgentController::class, 'index'])->name('admin.agents.index');

@@ -66,6 +66,13 @@ const LoginScreen: React.FC = () => {
         navigation.navigate('SetupPassword', { email, name: check.name });
         return;
       }
+      if (check.state === 'app_account_deleted') {
+        Alert.alert(
+          'Cuenta eliminada',
+          check.message || 'Esta cuenta fue eliminada de la app. Si querés volver a usarla, escribinos a info@ie.org.py.'
+        );
+        return;
+      }
       if (check.state === 'admin') {
         Alert.alert('Solo administradores', check.message || 'Los administradores deben usar el panel web.');
         return;

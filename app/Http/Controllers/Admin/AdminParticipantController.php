@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Program;
 use App\Models\Application;
+use App\Models\Program;
+use App\Models\User;
 use App\Services\ApplicationDeletionService;
 use App\Services\Exceptions\ApplicationDeletionException;
 use App\Services\ProgramEngine\ProcessResolver;
@@ -22,65 +22,65 @@ class AdminParticipantController extends Controller
     public function index(Request $request)
     {
         $query = User::where('role', 'user')->with(['applications.program', 'englishEvaluations']);
-        
+
         // Filtrar por categoría de programa (IE o YFU)
         if ($request->filled('program_category')) {
             $category = $request->program_category;
-            $query->whereHas('applications.program', function($q) use ($category) {
+            $query->whereHas('applications.program', function ($q) use ($category) {
                 $q->where('main_category', $category);
             });
         }
-        
+
         // Búsqueda general
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%")
-                  ->orWhere('country', 'like', "%{$search}%")
-                  ->orWhere('nationality', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhere('country', 'like', "%{$search}%")
+                    ->orWhere('nationality', 'like', "%{$search}%");
             });
         }
-        
+
         // Filtro por país
         if ($request->filled('country')) {
             $query->where('country', 'like', "%{$request->country}%");
         }
-        
+
         // Filtro por ciudad
         if ($request->filled('city')) {
             $query->where('city', 'like', "%{$request->city}%");
         }
-        
+
         // Filtro por programa específico
         if ($request->filled('program_id')) {
-            $query->whereHas('applications', function($q) use ($request) {
+            $query->whereHas('applications', function ($q) use ($request) {
                 $q->where('program_id', $request->program_id);
             });
         }
-        
+
         // Filtro por estado de aplicación
         if ($request->filled('application_status')) {
-            $query->whereHas('applications', function($q) use ($request) {
+            $query->whereHas('applications', function ($q) use ($request) {
                 $q->where('status', $request->application_status);
             });
         }
-        
+
         // Filtro por nivel de inglés
         if ($request->filled('english_level')) {
-            $query->whereHas('englishEvaluations', function($q) use ($request) {
+            $query->whereHas('englishEvaluations', function ($q) use ($request) {
                 $q->where('cefr_level', $request->english_level)
-                  ->whereRaw('id IN (SELECT MAX(id) FROM english_evaluations GROUP BY user_id)');
+                    ->whereRaw('id IN (SELECT MAX(id) FROM english_evaluations GROUP BY user_id)');
             });
         }
-        
+
         // Filtro por género
         if ($request->filled('gender')) {
             $query->where('gender', $request->gender);
         }
-        
+
         // Filtro por rango de edad
         if ($request->filled('age_from')) {
             $query->whereRaw('TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= ?', [$request->age_from]);
@@ -88,7 +88,7 @@ class AdminParticipantController extends Controller
         if ($request->filled('age_to')) {
             $query->whereRaw('TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) <= ?', [$request->age_to]);
         }
-        
+
         // Filtro por fecha de registro
         if ($request->filled('registered_from')) {
             $query->whereDate('created_at', '>=', $request->registered_from);
@@ -96,21 +96,21 @@ class AdminParticipantController extends Controller
         if ($request->filled('registered_to')) {
             $query->whereDate('created_at', '<=', $request->registered_to);
         }
-        
+
         // Ordenamiento
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
-        
+
         $participants = $query->paginate(15)->appends($request->except('page'));
-        
+
         // Datos para filtros
         $programs = Program::select('id', 'name', 'main_category')->orderBy('name')->get();
         $countries = User::where('role', 'user')->distinct()->pluck('country')->filter()->sort()->values();
         $cities = User::where('role', 'user')->distinct()->pluck('city')->filter()->sort()->values();
-        
+
         $programCategory = $request->program_category;
-        
+
         return view('admin.participants.index', compact('participants', 'programCategory', 'programs', 'countries', 'cities'));
     }
 
@@ -123,7 +123,7 @@ class AdminParticipantController extends Controller
             ->orderBy('main_category')
             ->orderBy('name')
             ->get();
-        
+
         return view('admin.participants.create', compact('programs'));
     }
 
@@ -160,7 +160,7 @@ class AdminParticipantController extends Controller
             'emergency_contact_name' => ['nullable', 'string', 'max:255'],
             'emergency_contact_phone' => ['nullable', 'string', 'max:50'],
         ]);
-        
+
         // Si el admin no ingresó contraseña, generamos un hash random no
         // adivinable y marcamos al postulante para que la cree desde la app.
         $hasExplicitPassword = $request->filled('password');
@@ -192,13 +192,13 @@ class AdminParticipantController extends Controller
             'emergency_medical_contact' => $request->emergency_contact_name,
             'emergency_medical_phone' => $request->emergency_contact_phone,
         ];
-        
+
         // Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
             $path = $request->file('profile_photo')->store('profile_photos', 'public');
             $data['profile_photo'] = $path;
         }
-        
+
         $user = User::create($data);
 
         // Módulo 2 fix: Persist emergency contact to emergency_contacts table during creation
@@ -235,7 +235,7 @@ class AdminParticipantController extends Controller
             ]);
             app(ProcessResolver::class)->ensureForApplication($application);
         }
-        
+
         return redirect()->route('admin.participants.index')
             ->with('success', 'Participante creado correctamente.');
     }
@@ -243,6 +243,16 @@ class AdminParticipantController extends Controller
     /**
      * Display the specified participant.
      */
+    /** Rehabilita la app para un participante que eliminó su cuenta: vuelve a crear su contraseña. */
+    public function restoreAppAccess(User $participant, \App\Services\AccountDeletionService $service)
+    {
+        abort_unless($participant->app_account_deleted_at, 404);
+
+        $service->restoreAppAccount($participant, auth()->user());
+
+        return back()->with('success', 'Acceso a la app restaurado. El participante debe ingresar con su correo y crear una contraseña nueva.');
+    }
+
     public function show(User $participant)
     {
         // Módulo B3 fix: Si el usuario no es participante, en vez de 404 ciego damos un mensaje útil.
@@ -250,13 +260,14 @@ class AdminParticipantController extends Controller
         if ($participant->role !== 'user') {
             \Log::warning('admin.participants.show: tried to view non-participant user', [
                 'user_id' => $participant->id,
-                'role'    => $participant->role,
+                'role' => $participant->role,
                 'caused_by' => optional(auth()->user())->id,
             ]);
+
             return redirect()->route('admin.participants.index')
                 ->with('warning', "El usuario #{$participant->id} no es un participante (rol: {$participant->role}).");
         }
-        
+
         // Cargar todas las relaciones necesarias incluyendo las nuevas
         // Módulo 3 fix: Added englishEvaluations loading
         // Fase 1 rediseño: cada Application ahora carga inglés (último), visa y pagos verificados para la tarjeta.
@@ -274,7 +285,7 @@ class AdminParticipantController extends Controller
             'workExperiences',
             'englishEvaluations',
         ]);
-        
+
         // Calcular estadísticas de aplicaciones
         $applicationStats = [
             'total' => $participant->applications->count(),
@@ -282,18 +293,18 @@ class AdminParticipantController extends Controller
             'approved' => $participant->applications->where('status', 'approved')->count(),
             'rejected' => $participant->applications->where('status', 'rejected')->count(),
         ];
-        
+
         // Calcular total de puntos
         $totalPoints = $participant->points->sum('points');
-        
+
         // All applications for the applications tab
         $allApplications = $participant->applications()->with(['program', 'programProcess'])->get();
         $deletion = app(ApplicationDeletionService::class);
         $allApplications->each(fn ($a) => $a->setAttribute('deletion_summary', $deletion->summary($a)));
-        
+
         // Currencies for payment modal
         $currencies = \App\Models\Currency::all();
-        
+
         // Programs for new application modal
         $programs = \App\Models\Program::where('is_active', true)->orderBy('name')->get();
 
@@ -317,20 +328,20 @@ class AdminParticipantController extends Controller
         if ($participant->role !== 'user') {
             abort(404);
         }
-        
+
         // Obtener todos los programas activos
         $programs = Program::where('is_active', true)
             ->orderBy('main_category')
             ->orderBy('name')
             ->get();
-        
+
         // Cargar relaciones incluyendo las nuevas
         $participant->load([
             'applications.program',
             'emergencyContacts',
-            'workExperiences'
+            'workExperiences',
         ]);
-        
+
         return view('admin.participants.edit', compact('participant', 'programs'));
     }
 
@@ -412,7 +423,7 @@ class AdminParticipantController extends Controller
         if ($participant->role !== 'user') {
             abort(404);
         }
-        
+
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
@@ -441,14 +452,14 @@ class AdminParticipantController extends Controller
             'emergency_medical_contact' => ['nullable', 'string', 'max:100'],
             'emergency_medical_phone' => ['nullable', 'string', 'max:50'],
         ];
-        
+
         // Solo validar contraseña si se proporciona
         if ($request->filled('password')) {
             $rules['password'] = ['confirmed', Password::defaults()];
         }
-        
+
         $request->validate($rules);
-        
+
         // Build User data explicitly (only fields that exist on users table)
         $userData = $request->only([
             'name', 'phone', 'nationality', 'birth_date', 'gender',
@@ -458,18 +469,18 @@ class AdminParticipantController extends Controller
             'medical_conditions', 'allergies', 'medications',
             'emergency_medical_contact', 'emergency_medical_phone',
         ]);
-        
+
         // Actualizar contraseña solo si se proporciona
         if ($request->filled('password')) {
             $userData['password'] = Hash::make($request->password);
         }
-        
+
         // Actualizar datos del usuario
         $participant->update($userData);
-        
+
         // Handle Application-specific fields
         $firstApp = $participant->applications()->first();
-        
+
         if ($request->filled('program_id')) {
             if ($firstApp && $firstApp->program_id == $request->program_id) {
                 // Same program — update Application fields
@@ -479,7 +490,7 @@ class AdminParticipantController extends Controller
                 $existingApp = Application::where('user_id', $participant->id)
                     ->where('program_id', $request->program_id)
                     ->first();
-                
+
                 if ($existingApp) {
                     $existingApp->update($request->only(['status', 'current_stage', 'progress_percentage']));
                 } else {
@@ -498,7 +509,7 @@ class AdminParticipantController extends Controller
             // No program selected but app exists — still update status/stage
             $firstApp->update($request->only(['status', 'current_stage', 'progress_percentage']));
         }
-        
+
         return redirect()->route('admin.participants.show', $participant->id)
             ->with('success', 'Participante actualizado correctamente.');
     }
@@ -512,9 +523,9 @@ class AdminParticipantController extends Controller
         if ($participant->role !== 'user') {
             abort(404);
         }
-        
+
         $participant->delete();
-        
+
         return redirect()->route('admin.participants.index')
             ->with('success', 'Participante eliminado correctamente.');
     }
@@ -581,34 +592,34 @@ class AdminParticipantController extends Controller
     {
         // Aplicar mismos filtros que index
         $query = User::where('role', 'user')->with(['applications.program', 'englishEvaluations']);
-        
+
         if ($request->filled('program_category')) {
-            $query->whereHas('applications.program', function($q) use ($request) {
+            $query->whereHas('applications.program', function ($q) use ($request) {
                 $q->where('main_category', $request->program_category);
             });
         }
-        
+
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
-        
+
         if ($request->filled('english_level')) {
-            $query->whereHas('englishEvaluations', function($q) use ($request) {
+            $query->whereHas('englishEvaluations', function ($q) use ($request) {
                 $q->where('cefr_level', $request->english_level);
             });
         }
-        
+
         $participants = $query->get();
-        
+
         // Crear archivo CSV
-        $filename = 'participants_' . date('Y-m-d_His') . '.csv';
+        $filename = 'participants_'.date('Y-m-d_His').'.csv';
         $handle = fopen('php://temp', 'r+');
-        
+
         // Headers
         fputcsv($handle, [
             'ID',
@@ -623,12 +634,12 @@ class AdminParticipantController extends Controller
             'Programas',
             'Fecha Registro',
         ]);
-        
+
         // Datos
         foreach ($participants as $participant) {
             $lastEval = $participant->englishEvaluations->sortByDesc('created_at')->first();
             $programs = $participant->applications->pluck('program.name')->unique()->join(', ');
-            
+
             fputcsv($handle, [
                 $participant->id,
                 $participant->name,
@@ -643,14 +654,14 @@ class AdminParticipantController extends Controller
                 $participant->created_at->format('Y-m-d H:i:s'),
             ]);
         }
-        
+
         rewind($handle);
         $csv = stream_get_contents($handle);
         fclose($handle);
-        
+
         return response($csv, 200)
             ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     /**
@@ -675,10 +686,10 @@ class AdminParticipantController extends Controller
             ->firstOrFail();
 
         \App\Models\ParticipantNote::create([
-            'user_id'        => $user->id,
-            'admin_id'       => auth()->id(),
+            'user_id' => $user->id,
+            'admin_id' => auth()->id(),
             'application_id' => $application->id,
-            'content'        => $validated['content'],
+            'content' => $validated['content'],
         ]);
 
         return back()->with('success', 'Nota guardada.');

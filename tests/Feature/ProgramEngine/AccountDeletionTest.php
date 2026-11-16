@@ -4,14 +4,13 @@ namespace Tests\Feature\ProgramEngine;
 
 use App\Models\Notification;
 use App\Models\Payment;
-use App\Models\ProgramProcess;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 
 class AccountDeletionTest extends EngineTestCase
 {
-    public function test_participant_deletes_account_and_personal_data_is_anonymized(): void
+    public function test_deleting_the_app_account_only_removes_app_access_and_keeps_all_records(): void
     {
         Storage::fake('public');
         $admin = $this->admin();
@@ -29,35 +28,60 @@ class AccountDeletionTest extends EngineTestCase
             'amount' => 100, 'status' => 'verified', 'concept' => 'Inscripción', 'payment_method' => 'transfer',
         ]);
         $user->createToken('app');
+        $processStatus = $process->status;
 
         Sanctum::actingAs($user);
         $this->deleteJson('/api/me', ['password' => 'incorrecta'])->assertStatus(422);
-        $this->assertSame('Ana Pérez', $user->fresh()->name);
+        $this->assertNull($user->fresh()->app_account_deleted_at);
 
         $this->deleteJson('/api/me', ['password' => 'secreto123'])->assertOk()->assertJsonPath('status', 'success');
 
+        // Se conserva todo: ficha, archivos, documentos, proceso, postulación y pago.
         $fresh = $user->fresh();
-        $this->assertSame('Usuario eliminado', $fresh->name);
-        $this->assertStringEndsWith('@ie.invalid', $fresh->email);
-        $this->assertNull($fresh->phone);
-        $this->assertNull($fresh->passport_number);
-        $this->assertNull($fresh->getRawOriginal('profile_photo'));
-        $this->assertNotNull($fresh->anonymized_at);
-        $this->assertSame(0, $fresh->tokens()->count());
-
-        Storage::disk('public')->assertMissing('profile_photos/ana.jpg');
-        Storage::disk('public')->assertMissing('test/passport-0.pdf');
-        $this->assertDatabaseMissing('program_documents', ['program_process_id' => $process->id]);
-        $this->assertSame(ProgramProcess::STATUS_CANCELLED, $process->fresh()->status);
-
-        // Postulación y pago quedan para la contabilidad de IE.
+        $this->assertNotNull($fresh->app_account_deleted_at);
+        $this->assertSame('Ana Pérez', $fresh->name);
+        $this->assertSame('ana@example.com', $fresh->email);
+        $this->assertSame('0981123456', $fresh->phone);
+        $this->assertSame('AB123', $fresh->passport_number);
+        Storage::disk('public')->assertExists('profile_photos/ana.jpg');
+        Storage::disk('public')->assertExists('test/passport-0.pdf');
+        $this->assertDatabaseHas('program_documents', ['program_process_id' => $process->id]);
+        $this->assertSame($processStatus, $process->fresh()->status);
         $this->assertDatabaseHas('applications', ['id' => $process->application_id, 'user_id' => $user->id]);
         $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'verified']);
 
-        $this->assertTrue(Notification::where('user_id', $admin->id)->where('title', 'Cuenta eliminada por un participante')->exists());
+        // Solo se pierde el acceso a la app.
+        $this->assertSame(0, $fresh->tokens()->count());
+        $this->assertTrue(Notification::where('user_id', $admin->id)->where('title', 'Cuenta de la app eliminada')->exists());
 
-        // Ya no puede iniciar sesión con sus credenciales anteriores.
-        $this->postJson('/api/login', ['email' => 'ana@example.com', 'password' => 'secreto123'])->assertStatus(401);
+        $this->app['auth']->forgetGuards();
+        $this->postJson('/api/login', ['email' => 'ana@example.com', 'password' => 'secreto123'])
+            ->assertStatus(403)->assertJsonPath('message', User::APP_ACCOUNT_DELETED_MESSAGE);
+        $this->postJson('/api/auth/check-email', ['email' => 'ana@example.com'])
+            ->assertOk()->assertJsonPath('state', 'app_account_deleted');
+    }
+
+    public function test_admin_restores_app_access_and_participant_creates_a_new_password(): void
+    {
+        $admin = $this->admin();
+        $user = User::factory()->create([
+            'role' => 'user', 'email' => 'ana@example.com', 'app_account_deleted_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.participants.show', $user->id))
+            ->assertOk()->assertSee('Cuenta de la app eliminada')->assertSee('Restaurar acceso a la app');
+
+        $this->actingAs($admin)
+            ->post(route('admin.participants.restore-app-access', $user->id))
+            ->assertRedirect();
+
+        $fresh = $user->fresh();
+        $this->assertNull($fresh->app_account_deleted_at);
+        $this->assertTrue((bool) $fresh->requires_password_setup);
+
+        $this->postJson('/api/auth/check-email', ['email' => 'ana@example.com'])
+            ->assertOk()->assertJsonPath('state', 'password_setup_required');
     }
 
     public function test_staff_accounts_cannot_be_deleted_from_the_app(): void
@@ -66,6 +90,6 @@ class AccountDeletionTest extends EngineTestCase
         Sanctum::actingAs($admin);
 
         $this->deleteJson('/api/me', ['password' => 'secreto123'])->assertForbidden();
-        $this->assertNull($admin->fresh()->anonymized_at);
+        $this->assertNull($admin->fresh()->app_account_deleted_at);
     }
 }

@@ -158,6 +158,14 @@ class AuthController extends Controller
 
             $user = User::where('email', $request->email)->first();
 
+            if ($user?->app_account_deleted_at) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => User::APP_ACCOUNT_DELETED_MESSAGE,
+                    'errors' => ['email' => [User::APP_ACCOUNT_DELETED_MESSAGE]],
+                ], 403);
+            }
+
             // V1 mobile: si el postulante existe pero todavía no seteó su contraseña
             // (cargado por admin), devolvemos un código distinto para que el cliente
             // ofrezca el flujo de "Crear contraseña".
@@ -291,7 +299,7 @@ class AuthController extends Controller
         }
 
         try {
-            $service->anonymize($user);
+            $service->closeAppAccount($user);
         } catch (\Throwable $e) {
             Log::error('Error al eliminar cuenta', ['user_id' => $user->id, 'error' => $e->getMessage()]);
 
@@ -303,7 +311,7 @@ class AuthController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Tu cuenta fue eliminada.',
+            'message' => 'Tu cuenta de la app fue eliminada.',
         ]);
     }
 
@@ -366,6 +374,14 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'success',
                 'state' => 'not_found',
+            ]);
+        }
+
+        if ($user->app_account_deleted_at) {
+            return response()->json([
+                'status' => 'success',
+                'state' => 'app_account_deleted',
+                'message' => User::APP_ACCOUNT_DELETED_MESSAGE,
             ]);
         }
 

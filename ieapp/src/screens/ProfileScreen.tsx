@@ -331,7 +331,7 @@ const ProfileScreen: React.FC = () => {
       setDeleting(true);
       await profileService.deleteAccount(deletePassword);
       closeDeleteModal();
-      Alert.alert('Cuenta eliminada', 'Tu cuenta y tus datos personales fueron eliminados.');
+      Alert.alert('Cuenta eliminada', 'Tu cuenta de la app fue eliminada y se cerró tu sesión.');
       await logout();
     } catch (error: any) {
       const message = error?.response?.data?.message || 'No se pudo eliminar la cuenta. Por favor intentá de nuevo.';
@@ -516,9 +516,10 @@ const ProfileScreen: React.FC = () => {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Eliminar mi cuenta</Text>
               <Text style={styles.deleteWarning}>
-                Se eliminarán tus datos personales, tu foto y los documentos que subiste, y se cancelarán tus
-                procesos en curso. Esta acción no se puede deshacer. Los registros de pagos se conservan sin
-                tus datos personales por obligaciones contables.
+                Se eliminará tu cuenta de la app: se cerrará tu sesión y ya no podrás ingresar con este correo y
+                contraseña. Tu legajo en IE (datos, documentos, postulaciones y pagos) se conserva por fines de
+                transparencia, administración y seguimiento de los programas. Si querés volver a usar la app,
+                escribinos a info@ie.org.py.
               </Text>
               <Text style={styles.formLabel}>Ingresá tu contraseña para confirmar:</Text>
               <TextInput

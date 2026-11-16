@@ -39,6 +39,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'birth_date' => 'date',
+        'app_account_deleted_at' => 'datetime',
         'passport_expiry' => 'date',
         'date_of_birth' => 'date',
         'hobbies' => 'array',
@@ -57,6 +58,8 @@ class User extends Authenticatable
         'requires_password_setup' => 'boolean',
         'password_set_at' => 'datetime',
     ];
+
+    public const APP_ACCOUNT_DELETED_MESSAGE = 'Esta cuenta fue eliminada de la app. Si querés volver a usarla, escribinos a info@ie.org.py.';
 
     protected $hidden = [
         'password', 'remember_token', 'bank_info',

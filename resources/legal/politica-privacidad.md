@@ -1,6 +1,6 @@
 # Política de Privacidad — IE - intercultural experience
 
-**Última actualización:** 2 de noviembre de 2026
+**Última actualización:** 16 de noviembre de 2026
 
 Esta Política de Privacidad describe cómo **IE - intercultural experience** ("nosotros", "la empresa")
 recopila, usa y protege la información de los usuarios ("vos", "usuario") de la aplicación móvil
@@ -68,15 +68,17 @@ las finalidades descritas y con las obligaciones legales aplicables.
 
 ### Eliminación de tu cuenta
 
-Podés eliminar tu cuenta en cualquier momento desde la App, en **Mi Perfil → Eliminar mi cuenta**
-(se pide tu contraseña para confirmar). Al hacerlo:
+Podés eliminar tu cuenta de la App en cualquier momento, en **Mi Perfil → Eliminar mi cuenta** (se pide
+tu contraseña para confirmar). Al hacerlo:
 
-- Se eliminan tus datos personales, tu foto de perfil y los documentos que subiste.
-- Se cancelan tus procesos en curso y se cierran todas tus sesiones.
-- Los registros de postulaciones y pagos se conservan **sin tus datos personales**, por obligaciones
-  contables y legales.
+- Se elimina tu cuenta de acceso a la App y se cierran todas tus sesiones.
+- Tu legajo como participante (datos personales, documentos, postulaciones, seguimiento de programas y
+  pagos) se conserva por fines de transparencia, administración y seguimiento de los programas, y para
+  cumplir obligaciones contables, legales y con las instituciones y patrocinadores de los programas.
 
-La eliminación es definitiva. También podés pedirla escribiendo a info@ie.org.py.
+También podés pedir la eliminación de tu cuenta, o la eliminación o corrección de datos de tu legajo,
+escribiendo a info@ie.org.py. Te responderemos indicando qué datos pueden eliminarse y cuáles debemos
+conservar por esas obligaciones.
 
 ## 7. Seguridad
 
@@ -86,7 +88,7 @@ servidores se realiza mediante conexiones cifradas (HTTPS).
 ## 8. Tus derechos
 
 Podés solicitar el acceso o la corrección de tus datos personales escribiéndonos al correo de contacto
-indicado arriba, y eliminar tu cuenta desde la App como se describe en la sección 6.
+indicado arriba, y eliminar tu cuenta de la App como se describe en la sección 6.
 
 ## 9. Menores de edad
 
