@@ -41,7 +41,6 @@ const ApplicationConfirmScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isApplying, setIsApplying] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
   const [isAdult, setIsAdult] = useState(false);
   const [hasActiveForm, setHasActiveForm] = useState(false);
   const [activeForm, setActiveForm] = useState<any>(null);
@@ -96,11 +95,6 @@ const ApplicationConfirmScreen: React.FC = () => {
   const handleConfirmApply = async () => {
     if (!user) {
       Alert.alert('Acceso Denegado', 'Debes iniciar sesión para postular a este programa.');
-      return;
-    }
-    
-    if (!acceptTerms) {
-      Alert.alert('Términos y Condiciones', 'Debes aceptar los términos y condiciones para continuar.');
       return;
     }
     
@@ -262,9 +256,9 @@ const ApplicationConfirmScreen: React.FC = () => {
         )}
         
         <View style={styles.termsContainer}>
-          <Text style={styles.termsTitle}>Términos y Condiciones</Text>
+          <Text style={styles.termsTitle}>Antes de postular</Text>
           <Text style={styles.termsText}>
-            Al postular a este programa, acepto que:
+            Al confirmar tu postulación declarás que:
           </Text>
           
           <View style={styles.termsList}>
@@ -287,17 +281,6 @@ const ApplicationConfirmScreen: React.FC = () => {
             </Text>
           </View>
           
-          <View style={styles.acceptTermsContainer}>
-            <Switch
-              value={acceptTerms}
-              onValueChange={setAcceptTerms}
-              trackColor={{ false: '#cccccc', true: '#0066cc80' }}
-              thumbColor={acceptTerms ? '#0066cc' : '#f4f4f4'}
-            />
-            <Text style={styles.acceptTermsText}>
-              Acepto los términos y condiciones del programa
-            </Text>
-          </View>
         </View>
       </ScrollView>
       
@@ -313,10 +296,10 @@ const ApplicationConfirmScreen: React.FC = () => {
         <TouchableOpacity 
           style={[
             styles.confirmButton, 
-            (!acceptTerms || !isAdult || isApplying) && styles.disabledButton
+            (!isAdult || isApplying) && styles.disabledButton
           ]}
           onPress={handleConfirmApply}
-          disabled={!acceptTerms || !isAdult || isApplying}
+          disabled={!isAdult || isApplying}
         >
           {isApplying ? (
             <ActivityIndicator color="#FFFFFF" size="small" />

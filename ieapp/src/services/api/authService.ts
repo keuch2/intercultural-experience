@@ -15,6 +15,7 @@ export interface RegisterData {
   country?: string;
   academic_level?: string;
   english_level?: string;
+  accept_terms?: boolean;
 }
 
 export interface AuthResponse {

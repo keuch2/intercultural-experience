@@ -23,6 +23,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../contexts/AuthContext';
 import { profileService } from '../services/api';
+import { openLegalUrl } from '../utils/legalLinks';
 import Header from '../components/Header';
 
 // Fecha de nacimiento: se edita como DD/MM/AAAA y se guarda como AAAA-MM-DD.
@@ -496,6 +497,16 @@ const ProfileScreen: React.FC = () => {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+      <View style={styles.legalLinks}>
+        <TouchableOpacity onPress={() => openLegalUrl('terms')} hitSlop={8}>
+          <Text style={styles.legalLinkText}>Términos y Condiciones</Text>
+        </TouchableOpacity>
+        <Text style={styles.legalSeparator}>·</Text>
+        <TouchableOpacity onPress={() => openLegalUrl('privacy')} hitSlop={8}>
+          <Text style={styles.legalLinkText}>Política de Privacidad</Text>
+        </TouchableOpacity>
+      </View>
+
       <TouchableOpacity style={styles.deleteAccountButton} onPress={() => setDeleteVisible(true)}>
         <Text style={styles.deleteAccountText}>Eliminar mi cuenta</Text>
       </TouchableOpacity>
@@ -786,6 +797,21 @@ const styles = StyleSheet.create({
   purpleButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
   orangeButton: { backgroundColor: '#F8B400', borderRadius: 8, padding: 15, marginBottom: 10, alignItems: 'center' },
   orangeButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  legalLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 24,
+  },
+  legalLinkText: {
+    color: '#6C4AA0',
+    fontSize: 13,
+    textDecorationLine: 'underline',
+  },
+  legalSeparator: {
+    color: '#999',
+  },
   deleteAccountButton: { padding: 15, marginTop: 10, marginBottom: 20, alignItems: 'center' },
   deleteAccountText: { color: '#E52224', fontWeight: 'bold', fontSize: 15, textDecorationLine: 'underline' },
   passwordHint: { fontSize: 12, color: '#888', marginTop: 4 },

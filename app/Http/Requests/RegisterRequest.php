@@ -24,6 +24,8 @@ class RegisterRequest extends BaseFormRequest
             'country' => ['nullable', 'string', 'max:100'],
             'academic_level' => ['nullable', 'in:bachiller,licenciatura,maestria,posgrado,doctorado'],
             'english_level' => ['nullable', 'in:basico,intermedio,avanzado,nativo'],
+            // Opcional para no romper versiones viejas de la app; las nuevas lo envían siempre.
+            'accept_terms' => ['sometimes', 'accepted'],
         ];
     }
 }

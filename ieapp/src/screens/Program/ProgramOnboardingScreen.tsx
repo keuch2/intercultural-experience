@@ -27,7 +27,6 @@ const ProgramOnboardingScreen: React.FC = () => {
   const [program, setProgram] = useState<PublicProgram | null>(null);
   const [loadingProgram, setLoadingProgram] = useState(true);
   const [step, setStep] = useState(1);
-  const [acceptTerms, setAcceptTerms] = useState(false);
   const [isAdult, setIsAdult] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -53,7 +52,6 @@ const ProgramOnboardingScreen: React.FC = () => {
   const totalSteps = requiresAdult ? 3 : 2;
 
   const next = () => {
-    if (step === 1 && !acceptTerms) { Alert.alert('Términos', 'Debés aceptar los términos para continuar.'); return; }
     if (step === 2 && requiresAdult && !isAdult) { Alert.alert('Mayoría de edad', 'Confirmá que sos mayor de 18 años.'); return; }
     if (step < totalSteps) setStep(step + 1);
   };
@@ -97,11 +95,7 @@ const ProgramOnboardingScreen: React.FC = () => {
             <Ionicons name="rocket-outline" size={42} color="#3B82F6" style={{ marginBottom: 12 }} />
             <Text style={styles.title}>{ob.title || `Postulá a ${program?.name ?? 'este programa'}`}</Text>
             {ob.intro ? <Text style={styles.text}>{ob.intro}</Text> : program?.description ? <Text style={styles.text}>{program.description}</Text> : null}
-            <Text style={styles.text}>
-              Para postular necesitamos que aceptes nuestros <Text style={styles.link}>Términos y Condiciones</Text> y la <Text style={styles.link}>Política de Privacidad</Text>.
-            </Text>
             {ob.terms_text ? <View style={styles.termsBox}><Text style={styles.termsText}>{ob.terms_text}</Text></View> : null}
-            <View style={styles.switchRow}><Switch value={acceptTerms} onValueChange={setAcceptTerms} /><Text style={styles.switchLabel}>Acepto los términos y la política de privacidad.</Text></View>
           </View>
         )}
         {step === 2 && requiresAdult && (
@@ -152,7 +146,6 @@ const styles = StyleSheet.create({
   scroll: { padding: 22 },
   title: { fontSize: 24, fontWeight: '800', color: '#222', marginBottom: 12, lineHeight: 30 },
   text: { color: '#444', fontSize: 14, lineHeight: 22, marginBottom: 10 },
-  link: { color: '#3B82F6', textDecorationLine: 'underline', fontWeight: '600' },
   termsBox: { backgroundColor: '#f8f9fa', padding: 12, borderRadius: 8, marginTop: 6 },
   termsText: { color: '#555', fontSize: 12, lineHeight: 18 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 18, backgroundColor: '#f8f9fa', padding: 12, borderRadius: 8 },

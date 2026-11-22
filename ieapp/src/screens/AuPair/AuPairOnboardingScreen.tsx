@@ -18,7 +18,7 @@ type RouteP = RouteProp<{ AuPairOnboarding: { programId?: number } }, 'AuPairOnb
 /**
  * Onboarding post-registro/login para visitantes que vinieron desde
  * "Postular Au Pair". 3 pasos:
- *  1. Bienvenida + términos
+ *  1. Bienvenida (Términos y Privacidad ya se aceptaron al registrarse)
  *  2. Confirmar edad y nacionalidad
  *  3. Confirmación final + crear Application Au Pair vía POST /applications
  *
@@ -58,15 +58,10 @@ const AuPairOnboardingScreen: React.FC = () => {
   }, [programId]);
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [acceptTerms, setAcceptTerms] = useState(false);
   const [isAdult, setIsAdult] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const next = () => {
-    if (step === 1 && !acceptTerms) {
-      Alert.alert('Términos', 'Debés aceptar los términos para continuar.');
-      return;
-    }
     if (step === 2 && !isAdult) {
       Alert.alert('Mayoría de edad', 'Confirmá que sos mayor de 18 años.');
       return;
@@ -142,15 +137,6 @@ const AuPairOnboardingScreen: React.FC = () => {
               Vivirás un año en Estados Unidos con una familia anfitriona, cuidando niños,
               practicando inglés y conociendo una nueva cultura.
             </Text>
-            <Text style={styles.text}>
-              Para postular necesitamos que aceptes nuestros{' '}
-              <Text style={styles.link}>Términos y Condiciones</Text> y la{' '}
-              <Text style={styles.link}>Política de Privacidad</Text>.
-            </Text>
-            <View style={styles.switchRow}>
-              <Switch value={acceptTerms} onValueChange={setAcceptTerms} />
-              <Text style={styles.switchLabel}>Acepto los términos y la política de privacidad.</Text>
-            </View>
           </View>
         )}
 
@@ -230,7 +216,6 @@ const styles = StyleSheet.create({
   scroll: { padding: 22 },
   title: { fontSize: 24, fontWeight: '800', color: '#222', marginBottom: 12, lineHeight: 30 },
   text: { color: '#444', fontSize: 14, lineHeight: 22, marginBottom: 10 },
-  link: { color: '#3B82F6', textDecorationLine: 'underline', fontWeight: '600' },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 18, backgroundColor: '#f8f9fa', padding: 12, borderRadius: 8 },
   switchLabel: { flex: 1, color: '#222', fontSize: 14 },
   bullets: { marginTop: 14 },

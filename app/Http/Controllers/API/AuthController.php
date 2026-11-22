@@ -76,6 +76,7 @@ class AuthController extends Controller
                 'academic_level' => $request->academic_level,
                 'english_level' => $request->english_level,
                 'role' => 'user', // Force user role for mobile registration
+                'terms_accepted_at' => $request->boolean('accept_terms') ? now() : null,
             ]);
 
             $token = $user->createToken('mobile-app-token', ['*'], now()->addDays(30))->plainTextToken;

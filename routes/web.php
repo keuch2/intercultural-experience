@@ -37,6 +37,13 @@ Route::get('privacidad', function () {
     return view('legal.privacy', compact('content'));
 })->name('privacy');
 
+// Términos y Condiciones de la app (se aceptan al registrarse en la app)
+Route::get('terminos', function () {
+    $content = \Illuminate\Support\Str::markdown(file_get_contents(resource_path('legal/terminos.md')), ['html_input' => 'strip']);
+
+    return view('legal.privacy', ['content' => $content, 'title' => 'Términos y Condiciones']);
+})->name('terms');
+
 // Instrucciones públicas para eliminar la cuenta (URL de eliminación declarada en Google Play)
 Route::get('eliminar-cuenta', function () {
     $content = \Illuminate\Support\Str::markdown(file_get_contents(resource_path('legal/eliminar-cuenta.md')), ['html_input' => 'strip']);

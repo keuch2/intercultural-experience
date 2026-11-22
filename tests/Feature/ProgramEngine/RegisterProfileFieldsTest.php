@@ -34,6 +34,21 @@ class RegisterProfileFieldsTest extends TestCase
         $this->assertSame('intermedio', $user->english_level);
     }
 
+    public function test_registration_records_terms_acceptance(): void
+    {
+        $base = ['name' => 'Ana Gomez', 'password' => 'Clave-Segura-2026!', 'password_confirmation' => 'Clave-Segura-2026!'];
+
+        $this->postJson('/api/register', $base + ['email' => 'ana.terminos@example.com', 'accept_terms' => true])->assertCreated();
+        $this->assertNotNull(User::where('email', 'ana.terminos@example.com')->value('terms_accepted_at'));
+
+        // Versiones viejas de la app no envían el campo: el registro sigue funcionando.
+        $this->postJson('/api/register', $base + ['email' => 'ana.vieja@example.com'])->assertCreated();
+        $this->assertNull(User::where('email', 'ana.vieja@example.com')->value('terms_accepted_at'));
+
+        $this->postJson('/api/register', $base + ['email' => 'ana.rechaza@example.com', 'accept_terms' => false])
+            ->assertStatus(422)->assertJsonValidationErrors('accept_terms');
+    }
+
     public function test_registration_rejects_unknown_levels(): void
     {
         $this->postJson('/api/register', [

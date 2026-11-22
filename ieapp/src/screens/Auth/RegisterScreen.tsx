@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { openLegalUrl } from '../../utils/legalLinks';
 import InputField from '../../components/InputField';
 import DropdownField from '../../components/DropdownField';
 import { allCountries } from '../../data/countries';
@@ -31,6 +33,8 @@ const RegisterScreen: React.FC = () => {
   const [country, setCountry] = useState('');
   const [academicLevel, setAcademicLevel] = useState('');
   const [englishLevel, setEnglishLevel] = useState('');
+  // Términos y Política de Privacidad: se aceptan una sola vez, acá (no en cada postulación).
+  const [acceptTerms, setAcceptTerms] = useState(false);
   
   // Error state
   const [errors, setErrors] = useState<{[key: string]: string[]}>({});
@@ -86,13 +90,22 @@ const RegisterScreen: React.FC = () => {
       newErrors.city = ['La ciudad debe tener al menos 2 caracteres'];
     }
     
+    if (!acceptTerms) {
+      newErrors.accept_terms = ['Debés aceptar los Términos y Condiciones y la Política de Privacidad.'];
+    }
+    
     setErrors(newErrors);
     setIsValidating(false);
     return Object.keys(newErrors).length === 0;
-  }, [name, email, password, passwordConfirmation, city]);
+  }, [name, email, password, passwordConfirmation, city, acceptTerms]);
   
   const handleRegister = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      if (!acceptTerms) {
+        Alert.alert('Términos y Condiciones', 'Para crear tu cuenta debés aceptar los Términos y Condiciones y la Política de Privacidad.');
+      }
+      return;
+    }
     
     console.log('Attempting registration with:', { name, email, password: '***', passwordConfirmation: '***' });
     
@@ -106,8 +119,9 @@ const RegisterScreen: React.FC = () => {
         english_level: englishLevel,
       }).filter(([, value]) => value !== '')
     );
+    const payload = { ...profile, accept_terms: true };
 
-    const result = await register(name, email, password, passwordConfirmation, profile);
+    const result = await register(name, email, password, passwordConfirmation, payload);
     
     if (result.success) {
       Alert.alert('Registro exitoso', 'Tu cuenta ha sido creada correctamente');
@@ -292,6 +306,31 @@ const RegisterScreen: React.FC = () => {
         error={getErrorMessage('english_level')}
       />
       
+      <View style={styles.termsRow}>
+        <TouchableOpacity
+          onPress={() => setAcceptTerms((v) => !v)}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: acceptTerms }}
+          hitSlop={8}
+        >
+          <Ionicons
+            name={acceptTerms ? 'checkbox' : 'square-outline'}
+            size={24}
+            color={getErrorMessage('accept_terms') && !acceptTerms ? '#E52224' : '#6C4AA0'}
+          />
+        </TouchableOpacity>
+        <Text style={styles.termsText}>
+          <Text onPress={() => setAcceptTerms((v) => !v)}>Leí y acepto los </Text>
+          <Text style={styles.termsLink} onPress={() => openLegalUrl('terms')}>Términos y Condiciones</Text>
+          <Text onPress={() => setAcceptTerms((v) => !v)}> y la </Text>
+          <Text style={styles.termsLink} onPress={() => openLegalUrl('privacy')}>Política de Privacidad</Text>
+          <Text onPress={() => setAcceptTerms((v) => !v)}> de IE.</Text>
+        </Text>
+      </View>
+      {getErrorMessage('accept_terms') && !acceptTerms ? (
+        <Text style={styles.termsError}>{getErrorMessage('accept_terms')}</Text>
+      ) : null}
+
       <TouchableOpacity 
         style={styles.button} 
         onPress={handleRegister}
@@ -383,6 +422,30 @@ const styles = StyleSheet.create({
   strengthText: {
     fontSize: 12,
     fontWeight: '500',
+  },
+  termsRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginTop: 16,
+    width: '100%',
+  },
+  termsText: {
+    flex: 1,
+    color: '#444',
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  termsLink: {
+    color: '#6C4AA0',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+  termsError: {
+    color: '#E52224',
+    fontSize: 12,
+    marginTop: 6,
+    width: '100%',
   },
   loadingContainer: {
     flexDirection: 'row',

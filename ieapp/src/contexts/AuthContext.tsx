@@ -37,6 +37,8 @@ export interface RegisterProfileData {
   country?: string;
   academic_level?: string;
   english_level?: string;
+  /** Aceptación de Términos y Política de Privacidad (obligatoria al registrarse). */
+  accept_terms?: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

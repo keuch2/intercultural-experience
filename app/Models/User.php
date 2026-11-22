@@ -34,12 +34,14 @@ class User extends Authenticatable
         'program_expectations', 'hobbies', 'gender', 'date_of_birth',
         // V1 mobile: postulantes cargados por admin
         'requires_password_setup', 'password_set_at',
+        'terms_accepted_at',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
         'birth_date' => 'date',
         'app_account_deleted_at' => 'datetime',
+        'terms_accepted_at' => 'datetime',
         'passport_expiry' => 'date',
         'date_of_birth' => 'date',
         'hobbies' => 'array',
