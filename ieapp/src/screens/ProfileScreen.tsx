@@ -43,6 +43,17 @@ const displayToIsoDate = (value: string): string | null => {
   return valid ? `${yyyy}-${mm}-${dd}` : null;
 };
 
+// Edad calculada desde AAAA-MM-DD (sin new Date(string) para no correr un día por la zona horaria).
+const ageFromIso = (value?: string | null): number | null => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value || '');
+  if (!m) return null;
+  const today = new Date();
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const hadBirthday = today.getMonth() + 1 > mo || (today.getMonth() + 1 === mo && today.getDate() >= d);
+  const age = today.getFullYear() - y - (hadBirthday ? 0 : 1);
+  return age >= 0 ? age : null;
+};
+
 // Inserta las barras mientras se escribe: 13061971 → 13/06/1971
 const maskDate = (value: string): string => {
   const digits = value.replace(/\D/g, '').slice(0, 8);
@@ -383,7 +394,10 @@ const ProfileScreen: React.FC = () => {
         <Text style={styles.infoLabel}>Nombre:</Text>
         <Text style={styles.infoValue}>{user?.name || 'No disponible'}</Text>
         <Text style={styles.infoLabel}>Fecha de Nacimiento:</Text>
-        <Text style={styles.infoValue}>{isoToDisplayDate(user?.birth_date) || 'No disponible'}</Text>
+        <Text style={styles.infoValue}>
+          {isoToDisplayDate(user?.birth_date) || 'No disponible'}
+          {ageFromIso(user?.birth_date) !== null ? ` (${ageFromIso(user?.birth_date)} años)` : ''}
+        </Text>
         <Text style={styles.infoLabel}>Ciudad:</Text>
         <Text style={styles.infoValue}>{user?.city || 'No disponible'}</Text>
         <Text style={styles.infoLabel}>País:</Text>

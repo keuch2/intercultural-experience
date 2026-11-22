@@ -37,6 +37,39 @@
         </div>
     @endif
 
+    @error('timezone')
+        <div class="alert alert-danger">{{ $message }}</div>
+    @enderror
+
+    <!-- Zona horaria -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-clock text-primary"></i> Zona horaria</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('admin.settings.timezone.update') }}" method="POST">
+                        @csrf
+                        <label for="timezone" class="form-label">Zona horaria del sistema</label>
+                        <div class="d-flex gap-2">
+                            <select name="timezone" id="timezone" class="form-select">
+                                @foreach($timezones as $tz)
+                                    <option value="{{ $tz }}" @selected($tz === $currentTimezone)>{{ $tz === 'America/Asuncion' ? 'America/Asuncion (Paraguay)' : $tz }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="btn btn-primary text-nowrap"><i class="fas fa-save"></i> Guardar</button>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            Hora actual del sistema: <strong>{{ now()->format('d/m/Y H:i') }}</strong>.
+                            El cambio aplica a las fechas que se registren o muestren desde ahora; no modifica la hora de los registros ya guardados.
+                        </small>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Configuraciones por Grupo -->
     <div class="row">
         @foreach($settings as $group => $groupSettings)

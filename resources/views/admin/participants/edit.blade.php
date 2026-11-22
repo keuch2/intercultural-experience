@@ -79,6 +79,29 @@
                         </div>
                     </div>
 
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="gender" class="form-label">Género</label>
+                            <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender">
+                                <option value="">Seleccionar...</option>
+                                @foreach(\App\Models\User::GENDER_LABELS as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('gender', $participant->gender) === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('gender')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label for="nationality" class="form-label">Nacionalidad</label>
+                            <input type="text" class="form-control @error('nationality') is-invalid @enderror"
+                                   id="nationality" name="nationality" value="{{ old('nationality', $participant->nationality) }}">
+                            @error('nationality')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
                     <!-- Ubicación -->
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -125,6 +148,67 @@
                             <input type="text" class="form-control @error('passport_number') is-invalid @enderror" 
                                    id="passport_number" name="passport_number" value="{{ old('passport_number', $participant->passport_number) }}">
                             @error('passport_number')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Información Académica -->
+                    <h6 class="mt-4 mb-3 text-primary"><i class="fas fa-graduation-cap me-1"></i> Información Académica</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="academic_level" class="form-label">Nivel Académico</label>
+                            <select class="form-select @error('academic_level') is-invalid @enderror" id="academic_level" name="academic_level">
+                                <option value="">Seleccionar...</option>
+                                @foreach(\App\Models\User::ACADEMIC_LEVEL_LABELS as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('academic_level', $participant->academic_level) === $value)>{{ $label }}</option>
+                                @endforeach
+                                @if($participant->academic_level && ! array_key_exists($participant->academic_level, \App\Models\User::ACADEMIC_LEVEL_LABELS))
+                                    <option value="{{ $participant->academic_level }}" selected>{{ $participant->academic_level }}</option>
+                                @endif
+                            </select>
+                            @error('academic_level')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label for="university" class="form-label">Institución Educativa</label>
+                            <input type="text" class="form-control @error('university') is-invalid @enderror"
+                                   id="university" name="university" value="{{ old('university', $participant->university) }}">
+                            @error('university')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="career" class="form-label">Carrera / Campo de Estudio</label>
+                            <input type="text" class="form-control @error('career') is-invalid @enderror"
+                                   id="career" name="career" value="{{ old('career', $participant->career) }}">
+                            @error('career')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-3">
+                            <label for="academic_year" class="form-label">Año de Graduación / Curso</label>
+                            <input type="text" class="form-control @error('academic_year') is-invalid @enderror"
+                                   id="academic_year" name="academic_year" value="{{ old('academic_year', $participant->academic_year) }}">
+                            @error('academic_year')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-3">
+                            <label for="english_level" class="form-label">Nivel de Inglés</label>
+                            <select class="form-select @error('english_level') is-invalid @enderror" id="english_level" name="english_level">
+                                <option value="">Seleccionar...</option>
+                                @foreach(\App\Models\User::ENGLISH_LEVEL_LABELS as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('english_level', $participant->english_level) === $value)>{{ $label }}</option>
+                                @endforeach
+                                @if($participant->english_level && ! array_key_exists($participant->english_level, \App\Models\User::ENGLISH_LEVEL_LABELS))
+                                    <option value="{{ $participant->english_level }}" selected>{{ $participant->english_level }}</option>
+                                @endif
+                            </select>
+                            @error('english_level')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

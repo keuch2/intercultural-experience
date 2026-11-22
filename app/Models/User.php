@@ -13,6 +13,15 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, LogsActivity;
 
+    public const GENDER_LABELS = ['male' => 'Masculino', 'female' => 'Femenino', 'other' => 'Otro'];
+
+    public const ACADEMIC_LEVEL_LABELS = [
+        'bachiller' => 'Secundaria/Bachiller', 'licenciatura' => 'Licenciatura', 'maestria' => 'Maestría',
+        'posgrado' => 'Posgrado', 'doctorado' => 'Doctorado',
+    ];
+
+    public const ENGLISH_LEVEL_LABELS = ['basico' => 'Básico', 'intermedio' => 'Intermedio', 'avanzado' => 'Avanzado', 'nativo' => 'Nativo'];
+
     protected $fillable = [
         'name', 'email', 'password', 'role', 'role_id', 'phone', 'nationality', 
         'birth_date', 'address', 'bank_info', 'email_verified_at',

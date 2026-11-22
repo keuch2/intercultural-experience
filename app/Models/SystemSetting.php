@@ -10,6 +10,9 @@ class SystemSetting extends Model
 {
     use HasFactory;
 
+    /** Zona horaria del sistema (la aplica AppServiceProvider en cada request). */
+    public const TIMEZONE_KEY = 'app_timezone';
+
     protected $fillable = [
         'key',
         'value',

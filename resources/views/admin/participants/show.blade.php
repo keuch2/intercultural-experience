@@ -193,10 +193,21 @@
                                 <div class="col-md-6 mb-3">
                                     <strong>Fecha de Nacimiento:</strong><br>
                                     {{ $participant->birth_date ? $participant->birth_date->format('d/m/Y') : 'No especificada' }}
+                                    @if($participant->birth_date)
+                                        <span class="text-muted">({{ $participant->age }} años)</span>
+                                    @endif
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Género:</strong><br>
+                                    {{ \App\Models\User::GENDER_LABELS[$participant->gender] ?? 'No especificado' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Nacionalidad:</strong><br>
+                                    {{ $participant->nationality ?? 'No especificada' }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Cédula:</strong><br>
-                                    {{ $participant->cedula ?? 'No especificada' }}
+                                    {{ $participant->ci_number ?? 'No especificada' }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Pasaporte:</strong><br>
@@ -218,7 +229,33 @@
                                     {{ $participant->address ?? 'No especificada' }}
                                 </div>
                             </div>
-                            
+
+                            <hr>
+
+                            <h5 class="mb-3">Información Académica</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <strong>Nivel Académico:</strong><br>
+                                    {{ \App\Models\User::ACADEMIC_LEVEL_LABELS[$participant->academic_level] ?? ($participant->academic_level ?: 'No especificado') }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Institución Educativa:</strong><br>
+                                    {{ $participant->university ?: 'No especificada' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Carrera / Campo de Estudio:</strong><br>
+                                    {{ $participant->career ?: 'No especificada' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Año de Graduación / Curso:</strong><br>
+                                    {{ $participant->academic_year ?: 'No especificado' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Nivel de Inglés:</strong><br>
+                                    {{ \App\Models\User::ENGLISH_LEVEL_LABELS[$participant->english_level] ?? ($participant->english_level ?: 'No especificado') }}
+                                </div>
+                            </div>
+
                             <hr>
                             
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -300,23 +337,9 @@
                                     <i class="fas fa-edit"></i> Editar Salud
                                 </button>
                             </div>
+                            {{-- Tipo de sangre, seguro médico y contacto médico de emergencia se quitaron a pedido
+                                 de IE (nov 2026); las columnas siguen en users con los datos ya cargados. --}}
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <strong>Tipo de Sangre:</strong><br>
-                                    @if($participant->blood_type)
-                                        {{-- Módulo 2 fix: Use Bootstrap 5 class --}}
-                                        <span class="badge bg-danger">{{ $participant->blood_type }}</span>
-                                    @else
-                                        <span class="text-muted">No especificado</span>
-                                    @endif
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <strong>Seguro Médico:</strong><br>
-                                    {{ $participant->health_insurance ?? 'No especificado' }}
-                                    @if($participant->health_insurance_number)
-                                        <br><small class="text-muted">Nº {{ $participant->health_insurance_number }}</small>
-                                    @endif
-                                </div>
                                 <div class="col-md-12 mb-3">
                                     <strong>Condiciones Médicas:</strong><br>
                                     {{ $participant->medical_conditions ?? 'Ninguna reportada' }}
@@ -328,14 +351,6 @@
                                 <div class="col-md-12 mb-3">
                                     <strong>Medicamentos Actuales:</strong><br>
                                     {{ $participant->medications ?? 'Ninguno' }}
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <strong>Contacto Médico de Emergencia:</strong><br>
-                                    {{ $participant->emergency_medical_contact ?? 'No especificado' }}
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <strong>Teléfono Médico:</strong><br>
-                                    {{ $participant->emergency_medical_phone ?? 'No especificado' }}
                                 </div>
                             </div>
                         </div>
@@ -367,9 +382,6 @@
                                                         @endif
                                                         @if($contact->email)
                                                             <strong>Email:</strong> {{ $contact->email }}<br>
-                                                        @endif
-                                                        @if($contact->address)
-                                                            <strong>Dirección:</strong> {{ $contact->address }}
                                                         @endif
                                                     </p>
                                                 </div>
@@ -960,10 +972,6 @@ function toggleOtherConcept() {
                         <label class="form-label">Email</label>
                         <input type="email" class="form-control" name="email">
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Dirección</label>
-                        <input type="text" class="form-control" name="address">
-                    </div>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="is_primary" value="1" id="is_primary_contact">
                         <label class="form-check-label" for="is_primary_contact">Contacto principal</label>
@@ -1084,27 +1092,6 @@ function toggleOtherConcept() {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Tipo de Sangre</label>
-                            <select class="form-control" name="blood_type">
-                                <option value="">Seleccionar...</option>
-                                @foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $bt)
-                                    <option value="{{ $bt }}" {{ $participant->blood_type == $bt ? 'selected' : '' }}>{{ $bt }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Seguro Médico</label>
-                            <input type="text" class="form-control" name="health_insurance" value="{{ $participant->health_insurance }}">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Nº de Seguro</label>
-                            <input type="text" class="form-control" name="health_insurance_number" value="{{ $participant->health_insurance_number }}">
-                        </div>
-                    </div>
                     <div class="mb-3">
                         <label class="form-label">Condiciones Médicas</label>
                         <textarea class="form-control" name="medical_conditions" rows="2">{{ $participant->medical_conditions }}</textarea>
@@ -1116,16 +1103,6 @@ function toggleOtherConcept() {
                     <div class="mb-3">
                         <label class="form-label">Medicamentos Actuales</label>
                         <textarea class="form-control" name="medications" rows="2">{{ $participant->medications }}</textarea>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Contacto Médico de Emergencia</label>
-                            <input type="text" class="form-control" name="emergency_medical_contact" value="{{ $participant->emergency_medical_contact }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Teléfono Médico</label>
-                            <input type="text" class="form-control" name="emergency_medical_phone" value="{{ $participant->emergency_medical_phone }}">
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

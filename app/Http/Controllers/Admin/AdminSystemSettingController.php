@@ -13,9 +13,27 @@ class AdminSystemSettingController extends Controller
      */
     public function index()
     {
-        $settings = SystemSetting::orderBy('group')->orderBy('key')->get()->groupBy('group');
-        
-        return view('admin.settings.index', compact('settings'));
+        $settings = SystemSetting::where('key', '!=', SystemSetting::TIMEZONE_KEY)
+            ->orderBy('group')->orderBy('key')->get()->groupBy('group');
+        $timezones = \DateTimeZone::listIdentifiers();
+        $currentTimezone = config('app.timezone');
+
+        return view('admin.settings.index', compact('settings', 'timezones', 'currentTimezone'));
+    }
+
+    /**
+     * Zona horaria del sistema (fechas que se guardan y se muestran desde ahora en adelante).
+     */
+    public function updateTimezone(Request $request)
+    {
+        $validated = $request->validate([
+            'timezone' => ['required', 'string', \Illuminate\Validation\Rule::in(\DateTimeZone::listIdentifiers())],
+        ], [], ['timezone' => 'zona horaria']);
+
+        SystemSetting::set(SystemSetting::TIMEZONE_KEY, $validated['timezone'], 'string', 'general', 'Zona horaria del sistema');
+
+        return redirect()->route('admin.settings.index')
+            ->with('success', "Zona horaria actualizada: {$validated['timezone']}.");
     }
 
     /**

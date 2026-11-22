@@ -411,27 +411,6 @@
                         </div>
                         <div class="card-body">
                             <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="blood_type" class="form-label">Tipo de Sangre</label>
-                                    <select class="form-control" id="blood_type" name="blood_type">
-                                        <option value="">Seleccionar...</option>
-                                        <option value="A+" {{ old('blood_type') == 'A+' ? 'selected' : '' }}>A+</option>
-                                        <option value="A-" {{ old('blood_type') == 'A-' ? 'selected' : '' }}>A-</option>
-                                        <option value="B+" {{ old('blood_type') == 'B+' ? 'selected' : '' }}>B+</option>
-                                        <option value="B-" {{ old('blood_type') == 'B-' ? 'selected' : '' }}>B-</option>
-                                        <option value="AB+" {{ old('blood_type') == 'AB+' ? 'selected' : '' }}>AB+</option>
-                                        <option value="AB-" {{ old('blood_type') == 'AB-' ? 'selected' : '' }}>AB-</option>
-                                        <option value="O+" {{ old('blood_type') == 'O+' ? 'selected' : '' }}>O+</option>
-                                        <option value="O-" {{ old('blood_type') == 'O-' ? 'selected' : '' }}>O-</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="health_insurance" class="form-label">Seguro Médico</label>
-                                    <input type="text" class="form-control" id="health_insurance" name="health_insurance" value="{{ old('health_insurance') }}">
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
                                 <div class="col-md-12">
                                     <label for="allergies" class="form-label">Alergias</label>
                                     <textarea class="form-control" id="allergies" name="allergies" rows="2" placeholder="Describe cualquier alergia conocida...">{{ old('allergies') }}</textarea>
@@ -442,6 +421,13 @@
                                 <div class="col-md-12">
                                     <label for="medical_conditions" class="form-label">Condiciones Médicas</label>
                                     <textarea class="form-control" id="medical_conditions" name="medical_conditions" rows="2" placeholder="Describe cualquier condición médica relevante...">{{ old('medical_conditions') }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label for="medications" class="form-label">Medicamentos Actuales</label>
+                                    <textarea class="form-control" id="medications" name="medications" rows="2" placeholder="Medicamentos que toma regularmente...">{{ old('medications') }}</textarea>
                                 </div>
                             </div>
                         </div>

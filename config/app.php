@@ -76,7 +76,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // Hora de Paraguay. El admin puede cambiarla en Configuración (system_settings.app_timezone,
+    // aplicada en AppServiceProvider). El MySQL de producción también corre en UTC-3.
+    'timezone' => env('APP_TIMEZONE', 'America/Asuncion'),
 
     /*
     |--------------------------------------------------------------------------

@@ -153,10 +153,9 @@ class AdminParticipantController extends Controller
             'field_of_study' => ['nullable', 'string', 'max:255'],
             'graduation_year' => ['nullable', 'integer', 'min:1950', 'max:2030'],
             'current_occupation' => ['nullable', 'string', 'max:255'],
-            'blood_type' => ['nullable', 'string', 'max:10'],
-            'health_insurance' => ['nullable', 'string', 'max:255'],
             'allergies' => ['nullable', 'string'],
             'medical_conditions' => ['nullable', 'string'],
+            'medications' => ['nullable', 'string'],
             'emergency_contact_name' => ['nullable', 'string', 'max:255'],
             'emergency_contact_phone' => ['nullable', 'string', 'max:50'],
         ]);
@@ -185,12 +184,9 @@ class AdminParticipantController extends Controller
             'career' => $request->field_of_study,
             'academic_year' => $request->graduation_year,
             'current_job' => $request->current_occupation,
-            'blood_type' => $request->blood_type,
-            'health_insurance' => $request->health_insurance,
             'allergies' => $request->allergies,
             'medical_conditions' => $request->medical_conditions,
-            'emergency_medical_contact' => $request->emergency_contact_name,
-            'emergency_medical_phone' => $request->emergency_contact_phone,
+            'medications' => $request->medications,
         ];
 
         // Handle profile photo upload
@@ -438,19 +434,17 @@ class AdminParticipantController extends Controller
             'passport_expiry' => ['nullable', 'date'],
             'academic_level' => ['nullable', 'string', 'max:50'],
             'english_level' => ['nullable', 'string', 'max:50'],
+            'university' => ['nullable', 'string', 'max:255'],
+            'career' => ['nullable', 'string', 'max:255'],
+            'academic_year' => ['nullable', 'string', 'max:50'],
             'bio' => ['nullable', 'string'],
             'program_id' => ['nullable', 'exists:programs,id'],
             'status' => ['nullable', 'in:pending,in_review,approved,rejected'],
             // Módulo 5: current_stage and progress_percentage removed — auto-calculated
-            // Campos de salud
-            'blood_type' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
-            'health_insurance' => ['nullable', 'string', 'max:100'],
-            'health_insurance_number' => ['nullable', 'string', 'max:100'],
+            // Campos de salud (tipo de sangre, seguro y contacto médico se quitaron en nov 2026)
             'medical_conditions' => ['nullable', 'string'],
             'allergies' => ['nullable', 'string'],
             'medications' => ['nullable', 'string'],
-            'emergency_medical_contact' => ['nullable', 'string', 'max:100'],
-            'emergency_medical_phone' => ['nullable', 'string', 'max:50'],
         ];
 
         // Solo validar contraseña si se proporciona
@@ -464,10 +458,8 @@ class AdminParticipantController extends Controller
         $userData = $request->only([
             'name', 'phone', 'nationality', 'birth_date', 'gender',
             'address', 'city', 'country', 'ci_number', 'passport_number', 'passport_expiry',
-            'academic_level', 'english_level', 'bio',
-            'blood_type', 'health_insurance', 'health_insurance_number',
+            'academic_level', 'english_level', 'university', 'career', 'academic_year', 'bio',
             'medical_conditions', 'allergies', 'medications',
-            'emergency_medical_contact', 'emergency_medical_phone',
         ]);
 
         // Actualizar contraseña solo si se proporciona
@@ -540,21 +532,12 @@ class AdminParticipantController extends Controller
         }
 
         $request->validate([
-            'blood_type' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
-            'health_insurance' => ['nullable', 'string', 'max:255'],
-            'health_insurance_number' => ['nullable', 'string', 'max:100'],
             'medical_conditions' => ['nullable', 'string'],
             'allergies' => ['nullable', 'string'],
             'medications' => ['nullable', 'string'],
-            'emergency_medical_contact' => ['nullable', 'string', 'max:100'],
-            'emergency_medical_phone' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $participant->update($request->only([
-            'blood_type', 'health_insurance', 'health_insurance_number',
-            'medical_conditions', 'allergies', 'medications',
-            'emergency_medical_contact', 'emergency_medical_phone',
-        ]));
+        $participant->update($request->only(['medical_conditions', 'allergies', 'medications']));
 
         return redirect()->route('admin.participants.show', $participant->id)
             ->with('success', 'Información de salud actualizada correctamente.');
