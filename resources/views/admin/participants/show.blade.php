@@ -218,7 +218,7 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Ciudad:</strong><br>
-                                    {{ $participant->city ?? 'No especificada' }}
+                                    {{ $participant->cityRef?->label ?? $participant->city ?? 'No especificada' }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>País:</strong><br>

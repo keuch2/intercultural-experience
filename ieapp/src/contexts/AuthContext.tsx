@@ -39,6 +39,13 @@ export interface RegisterProfileData {
   english_level?: string;
   /** Aceptación de Términos y Política de Privacidad (obligatoria al registrarse). */
   accept_terms?: boolean;
+  phone?: string;
+  /** AAAA-MM-DD */
+  birth_date?: string;
+  /** Ciudad del catálogo; si no está, se envía `city` con el texto libre. */
+  city_id?: number;
+  /** 2 = formulario con todos los campos obligatorios. */
+  registration_version?: number;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

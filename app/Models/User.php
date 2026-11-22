@@ -22,10 +22,31 @@ class User extends Authenticatable
 
     public const ENGLISH_LEVEL_LABELS = ['basico' => 'Básico', 'intermedio' => 'Intermedio', 'avanzado' => 'Avanzado', 'nativo' => 'Nativo'];
 
+    /**
+     * Ciudad del catálogo ↔ texto: si se elige city_id, users.city toma el nombre oficial; si se escribe
+     * la ciudad a mano (formularios viejos, "Otra", admin), se intenta vincular al catálogo.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (User $user) {
+            if ($user->isDirty('city_id') && $user->city_id) {
+                $user->city = City::find($user->city_id)?->name ?? $user->city;
+            } elseif ($user->isDirty('city') || $user->isDirty('country')) {
+                $isParaguay = ! $user->country || City::normalize($user->country) === 'paraguay';
+                $user->city_id = $isParaguay ? City::matchName($user->city)?->id : null;
+            }
+        });
+    }
+
+    public function cityRef(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
     protected $fillable = [
         'name', 'email', 'password', 'role', 'role_id', 'phone', 'nationality', 
         'birth_date', 'address', 'bank_info', 'email_verified_at',
-        'city', 'country', 'academic_level', 'english_level', 'profile_photo',
+        'city', 'city_id', 'country', 'academic_level', 'english_level', 'profile_photo',
         'created_by_agent_id', 'bio', 'avatar',
         // Health fields
         'medical_conditions', 'allergies', 'medications', 'health_insurance',

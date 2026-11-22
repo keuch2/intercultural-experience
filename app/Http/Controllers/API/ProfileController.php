@@ -100,6 +100,8 @@ class ProfileController extends Controller
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:100'],
+            // Ciudad del catálogo; si no viene, User la vincula sola a partir del texto de `city`.
+            'city_id' => ['nullable', 'integer', \Illuminate\Validation\Rule::exists('cities', 'id')->where('is_active', true)],
             'country' => ['nullable', 'string', 'max:100'],
             'academic_level' => ['nullable', 'in:bachiller,licenciatura,maestria,posgrado,doctorado'],
             'english_level' => ['nullable', 'in:basico,intermedio,avanzado,nativo']
@@ -147,6 +149,7 @@ class ProfileController extends Controller
                 'nationality' => $user->nationality,
                 'birth_date' => $user->birth_date?->format('Y-m-d'),
                 'city' => $user->city,
+                'city_id' => $user->city_id,
                 'country' => $user->country,
                 'academic_level' => $user->academic_level,
                 'english_level' => $user->english_level,

@@ -198,7 +198,8 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="city" class="form-label">Ciudad *</label>
-                                    <input type="text" class="form-control" id="city" name="city" value="{{ old('city') }}">
+                                    <input type="text" class="form-control" id="city" name="city" value="{{ old('city') }}" list="py-cities" autocomplete="off">
+                                    @include('admin.partials._city_datalist')
                                 </div>
                                 <div class="col-md-6">
                                     <label for="state" class="form-label">Estado/Provincia</label>

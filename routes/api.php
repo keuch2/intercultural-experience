@@ -57,6 +57,9 @@ Route::prefix('public')->group(function () {
     Route::get('/programs/{id}', [\App\Http\Controllers\API\PublicProgramController::class, 'show']);
 });
 
+// Catálogo de ciudades (registro y perfil de la app)
+Route::get('/cities', [\App\Http\Controllers\API\CityController::class, 'index'])->name('api.cities.index');
+
 // Public settings endpoints
 Route::get('/settings', [\App\Http\Controllers\API\SettingsController::class, 'index']);
 Route::get('/settings/whatsapp', [\App\Http\Controllers\API\SettingsController::class, 'whatsapp']);

@@ -141,7 +141,8 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small">Ciudad</label>
-                        <input type="text" name="city" class="form-control form-control-sm" value="{{ old('city', $user->city) }}">
+                        <input type="text" name="city" class="form-control form-control-sm" value="{{ old('city', $user->city) }}" list="py-cities" autocomplete="off">
+                        @include('admin.partials._city_datalist')
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small">País</label>

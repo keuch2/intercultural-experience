@@ -72,6 +72,7 @@ class AuthController extends Controller
                 'birth_date' => $request->birth_date,
                 'address' => $request->address,
                 'city' => $request->city,
+                'city_id' => $request->city_id,
                 'country' => $request->country,
                 'academic_level' => $request->academic_level,
                 'english_level' => $request->english_level,

@@ -25,42 +25,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { profileService } from '../services/api';
 import { openLegalUrl } from '../utils/legalLinks';
 import Header from '../components/Header';
-
-// Fecha de nacimiento: se edita como DD/MM/AAAA y se guarda como AAAA-MM-DD.
-// Se toman las partes del texto (sin new Date) para no correr un día por la zona horaria.
-const isoToDisplayDate = (value?: string | null): string => {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value || '');
-  return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
-};
-
-const displayToIsoDate = (value: string): string | null => {
-  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
-  if (!m) return null;
-  const [, dd, mm, yyyy] = m;
-  const date = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-  const valid = date.getFullYear() === Number(yyyy) && date.getMonth() === Number(mm) - 1
-    && date.getDate() === Number(dd) && date < new Date();
-  return valid ? `${yyyy}-${mm}-${dd}` : null;
-};
-
-// Edad calculada desde AAAA-MM-DD (sin new Date(string) para no correr un día por la zona horaria).
-const ageFromIso = (value?: string | null): number | null => {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value || '');
-  if (!m) return null;
-  const today = new Date();
-  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
-  const hadBirthday = today.getMonth() + 1 > mo || (today.getMonth() + 1 === mo && today.getDate() >= d);
-  const age = today.getFullYear() - y - (hadBirthday ? 0 : 1);
-  return age >= 0 ? age : null;
-};
-
-// Inserta las barras mientras se escribe: 13061971 → 13/06/1971
-const maskDate = (value: string): string => {
-  const digits = value.replace(/\D/g, '').slice(0, 8);
-  if (digits.length <= 2) return digits;
-  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
-};
+import CityField from '../components/CityField';
+import { isoToDisplayDate, displayToIsoDate, maskDate, ageFromIso } from '../utils/dates';
 
 const ACADEMIC_LEVEL_OPTIONS = [
   { label: 'Bachiller', value: 'bachiller' },
@@ -102,6 +68,8 @@ const ProfileScreen: React.FC = () => {
     academic_level: '',
     english_level: ''
   });
+  // Ciudad del catálogo (null = "Otra" o país distinto de Paraguay).
+  const [cityId, setCityId] = useState<number | null>(null);
   
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -129,6 +97,7 @@ const ProfileScreen: React.FC = () => {
         academic_level: user.academic_level || '',
         english_level: user.english_level || ''
       });
+      setCityId(user.city_id ?? null);
     }
   }, [user]);
   
@@ -158,6 +127,8 @@ const ProfileScreen: React.FC = () => {
         name: formData.name,
         birth_date: birthDate,
         nationality: formData.nationality,
+        // Del catálogo va el id (el backend completa el nombre); con "Otra" va null y el texto libre.
+        city_id: cityId,
         city: formData.city,
         country: formData.country,
         academic_level: formData.academic_level,
@@ -618,15 +589,6 @@ const ProfileScreen: React.FC = () => {
                   maxLength={10}
                 />
 
-                <Text style={styles.formLabel}>Ciudad:</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.city}
-                  onChangeText={(value) => handleChange('city', value)}
-                  placeholder="Ingresa tu ciudad"
-                  autoCapitalize="words"
-                />
-
                 <DropdownField
                   label="País:"
                   options={
@@ -635,10 +597,29 @@ const ProfileScreen: React.FC = () => {
                       : COUNTRY_OPTIONS
                   }
                   value={formData.country}
-                  onSelect={(value) => handleChange('country', value)}
+                  onSelect={(value) => {
+                    if (value !== formData.country) {
+                      handleChange('city', '');
+                      setCityId(null);
+                    }
+                    handleChange('country', value);
+                  }}
                   placeholder="Selecciona tu país"
                   searchable
                   maxHeight={250}
+                />
+
+                <CityField
+                  key={`city-${personalInfoVisible}`}
+                  label="Ciudad:"
+                  country={formData.country}
+                  value={{ city_id: cityId, city: formData.city }}
+                  onChange={(value) => {
+                    setCityId(value.city_id);
+                    handleChange('city', value.city);
+                  }}
+                  labelStyle={styles.formLabel}
+                  inputStyle={styles.input}
                 />
 
                 <DropdownField

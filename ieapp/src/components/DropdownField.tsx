@@ -2,6 +2,9 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+const normalizeSearch = (text: string): string =>
+  text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
 interface DropdownOption {
   label: string;
   value: string;
@@ -44,10 +47,11 @@ const DropdownField: React.FC<DropdownFieldProps> = React.memo(({
     if (!searchable || !searchQuery.trim()) {
       return options;
     }
-    const query = searchQuery.toLowerCase().trim();
-    return options.filter(option => 
-      option.label.toLowerCase().includes(query) ||
-      option.value.toLowerCase().includes(query)
+    // Sin acentos ni mayúsculas: "asuncion" encuentra "Asunción", "nemby" encuentra "Ñemby".
+    const query = normalizeSearch(searchQuery);
+    return options.filter(option =>
+      normalizeSearch(option.label).includes(query) ||
+      normalizeSearch(option.value).includes(query)
     );
   }, [options, searchQuery, searchable]);
 
@@ -66,13 +70,6 @@ const DropdownField: React.FC<DropdownFieldProps> = React.memo(({
     setIsVisible(false);
     setSearchQuery('');
   }, []);
-
-  // Optimize FlatList rendering
-  const getItemLayout = useCallback((_: any, index: number) => ({
-    length: 56, // Estimated item height
-    offset: 56 * index,
-    index,
-  }), []);
 
   const renderOption = useCallback(({ item }: { item: DropdownOption }) => (
     <TouchableOpacity
@@ -145,6 +142,7 @@ const DropdownField: React.FC<DropdownFieldProps> = React.memo(({
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   autoFocus={false}
+                  autoCorrect={false}
                 />
                 {searchQuery.length > 0 && (
                   <TouchableOpacity 
@@ -161,7 +159,6 @@ const DropdownField: React.FC<DropdownFieldProps> = React.memo(({
               data={filteredOptions}
               keyExtractor={keyExtractor}
               renderItem={renderOption}
-              getItemLayout={getItemLayout}
               removeClippedSubviews={true}
               maxToRenderPerBatch={10}
               initialNumToRender={15}

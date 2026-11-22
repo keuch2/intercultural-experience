@@ -107,7 +107,8 @@
                         <div class="col-md-6">
                             <label for="city" class="form-label">Ciudad</label>
                             <input type="text" class="form-control @error('city') is-invalid @enderror" 
-                                   id="city" name="city" value="{{ old('city', $participant->city) }}">
+                                   id="city" name="city" value="{{ old('city', $participant->city) }}" list="py-cities" autocomplete="off">
+                            @include('admin.partials._city_datalist')
                             @error('city')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

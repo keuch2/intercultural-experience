@@ -16,6 +16,13 @@ export interface RegisterData {
   academic_level?: string;
   english_level?: string;
   accept_terms?: boolean;
+  phone?: string;
+  /** AAAA-MM-DD */
+  birth_date?: string;
+  /** Ciudad del catálogo; si no está, se envía `city` con el texto libre. */
+  city_id?: number;
+  /** 2 = formulario con todos los campos obligatorios. */
+  registration_version?: number;
 }
 
 export interface AuthResponse {

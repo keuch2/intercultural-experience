@@ -6,6 +6,8 @@ import { openLegalUrl } from '../../utils/legalLinks';
 import InputField from '../../components/InputField';
 import DropdownField from '../../components/DropdownField';
 import { allCountries } from '../../data/countries';
+import CityField, { CityValue } from '../../components/CityField';
+import { displayToIsoDate, maskDate } from '../../utils/dates';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -29,8 +31,11 @@ const RegisterScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
+  const [phone, setPhone] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  // Paraguay por defecto: la ciudad se elige del catálogo (o "Otra").
+  const [country, setCountry] = useState('paraguay');
+  const [city, setCity] = useState<CityValue>({ city_id: null, city: '' });
   const [academicLevel, setAcademicLevel] = useState('');
   const [englishLevel, setEnglishLevel] = useState('');
   // Términos y Política de Privacidad: se aceptan una sola vez, acá (no en cada postulación).
@@ -85,9 +90,34 @@ const RegisterScreen: React.FC = () => {
       newErrors.passwordConfirmation = confirmationValidation.errors;
     }
     
-    // Validate optional fields if filled
-    if (city && city.trim().length > 0 && city.trim().length < 2) {
-      newErrors.city = ['La ciudad debe tener al menos 2 caracteres'];
+    // Todos los campos son obligatorios (pedido de IE, nov 2026).
+    const phoneValidation = validatePhone(phone);
+    if (!phone.trim()) {
+      newErrors.phone = ['Ingresá tu número de teléfono'];
+    } else if (!phoneValidation.isValid) {
+      newErrors.phone = phoneValidation.errors;
+    }
+
+    if (!birthDate.trim()) {
+      newErrors.birth_date = ['Ingresá tu fecha de nacimiento'];
+    } else if (!displayToIsoDate(birthDate)) {
+      newErrors.birth_date = ['Fecha inválida. Usá el formato DD/MM/AAAA'];
+    }
+
+    if (!country) {
+      newErrors.country = ['Seleccioná tu país'];
+    }
+
+    if (!city.city_id && city.city.trim().length < 2) {
+      newErrors.city = ['Seleccioná tu ciudad (o escribila si elegiste "Otra")'];
+    }
+
+    if (!academicLevel) {
+      newErrors.academic_level = ['Seleccioná tu nivel académico'];
+    }
+
+    if (!englishLevel) {
+      newErrors.english_level = ['Seleccioná tu nivel de inglés'];
     }
     
     if (!acceptTerms) {
@@ -97,29 +127,33 @@ const RegisterScreen: React.FC = () => {
     setErrors(newErrors);
     setIsValidating(false);
     return Object.keys(newErrors).length === 0;
-  }, [name, email, password, passwordConfirmation, city, acceptTerms]);
+  }, [name, email, password, passwordConfirmation, phone, birthDate, country, city, academicLevel, englishLevel, acceptTerms]);
   
   const handleRegister = async () => {
     if (!validateForm()) {
-      if (!acceptTerms) {
-        Alert.alert('Términos y Condiciones', 'Para crear tu cuenta debés aceptar los Términos y Condiciones y la Política de Privacidad.');
-      }
+      Alert.alert(
+        'Revisá el formulario',
+        acceptTerms
+          ? 'Completá todos los campos marcados para crear tu cuenta.'
+          : 'Para crear tu cuenta debés completar todos los campos y aceptar los Términos y Condiciones y la Política de Privacidad.'
+      );
       return;
     }
     
     console.log('Attempting registration with:', { name, email, password: '***', passwordConfirmation: '***' });
     
-    // Solo se envían los campos opcionales que el usuario completó.
-    const profile = Object.fromEntries(
-      Object.entries({
-        city: city.trim(),
-        // Se guarda el nombre del país ("Paraguay"), igual que en Mi Perfil y el panel.
-        country: allCountries.find((c) => c.value === country)?.label ?? country,
-        academic_level: academicLevel,
-        english_level: englishLevel,
-      }).filter(([, value]) => value !== '')
-    );
-    const payload = { ...profile, accept_terms: true };
+    const payload = {
+      phone: phone.trim(),
+      birth_date: displayToIsoDate(birthDate) ?? undefined,
+      // Se guarda el nombre del país ("Paraguay"), igual que en Mi Perfil y el panel.
+      country: allCountries.find((c) => c.value === country)?.label ?? country,
+      ...(city.city_id ? { city_id: city.city_id } : { city: city.city.trim() }),
+      academic_level: academicLevel,
+      english_level: englishLevel,
+      accept_terms: true,
+      // Formulario con todos los campos obligatorios: el backend aplica las reglas estrictas.
+      registration_version: 2,
+    };
 
     const result = await register(name, email, password, passwordConfirmation, payload);
     
@@ -185,11 +219,23 @@ const RegisterScreen: React.FC = () => {
       case 'passwordConfirmation':
         setPasswordConfirmation(value);
         break;
-      case 'city':
-        setCity(value);
+      case 'phone':
+        setPhone(value);
+        break;
+      case 'birth_date':
+        setBirthDate(maskDate(value));
         break;
     }
   }, [errors]);
+
+  const clearError = useCallback((field: string) => {
+    setErrors(prev => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }, []);
 
   // Format error messages for display
   const getErrorMessage = (field: string): string | undefined => {
@@ -225,6 +271,24 @@ const RegisterScreen: React.FC = () => {
         keyboardType="email-address"
         autoCapitalize="none"
         error={getErrorMessage('email')}
+      />
+
+      <InputField
+        label="Teléfono / WhatsApp"
+        value={phone}
+        onChangeText={(value) => handleFieldChange('phone', value)}
+        placeholder="Ej: 0981 123 456"
+        keyboardType="phone-pad"
+        error={getErrorMessage('phone')}
+      />
+
+      <InputField
+        label="Fecha de nacimiento"
+        value={birthDate}
+        onChangeText={(value) => handleFieldChange('birth_date', value)}
+        placeholder="DD/MM/AAAA"
+        keyboardType="number-pad"
+        error={getErrorMessage('birth_date')}
       />
       
       <View>
@@ -268,44 +332,57 @@ const RegisterScreen: React.FC = () => {
         error={getErrorMessage('passwordConfirmation')}
       />
       
-      <InputField
-        label="Ciudad (opcional)"
-        value={city}
-        onChangeText={(value) => handleFieldChange('city', value)}
-        placeholder="Tu ciudad"
-        error={getErrorMessage('city')}
-        autoCapitalize="words"
-      />
-      
       <DropdownField
-        label="País (opcional)"
+        label="País"
         options={allCountries}
         value={country}
-        onSelect={setCountry}
+        onSelect={(value) => {
+          setCountry(value);
+          setCity({ city_id: null, city: '' });
+          clearError('country');
+        }}
         placeholder="Selecciona tu país"
         error={getErrorMessage('country')}
         searchable={true}
         maxHeight={250}
       />
-      
+
+      <CityField
+        label="Ciudad"
+        country={allCountries.find((c) => c.value === country)?.label ?? country}
+        value={city}
+        onChange={(value) => {
+          setCity(value);
+          clearError('city');
+          clearError('city_id');
+        }}
+        error={getErrorMessage('city') ?? getErrorMessage('city_id')}
+      />
+
       <DropdownField
-        label="Nivel Académico (opcional)"
+        label="Nivel Académico"
         options={academicLevelOptions}
         value={academicLevel}
-        onSelect={setAcademicLevel}
+        onSelect={(value) => {
+          setAcademicLevel(value);
+          clearError('academic_level');
+        }}
         placeholder="Selecciona tu nivel académico"
         error={getErrorMessage('academic_level')}
       />
-      
+
       <DropdownField
-        label="Nivel de Inglés (opcional)"
+        label="Nivel de Inglés"
         options={englishLevelOptions}
         value={englishLevel}
-        onSelect={setEnglishLevel}
+        onSelect={(value) => {
+          setEnglishLevel(value);
+          clearError('english_level');
+        }}
         placeholder="Selecciona tu nivel de inglés"
         error={getErrorMessage('english_level')}
       />
-      
+
       <View style={styles.termsRow}>
         <TouchableOpacity
           onPress={() => setAcceptTerms((v) => !v)}
