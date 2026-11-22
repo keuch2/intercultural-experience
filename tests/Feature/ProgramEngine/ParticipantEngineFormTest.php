@@ -45,20 +45,22 @@ class ParticipantEngineFormTest extends EngineTestCase
             ->assertDontSee("'Work and Travel': 'work_travel'", false);
     }
 
-    public function test_assigning_engine_program_from_admin_creates_process(): void
+    public function test_assigning_engine_program_from_admin_creates_process_only_when_approved(): void
     {
         $program = $this->engineProgram(['slug' => 'work-travel']);
         $user = $this->participant();
 
+        // Sin aprobar: la postulación queda en la bandeja Solicitudes, sin proceso (nov 2026).
         $this->actingAs($this->admin())
-            ->put(route('admin.participants.update', $user->id), [
-                'name' => $user->name,
-                'email' => $user->email,
-                'program_id' => $program->id,
-            ])
+            ->put(route('admin.participants.update', $user->id), ['name' => $user->name, 'email' => $user->email, 'program_id' => $program->id])
             ->assertRedirect();
+        $this->assertDatabaseHas('applications', ['user_id' => $user->id, 'program_id' => $program->id, 'status' => 'pending']);
+        $this->assertSame(0, ProgramProcess::where('user_id', $user->id)->count());
 
-        $this->assertDatabaseHas('applications', ['user_id' => $user->id, 'program_id' => $program->id]);
+        // Aprobada desde "Editar": se crea el proceso.
+        $this->actingAs($this->admin())
+            ->put(route('admin.participants.update', $user->id), ['name' => $user->name, 'email' => $user->email, 'program_id' => $program->id, 'status' => 'approved'])
+            ->assertRedirect();
         $this->assertSame(1, ProgramProcess::where('user_id', $user->id)->where('program_id', $program->id)->count());
     }
 
@@ -84,7 +86,8 @@ class ParticipantEngineFormTest extends EngineTestCase
             ->assertRedirect(route('admin.participants.show', $user->id))
             ->assertSessionHas('success');
 
-        $this->assertDatabaseHas('applications', ['user_id' => $user->id, 'program_id' => $program->id, 'status' => 'pending']);
+        // Inscripto por IE: queda aprobada y con su proceso.
+        $this->assertDatabaseHas('applications', ['user_id' => $user->id, 'program_id' => $program->id, 'status' => 'approved']);
         $this->assertSame(1, ProgramProcess::where('user_id', $user->id)->where('program_id', $program->id)->count());
 
         // Duplicado activo → error de validación, sin crear otra postulación

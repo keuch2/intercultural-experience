@@ -237,7 +237,12 @@ class ProgramProcessController extends Controller
     {
         $this->assertOwned($program, $process);
         $approve = $request->input('action', 'approve') !== 'revoke';
-        $process->application?->update(['status' => $approve ? 'approved' : 'pending']);
+        if ($approve && $process->application && $process->application->status !== 'approved') {
+            // Mismo camino que la bandeja Solicitudes: registra la revisión y avisa al participante.
+            app(\App\Services\ApplicationReviewService::class)->approve($process->application, $request->user());
+        } elseif (! $approve) {
+            $process->application?->update(['status' => 'pending']);
+        }
         $this->log($program, $process, $approve ? 'applicant_approved' : 'applicant_revoked', $approve ? 'Postulante aprobado' : 'Aprobación revocada');
 
         return back()->with('success', $approve ? 'Postulante aprobado. Ya puede subir documentos desde la app.' : 'Aprobación revocada.');

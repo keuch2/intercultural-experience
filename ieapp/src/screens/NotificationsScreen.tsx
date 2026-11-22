@@ -57,7 +57,8 @@ const NotificationsScreen: React.FC = () => {
       case 'visa': return flow === 'aupair' ? 'AuPairVisa' : flow === 'engine' ? 'ProgramVisa' : null;
       case 'support': return flow === 'aupair' ? 'AuPairSupport' : flow === 'engine' ? 'ProgramSupport' : null;
       case 'job_pool': return flow === 'engine' ? 'JobPool' : null;
-      case 'program_stage': case 'program_dates': return flow === 'none' ? null : screensFor(flow).home;
+      // Solicitud aprobada → su proceso. Una rechazada no tiene pantalla (la postulación ya no se muestra).
+      case 'program_stage': case 'program_dates': case 'application': return flow === 'none' ? null : screensFor(flow).home;
       default: return null;
     }
   };

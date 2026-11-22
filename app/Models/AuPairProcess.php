@@ -12,6 +12,34 @@ class AuPairProcess extends Model
 {
     use SoftDeletes;
 
+    /** Valores con los que nace el proceso Au Pair de una postulación (al aprobarla o como vista previa). */
+    public static function initialAttributes(Application $application): array
+    {
+        $user = $application->user;
+
+        return [
+            'application_id' => $application->id,
+            'user_id' => $application->user_id,
+            'enrollment_date' => ($application->applied_at ?? $application->created_at)?->toDateString(),
+            'enrollment_city' => $user?->city,
+            'enrollment_country' => $user?->country,
+            'current_stage' => 'admission',
+            'admission_status' => 'pending',
+            'application_status' => 'locked',
+            'match_visa_status' => 'locked',
+            'support_status' => 'locked',
+        ];
+    }
+
+    /** Proceso de la postulación: el guardado si existe; si no, uno en memoria (sin tocar la base). */
+    public static function forApplicationOrPreview(Application $application): self
+    {
+        $process = self::where('application_id', $application->id)->first()
+            ?? new self(self::initialAttributes($application));
+
+        return $process->setRelation('application', $application);
+    }
+
     protected $fillable = [
         'application_id',
         'user_id',

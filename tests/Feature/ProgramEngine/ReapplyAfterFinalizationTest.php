@@ -62,6 +62,9 @@ class ReapplyAfterFinalizationTest extends EngineTestCase
 
         $this->getJson('/api/au-pair/process')->assertOk()->assertJsonPath('data.application_id', $newApp->id)->assertJsonPath('data.current_stage', 'admission');
         $this->getJson('/api/au-pair/process', ['X-Application-Id' => $app->id])->assertOk()->assertJsonPath('data.current_stage', 'completed');
+
+        // El perfil Au Pair pasa a la convocatoria nueva cuando IE aprueba la solicitud (ahí se crea el proceso).
+        app(\App\Services\ApplicationReviewService::class)->approve($newApp, null);
         $this->assertSame($newApp->id, $user->fresh()->auPairProcess->application_id, 'el perfil Au Pair muestra la convocatoria vigente');
     }
 }

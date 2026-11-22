@@ -9,6 +9,9 @@ class Application extends Model
     /** Estados que cuentan como postulación vigente (bloquean volver a postular al mismo programa). */
     public const ACTIVE_STATUSES = ['pending', 'in_review', 'approved'];
 
+    /** Solicitudes que IE todavía no aprobó ni rechazó (bandeja "Solicitudes"). */
+    public const AWAITING_REVIEW_STATUSES = ['pending', 'in_review'];
+
     protected $fillable = [
         'user_id',
         'program_id',
@@ -34,6 +37,9 @@ class Application extends Model
         'applied_at',
         'started_at',
         'completed_at',
+        'reviewed_at',
+        'reviewed_by',
+        'rejection_reason',
     ];
 
     protected $casts = [
@@ -42,6 +48,7 @@ class Application extends Model
         'applied_at' => 'datetime',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'reviewed_at' => 'datetime',
         'total_cost' => 'decimal:2',
         'amount_paid' => 'decimal:2',
         'payment_deadline' => 'date',
@@ -62,6 +69,28 @@ class Application extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    /** Pendientes de la decisión de IE. */
+    public function scopeAwaitingReview($query)
+    {
+        return $query->whereIn('status', self::AWAITING_REVIEW_STATUSES);
+    }
+
+    /** Lo que ve el participante en la app: las rechazadas quedan solo como historial interno. */
+    public function scopeVisibleToParticipant($query)
+    {
+        return $query->where('status', '!=', 'rejected');
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
     }
 
     public function program()

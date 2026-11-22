@@ -21,7 +21,9 @@ class ApplicationController extends Controller
      */
     public function index()
     {
+        // Las rechazadas quedan como historial interno: el participante no las ve (pedido de IE, nov 2026).
         $applications = Application::where('user_id', auth()->id())
+            ->visibleToParticipant()
             ->with(['program'])
             ->orderBy('applied_at', 'desc')
             ->get()
@@ -97,10 +99,8 @@ class ApplicationController extends Controller
         // Crear los requisitos del usuario para esta solicitud
         $this->createUserProgramRequisites($application);
 
-        // Programas del motor: crear el proceso de inmediato para que el admin lo vea.
-        if ($program->engine_enabled) {
-            app(\App\Services\ProgramEngine\ProcessResolver::class)->forApplication($application->setRelation('program', $program));
-        }
+        // El proceso del programa se crea recién cuando IE aprueba la solicitud (bandeja Solicitudes).
+        app(\App\Services\ApplicationReviewService::class)->notifyStaffOfNewApplication($application->setRelation('program', $program));
         
         return response()->json([
             'success' => true,
@@ -250,53 +250,32 @@ class ApplicationController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function approve($id)
+    public function approve(Request $request, $id)
     {
-        $application = Application::findOrFail($id);
-        
-        if ($application->status !== 'in_review') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Solo se pueden aprobar solicitudes en revisión.'
-            ], 422);
+        $application = Application::with(['program', 'user'])->findOrFail($id);
+        if (! in_array($application->status, Application::AWAITING_REVIEW_STATUSES, true)) {
+            return response()->json(['success' => false, 'message' => 'Solo se pueden aprobar solicitudes pendientes o en revisión.'], 422);
         }
-        
-        $application->status = 'approved';
-        $application->completed_at = now();
-        $application->save();
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'La solicitud ha sido aprobada.',
-            'data' => $application
-        ]);
+
+        // Crea el proceso del programa y avisa al participante (ApplicationReviewService).
+        app(\App\Services\ApplicationReviewService::class)->approve($application, $request->user());
+
+        return response()->json(['success' => true, 'message' => 'La solicitud ha sido aprobada.', 'data' => $application->fresh()]);
     }
-    
+
     /**
-     * Rechaza una solicitud (solo para administradores).
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * Rechaza una solicitud (solo para administradores). Queda como historial; el participante recibe un aviso.
      */
-    public function reject($id)
+    public function reject(Request $request, $id)
     {
-        $application = Application::findOrFail($id);
-        
-        if ($application->status !== 'in_review') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Solo se pueden rechazar solicitudes en revisión.'
-            ], 422);
+        $application = Application::with(['program', 'user'])->findOrFail($id);
+        if (! in_array($application->status, Application::AWAITING_REVIEW_STATUSES, true)) {
+            return response()->json(['success' => false, 'message' => 'Solo se pueden rechazar solicitudes pendientes o en revisión.'], 422);
         }
-        
-        $application->status = 'rejected';
-        $application->completed_at = now();
-        $application->save();
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'La solicitud ha sido rechazada.',
-            'data' => $application
-        ]);
+        $request->validate(['reason' => ['nullable', 'string', 'max:1000']]);
+
+        app(\App\Services\ApplicationReviewService::class)->reject($application, $request->user(), $request->input('reason'));
+
+        return response()->json(['success' => true, 'message' => 'La solicitud ha sido rechazada.', 'data' => $application->fresh()]);
     }
 }

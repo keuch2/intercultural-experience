@@ -25,12 +25,13 @@ class ProcessApiTest extends EngineTestCase
         Sanctum::actingAs($this->user);
     }
 
-    public function test_apply_from_app_creates_process_and_me_process_returns_envelope(): void
+    public function test_apply_from_app_waits_for_approval_and_me_process_returns_envelope(): void
     {
         $this->getJson('/api/me/process')->assertStatus(404)->assertJsonPath('status', 'no_application');
 
+        // El proceso se crea recién cuando IE aprueba la solicitud (nov 2026); la app ve una vista previa.
         $this->postJson('/api/applications', ['program_id' => $this->program->id])->assertStatus(201);
-        $this->assertDatabaseCount('program_processes', 1);
+        $this->assertDatabaseCount('program_processes', 0);
 
         $this->getJson('/api/me/process')->assertOk()
             ->assertJsonPath('data.program.slug', 'work-travel')
@@ -40,6 +41,11 @@ class ProcessApiTest extends EngineTestCase
 
         $this->getJson('/api/programs/work-travel/process')->assertOk()->assertJsonPath('data.current_stage', 'admission');
         $this->getJson("/api/programs/{$this->program->id}/process")->assertOk();
+        $this->assertDatabaseCount('program_processes', 0);
+
+        app(\App\Services\ApplicationReviewService::class)->approve(\App\Models\Application::where('user_id', $this->user->id)->firstOrFail(), null);
+        $this->assertDatabaseCount('program_processes', 1);
+        $this->getJson('/api/me/process')->assertOk()->assertJsonPath('data.application_approved', true);
     }
 
     public function test_public_catalog_exposes_engine_fields_for_routing(): void

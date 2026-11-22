@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Application;
+use App\Services\ApplicationReviewService;
 use App\Models\ApplicationDocument;
 use App\Models\Program;
 use App\Models\Point;
@@ -37,10 +38,14 @@ class AdminApplicationController extends Controller
             $query->where('program_id', $request->input('program_id'));
         }
         
-        if ($request->has('status') && $request->input('status') != '') {
-            $query->where('status', $request->input('status'));
-        }
-        
+        // Bandeja de solicitudes: por defecto las que esperan la decisión de IE (pendientes / en revisión).
+        $status = $request->input('status', 'awaiting');
+        match ($status) {
+            'awaiting' => $query->awaitingReview(),
+            'all', '' => null,
+            default => $query->where('status', $status),
+        };
+
         if ($request->has('date_range')) {
             $dateRange = explode(' - ', $request->input('date_range'));
             if (count($dateRange) == 2) {
@@ -50,10 +55,15 @@ class AdminApplicationController extends Controller
             }
         }
         
-        $applications = $query->orderBy('applied_at', 'desc')->paginate(10);
-        $programs = Program::all();
-        
-        return view('admin.applications.index', compact('applications', 'programs'));
+        $applications = $query->with('reviewer:id,name')->orderBy('applied_at', 'desc')->paginate(20)->withQueryString();
+        $programs = Program::orderBy('name')->get();
+        $counts = [
+            'awaiting' => Application::awaitingReview()->count(),
+            'approved' => Application::where('status', 'approved')->count(),
+            'rejected' => Application::where('status', 'rejected')->count(),
+        ];
+
+        return view('admin.applications.index', compact('applications', 'programs', 'status', 'counts'));
     }
 
     /**
@@ -100,44 +110,39 @@ class AdminApplicationController extends Controller
      * @param  \App\Models\Application  $application
      * @return \Illuminate\Http\Response
      */
-    public function approve(Application $application)
+    public function approve(Request $request, Application $application, ApplicationReviewService $review)
     {
-        if ($application->status !== 'in_review') {
-            return redirect()->back()->with('error', 'Solo se pueden aprobar solicitudes en revisión.');
+        if (! in_array($application->status, Application::AWAITING_REVIEW_STATUSES, true)) {
+            return redirect()->back()->with('error', 'Solo se pueden aprobar solicitudes pendientes o en revisión.');
         }
-        
-        $application->status = 'approved';
-        $application->completed_at = now();
-        $application->save();
-        
-        // Otorgar puntos al usuario por la aprobación
+
+        // Crea el proceso del programa y avisa al participante.
+        $review->approve($application, $request->user());
+
         Point::create([
             'user_id' => $application->user_id,
-            'change' => 100, // Valor arbitrario de puntos
+            'change' => 100,
             'reason' => 'application_approved',
-            'related_id' => $application->id
+            'related_id' => $application->id,
         ]);
-        
-        return redirect()->back()->with('success', 'La solicitud ha sido aprobada y se han otorgado puntos al usuario.');
+
+        return redirect()->back()->with('success', "Solicitud aprobada: {$application->user?->name} ya puede continuar con su proceso de {$application->program?->name}. Se le envió un aviso.");
     }
 
     /**
-     * Rechaza una solicitud.
-     *
-     * @param  \App\Models\Application  $application
-     * @return \Illuminate\Http\Response
+     * Rechaza una solicitud: queda como historial, no se crea (y se borra si existía) el proceso del
+     * programa, y el participante recibe un aviso. Puede volver a postular.
      */
-    public function reject(Application $application)
+    public function reject(Request $request, Application $application, ApplicationReviewService $review)
     {
-        if ($application->status !== 'in_review') {
-            return redirect()->back()->with('error', 'Solo se pueden rechazar solicitudes en revisión.');
+        if (! in_array($application->status, Application::AWAITING_REVIEW_STATUSES, true)) {
+            return redirect()->back()->with('error', 'Solo se pueden rechazar solicitudes pendientes o en revisión.');
         }
-        
-        $application->status = 'rejected';
-        $application->completed_at = now();
-        $application->save();
-        
-        return redirect()->back()->with('success', 'La solicitud ha sido rechazada.');
+        $data = $request->validate(['rejection_reason' => ['nullable', 'string', 'max:1000']]);
+
+        $review->reject($application, $request->user(), $data['rejection_reason'] ?? null);
+
+        return redirect()->back()->with('success', "Solicitud rechazada. Se le avisó a {$application->user?->name}.");
     }
 
     /**
@@ -150,10 +155,14 @@ class AdminApplicationController extends Controller
         $query = ApplicationDocument::with(['application.user', 'application.program']);
         
         // Aplicar filtros si existen
-        if ($request->has('status') && $request->input('status') != '') {
-            $query->where('status', $request->input('status'));
-        }
-        
+        // Bandeja de solicitudes: por defecto las que esperan la decisión de IE (pendientes / en revisión).
+        $status = $request->input('status', 'awaiting');
+        match ($status) {
+            'awaiting' => $query->awaitingReview(),
+            'all', '' => null,
+            default => $query->where('status', $status),
+        };
+
         $documents = $query->orderBy('created_at', 'desc')->paginate(10);
         
         return view('admin.documents.index', compact('documents'));
@@ -241,6 +250,16 @@ class AdminApplicationController extends Controller
 
         $application = Application::findOrFail($id);
         $oldStatus = $application->status;
+
+        // Aprobar / rechazar siempre por el servicio (crea o borra el proceso y avisa al participante).
+        if (in_array($request->status, ['approved', 'rejected'], true) && in_array($oldStatus, Application::AWAITING_REVIEW_STATUSES, true)) {
+            $review = app(ApplicationReviewService::class);
+            $request->status === 'approved'
+                ? $review->approve($application, $request->user())
+                : $review->reject($application, $request->user(), $request->notes);
+
+            return back()->with('success', 'Estado actualizado exitosamente.');
+        }
 
         $application->update([
             'status' => $request->status,

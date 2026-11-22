@@ -24,11 +24,12 @@ class AuPairProfileController extends Controller
      */
     public function index(Request $request)
     {
+        // Perfiles = solicitudes aprobadas (o con proceso de antes del cambio). Las pendientes se revisan en Solicitudes.
         $query = User::where('role', 'user')
             ->whereHas('applications', function ($q) {
                 $q->whereHas('program', function ($pq) {
                     $pq->where('subcategory', 'Au Pair');
-                });
+                })->where(fn ($a) => $a->where('status', 'approved')->orWhereHas('auPairProcess'));
             })
             ->with([
                 'applications' => function ($q) {
@@ -134,16 +135,14 @@ class AuPairProfileController extends Controller
         $profile = $user->auPairProfile;
         $process = $user->auPairProcess;
 
-        // Auto-create process if user has Au Pair application but no process yet
-        if ($application && !$process) {
-            // Módulo 10 fix: Use applied_at (actual enrollment date) if available, not created_at
-            $process = AuPairProcess::create([
-                'application_id' => $application->id,
-                'user_id' => $user->id,
-                'enrollment_date' => ($application->applied_at ?? $application->created_at)->toDateString(),
-                'enrollment_city' => $user->city,
-                'enrollment_country' => $user->country,
-            ]);
+        // El proceso Au Pair se crea al aprobar la solicitud. Una aprobada sin proceso (datos viejos) lo crea;
+        // una solicitud sin aprobar se revisa desde la bandeja Solicitudes.
+        if ($application && ! $process) {
+            if ($application->status !== 'approved') {
+                return redirect()->route('admin.applications.index', ['search' => $user->email])
+                    ->with('error', "La solicitud Au Pair de {$user->name} todavía no fue aprobada: aprobala o rechazala desde Solicitudes.");
+            }
+            $process = AuPairProcess::create(AuPairProcess::initialAttributes($application));
             $user->setRelation('auPairProcess', $process);
         }
 
@@ -816,7 +815,12 @@ class AuPairProfileController extends Controller
         }
 
         $approve = $request->input('action', 'approve') !== 'revoke';
-        $application->update(['status' => $approve ? 'approved' : 'pending']);
+        if ($approve && $application->status !== 'approved') {
+            // Mismo camino que la bandeja Solicitudes: crea el proceso si falta y avisa al participante.
+            app(\App\Services\ApplicationReviewService::class)->approve($application, $request->user());
+        } elseif (! $approve) {
+            $application->update(['status' => 'pending']);
+        }
 
         return back()->with('success', $approve
             ? 'Postulante aprobado. Ya puede subir documentos desde la app.'

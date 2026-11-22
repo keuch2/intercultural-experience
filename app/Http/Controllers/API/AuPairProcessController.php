@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\API\Concerns\ResolvesAuPairProcess;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\AuPairDocument;
@@ -24,39 +25,16 @@ use Illuminate\Http\Request;
  */
 class AuPairProcessController extends Controller
 {
+    use ResolvesAuPairProcess;
+
     public function show(Request $request)
     {
-        $user = $request->user();
-
-        // Postulación seleccionada en la app (X-Application-Id) o la más reciente.
-        $base = Application::query()
-            ->where('user_id', $user->id)
-            ->whereHas('program', fn ($q) => $q->where('subcategory', Program::SUBCATEGORY_AU_PAIR));
-        $selectedId = (int) ($request->header('X-Application-Id') ?: $request->query('application_id'));
-        $application = ($selectedId ? (clone $base)->whereKey($selectedId)->first() : null)
-            ?? $base->latest('id')->first();
-
-        if (! $application) {
-            return response()->json([
-                'status' => 'no_application',
-                'message' => 'El usuario no tiene una postulación Au Pair activa.',
-            ], 404);
+        [$process, $error] = $this->resolveProcess($request, allowPreview: true);
+        if ($error) {
+            return $error->getStatusCode() === 404
+                ? response()->json(['status' => 'no_application', 'message' => 'El usuario no tiene una postulación Au Pair activa.'], 404)
+                : $error;
         }
-
-        $process = AuPairProcess::firstOrCreate(
-            ['application_id' => $application->id],
-            [
-                'user_id' => $user->id,
-                'enrollment_date' => ($application->applied_at ?? $application->created_at)?->toDateString(),
-                'enrollment_city' => $user->city,
-                'enrollment_country' => $user->country,
-                'current_stage' => 'admission',
-                'admission_status' => 'pending',
-                'application_status' => 'locked',
-                'match_visa_status' => 'locked',
-                'support_status' => 'locked',
-            ]
-        );
 
         $process->loadMissing(['application', 'matchesExtended']);
 

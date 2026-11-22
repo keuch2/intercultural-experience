@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Program;
 use App\Models\User;
-use App\Services\ProgramEngine\ProcessResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -125,7 +124,7 @@ class ParticipantController extends Controller
         $validated['is_current_program'] = true; // Primera aplicación es siempre actual
         
         $participant = Application::create($validated);
-        app(ProcessResolver::class)->ensureForApplication($participant);
+        app(\App\Services\ApplicationReviewService::class)->approve($participant, $request->user());
         
         return redirect()
             ->route('admin.participants.show', $participant)
@@ -196,7 +195,7 @@ class ParticipantController extends Controller
             
             // Crear nueva aplicación
             $newApplication = Application::create($newApplicationData);
-            app(ProcessResolver::class)->ensureForApplication($newApplication);
+            app(\App\Services\ApplicationReviewService::class)->approve($newApplication, $request->user());
             
             return $newApplication;
         });
@@ -376,10 +375,17 @@ class ParticipantController extends Controller
             'notes' => 'nullable|string',
         ]);
         
-        $participant->update([
-            'status' => $validated['status'],
-        ]);
-        
+        // Aprobar / rechazar una solicitud pendiente pasa por el servicio (proceso + aviso al participante).
+        $awaiting = in_array($participant->status, Application::AWAITING_REVIEW_STATUSES, true);
+        if ($awaiting && in_array($validated['status'], ['approved', 'rejected'], true)) {
+            $review = app(\App\Services\ApplicationReviewService::class);
+            $validated['status'] === 'approved'
+                ? $review->approve($participant, $request->user())
+                : $review->reject($participant, $request->user(), $validated['notes'] ?? null);
+        } else {
+            $participant->update(['status' => $validated['status']]);
+        }
+
         return back()->with('success', 'Estado actualizado exitosamente');
     }
 

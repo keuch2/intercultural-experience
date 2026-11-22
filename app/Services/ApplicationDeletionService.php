@@ -57,8 +57,7 @@ class ApplicationDeletionService
             }
             $log->log("Postulación eliminada: {$user?->name} — {$program?->name}");
 
-            $this->deleteEngineProcess($application, $actor);
-            $this->deleteAuPairProcess($application);
+            $this->deleteProcesses($application, $actor);
 
             $wasCurrent = (bool) $application->is_current_program;
             $userId = $application->user_id;
@@ -68,6 +67,13 @@ class ApplicationDeletionService
                 Application::where('user_id', $userId)->latest('applied_at')->first()?->update(['is_current_program' => true]);
             }
         });
+    }
+
+    /** Borra el proceso (motor o Au Pair) y sus archivos, sin tocar la postulación ni sus pagos. */
+    public function deleteProcesses(Application $application, ?User $actor): void
+    {
+        $this->deleteEngineProcess($application, $actor);
+        $this->deleteAuPairProcess($application);
     }
 
     private function deleteEngineProcess(Application $application, ?User $actor): void

@@ -43,6 +43,40 @@ class ProcessResolver
     }
 
     /**
+     * Proceso para mostrar: el guardado si existe; si la postulación todavía no fue aprobada, uno en
+     * memoria (sin tocar la base) con la primera etapa en curso. El proceso real se crea al aprobar
+     * (ApplicationReviewService). Una postulación aprobada sin proceso (datos viejos) lo crea.
+     */
+    public function forApplicationOrPreview(Application $application): ProgramProcess
+    {
+        $existing = ProgramProcess::where('application_id', $application->id)->first();
+        if ($existing) {
+            return $existing->setRelation('application', $application);
+        }
+        if ($application->isApproved()) {
+            return $this->forApplication($application);
+        }
+
+        $program = $application->program ?? Program::findOrFail($application->program_id);
+        $definition = ProgramDefinition::for($program);
+        $first = $definition->firstStage();
+        if (! $first) {
+            throw new RuntimeException("El programa '{$program->name}' no tiene etapas configuradas.");
+        }
+
+        return (new ProgramProcess([
+            'application_id' => $application->id,
+            'program_id' => $program->id,
+            'user_id' => $application->user_id,
+            'current_stage_key' => $first->key,
+            'status' => ProgramProcess::STATUS_ACTIVE,
+            'stage_states' => $this->initialStageStates($definition),
+            'season' => $this->defaultSeason($program),
+            'enrollment_date' => ($application->applied_at ?? $application->created_at)?->toDateString(),
+        ]))->setRelation('application', $application)->setRelation('program', $program);
+    }
+
+    /**
      * Crea el proceso del motor si la postulación pertenece a un programa con motor
      * habilitado (p. ej. cuando el admin asigna Work & Travel desde Participantes).
      * Devuelve null para programas legacy o sin etapas configuradas.
@@ -70,12 +104,13 @@ class ProcessResolver
     {
         $application = Application::query()
             ->where('user_id', $user->id)
+            ->visibleToParticipant()
             ->when($program, fn ($q) => $q->where('program_id', $program->id))
             ->whereHas('program', fn ($q) => $q->where('engine_enabled', true))
             ->latest('id')
             ->first();
 
-        return $application ? $this->forApplication($application) : null;
+        return $application ? $this->forApplicationOrPreview($application) : null;
     }
 
     /**

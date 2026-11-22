@@ -65,19 +65,28 @@
                         </form>
                     @endif
                     
-                    @if($application->status == 'in_review')
-                        <form action="{{ url('/admin/applications/'.$application->id.'/approve') }}" method="POST">
+                    @if(in_array($application->status, \App\Models\Application::AWAITING_REVIEW_STATUSES, true))
+                        <form action="{{ route('admin.applications.approve', $application) }}" method="POST"
+                              onsubmit="return confirm('¿Aprobar la solicitud? Se crea el perfil en el programa y se envía un aviso al participante.')">
                             @csrf
-                            <button type="submit" class="btn btn-success btn-block mb-2">
+                            <button type="submit" class="btn btn-success w-100 mb-2">
                                 <i class="fas fa-check me-1"></i> Aprobar Solicitud
                             </button>
                         </form>
-                        <form action="{{ url('/admin/applications/'.$application->id.'/reject') }}" method="POST">
+                        <form action="{{ route('admin.applications.reject', $application) }}" method="POST"
+                              onsubmit="return confirm('¿Rechazar la solicitud? Queda en el historial y se avisa al participante.')">
                             @csrf
-                            <button type="submit" class="btn btn-danger btn-block">
+                            <textarea name="rejection_reason" class="form-control form-control-sm mb-2" rows="2" maxlength="1000" placeholder="Motivo del rechazo (opcional, se incluye en el aviso)"></textarea>
+                            <button type="submit" class="btn btn-danger w-100">
                                 <i class="fas fa-times me-1"></i> Rechazar Solicitud
                             </button>
                         </form>
+                    @endif
+                    @if($application->reviewed_at)
+                        <p class="small text-muted mt-2 mb-0 text-center">
+                            Revisada el {{ $application->reviewed_at->format('d/m/Y H:i') }}@if($application->reviewer) por {{ $application->reviewer->name }}@endif
+                            @if($application->rejection_reason)<br><span class="text-danger">Motivo: {{ $application->rejection_reason }}</span>@endif
+                        </p>
                     @endif
                 </div>
             </div>

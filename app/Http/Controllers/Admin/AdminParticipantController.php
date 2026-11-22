@@ -8,7 +8,7 @@ use App\Models\Program;
 use App\Models\User;
 use App\Services\ApplicationDeletionService;
 use App\Services\Exceptions\ApplicationDeletionException;
-use App\Services\ProgramEngine\ProcessResolver;
+use App\Services\ApplicationReviewService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -227,9 +227,10 @@ class AdminParticipantController extends Controller
                 'user_id' => $user->id,
                 'program_id' => $request->program_id,
                 'status' => 'pending',
-                'application_date' => now(),
+                'applied_at' => now(),
             ]);
-            app(ProcessResolver::class)->ensureForApplication($application);
+            // Inscripto por el equipo de IE: la solicitud queda aprobada y se crea su proceso.
+            app(ApplicationReviewService::class)->approve($application, $request->user());
         }
 
         return redirect()->route('admin.participants.index')
@@ -382,10 +383,11 @@ class AdminParticipantController extends Controller
             ]);
         });
 
-        app(ProcessResolver::class)->ensureForApplication($application);
+        // Inscripto por el equipo de IE: la solicitud queda aprobada y se crea su proceso.
+        app(ApplicationReviewService::class)->approve($application, $request->user());
 
         return redirect()->route('admin.participants.show', $participant->id)
-            ->with('success', "Postulación a {$program->name} creada correctamente.");
+            ->with('success', "Postulación a {$program->name} creada y aprobada.");
     }
 
     /**
@@ -476,7 +478,7 @@ class AdminParticipantController extends Controller
         if ($request->filled('program_id')) {
             if ($firstApp && $firstApp->program_id == $request->program_id) {
                 // Same program — update Application fields
-                $firstApp->update($request->only(['status', 'current_stage', 'progress_percentage']));
+                $this->applyApplicationStatus($firstApp, $request);
             } else {
                 // Different or new program — create new application
                 $existingApp = Application::where('user_id', $participant->id)
@@ -484,7 +486,7 @@ class AdminParticipantController extends Controller
                     ->first();
 
                 if ($existingApp) {
-                    $existingApp->update($request->only(['status', 'current_stage', 'progress_percentage']));
+                    $this->applyApplicationStatus($existingApp, $request);
                 } else {
                     $application = Application::create([
                         'user_id' => $participant->id,
@@ -494,16 +496,39 @@ class AdminParticipantController extends Controller
                         'progress_percentage' => $request->progress_percentage ?? 0,
                         'applied_at' => now(),
                     ]);
-                    app(ProcessResolver::class)->ensureForApplication($application);
+                    // El proceso se crea solo si se la deja aprobada; si no, queda en la bandeja Solicitudes.
+                    if ($application->status === 'approved') {
+                        $application->update(['status' => 'pending']);
+                        app(ApplicationReviewService::class)->approve($application, $request->user());
+                    }
                 }
             }
         } elseif ($firstApp) {
             // No program selected but app exists — still update status/stage
-            $firstApp->update($request->only(['status', 'current_stage', 'progress_percentage']));
+            $this->applyApplicationStatus($firstApp, $request);
         }
 
         return redirect()->route('admin.participants.show', $participant->id)
             ->with('success', 'Participante actualizado correctamente.');
+    }
+
+    /**
+     * Estado de la postulación desde "Editar": aprobar o rechazar una solicitud pendiente pasa por
+     * ApplicationReviewService (crea / borra el proceso y avisa al participante).
+     */
+    private function applyApplicationStatus(Application $application, Request $request): void
+    {
+        $status = $request->input('status');
+        $awaiting = in_array($application->status, Application::AWAITING_REVIEW_STATUSES, true);
+        $review = app(ApplicationReviewService::class);
+
+        if ($awaiting && $status === 'approved') {
+            $review->approve($application, $request->user());
+        } elseif ($awaiting && $status === 'rejected') {
+            $review->reject($application, $request->user());
+        } elseif ($status && $status !== $application->status && ! in_array($status, ['approved', 'rejected'], true)) {
+            $application->update(['status' => $status]);
+        }
     }
 
     /**

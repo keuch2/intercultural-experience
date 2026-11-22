@@ -227,6 +227,13 @@
                             Gestión
                         </div>
                         <ul class="nav flex-column">
+                            @php $awaitingApplications = \App\Models\Application::awaitingReview()->count(); @endphp
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center {{ request()->is('admin/applications*') ? 'active' : '' }}" href="{{ route('admin.applications.index') }}">
+                                    <span><i class="fas fa-inbox"></i> Solicitudes</span>
+                                    @if($awaitingApplications > 0)<span class="badge bg-danger rounded-pill ms-auto">{{ $awaitingApplications }}</span>@endif
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->is('admin/participants*') ? 'active' : '' }}" href="{{ route('admin.participants.index') }}">
                                     <i class="fas fa-user-graduate"></i> Participantes
@@ -284,11 +291,6 @@
                         <div class="collapse" id="sidebar-otros">
                             <ul class="nav flex-column" style="font-size: 0.85rem;">
                                 {{-- Legacy "Au Pair (legacy)" removed — usar Au Pair > Perfiles --}}
-                                <li class="nav-item">
-                                    <a class="nav-link py-1" href="{{ url('/admin/applications') }}">
-                                        <i class="fas fa-file-alt"></i> Solicitudes
-                                    </a>
-                                </li>
                                 <li class="nav-item">
                                     <a class="nav-link py-1" href="{{ route('admin.documents.index') }}">
                                         <i class="fas fa-file-pdf"></i> Documentos

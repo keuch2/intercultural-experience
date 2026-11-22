@@ -15,7 +15,7 @@ class ProcessController extends Controller
 
     public function show(Request $request, Program $engineProgram, EnvelopeBuilder $envelope)
     {
-        [$process, $err] = $this->resolveProcess($request, $engineProgram);
+        [$process, $err] = $this->resolveProcess($request, $engineProgram, allowPreview: true);
         if ($err) {
             return $err;
         }
