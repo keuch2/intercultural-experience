@@ -33,6 +33,7 @@ class AccountDeletionService
             ])->save();
 
             $user->tokens()->delete();
+            $user->deviceTokens()->delete(); // sin push en los dispositivos donde tenía sesión
 
             ActivityLog::log('participants')->withAction('app_account_deleted')
                 ->withProperties(['user_id' => $user->id])

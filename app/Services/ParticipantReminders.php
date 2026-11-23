@@ -32,6 +32,16 @@ class ParticipantReminders
 
     public const DOCS_EVERY_DAYS = 7;
 
+    /** Evento del recordatorio => tipo de aviso (NotificationCatalog). */
+    public const PUSH_TYPES = [
+        'installment_overdue' => 'installment_overdue',
+        'installment_due' => 'installment_due',
+        'payment_deadline' => 'payment_deadline',
+        'documents_pending' => 'documents_pending',
+        'personal_info_pending' => 'personal_info_pending',
+        'visa_appointment' => 'visa_appointment_reminder',
+    ];
+
     private bool $dryRun = false;
 
     private CarbonImmutable $today;
@@ -247,7 +257,7 @@ class ParticipantReminders
         if ($this->dryRun) {
             return true;
         }
-        $this->notifier->toUser($userId, $title, $message, $category);
+        $this->notifier->toUser($userId, $title, $message, $category, self::PUSH_TYPES[$event] ?? null);
         ParticipantReminder::create(['user_id' => $userId, 'key' => $key, 'sent_on' => $this->today->toDateString()]);
 
         return true;

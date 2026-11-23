@@ -140,7 +140,7 @@ class PaymentController extends Controller
 
         $payment->verify(auth()->id());
         $amount = ($payment->currency->code ?? 'USD').' '.number_format((float) $payment->amount, 2);
-        app(\App\Services\ProgramEngine\Notifier::class)->toUser($payment->user_id ?? $payment->application->user_id, 'Pago verificado', "Tu pago de {$amount} del ".optional($payment->payment_date)->format('d/m/Y').' fue verificado por IE.', 'payment');
+        app(\App\Services\ProgramEngine\Notifier::class)->toUser($payment->user_id ?? $payment->application->user_id, 'Pago verificado', "Tu pago de {$amount} del ".optional($payment->payment_date)->format('d/m/Y').' fue verificado por IE.', 'payment', 'payment_verified');
 
         return redirect()
             ->route('admin.participants.show', $payment->application_id)
@@ -167,7 +167,7 @@ class PaymentController extends Controller
 
         $payment->reject(auth()->id(), $request->input('rejection_reason'));
         $amount = ($payment->currency->code ?? 'USD').' '.number_format((float) $payment->amount, 2);
-        app(\App\Services\ProgramEngine\Notifier::class)->toUser($payment->user_id ?? $payment->application->user_id, 'Pago rechazado', "Tu pago de {$amount} fue rechazado. Motivo: ".$request->input('rejection_reason').'. Podés registrar un nuevo comprobante desde Pagos.', 'payment');
+        app(\App\Services\ProgramEngine\Notifier::class)->toUser($payment->user_id ?? $payment->application->user_id, 'Pago rechazado', "Tu pago de {$amount} fue rechazado. Motivo: ".$request->input('rejection_reason').'. Podés registrar un nuevo comprobante desde Pagos.', 'payment', 'payment_rejected');
 
         return redirect()
             ->route('admin.participants.show', $payment->application_id)

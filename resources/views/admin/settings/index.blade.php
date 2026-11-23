@@ -46,6 +46,18 @@
         <div class="col-lg-6 mb-4">
             <div class="card">
                 <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-bell text-primary"></i> Notificaciones push</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Qué avisos llegan como notificación push al celular y cuáles son obligatorios (llegan aunque el participante silencie la categoría).</p>
+                    <a href="{{ route('admin.notification-types.index') }}" class="btn btn-outline-primary btn-sm">Configurar notificaciones</a>
+                    <a href="{{ route('admin.notification-campaigns.index') }}" class="btn btn-outline-secondary btn-sm">Avisos especiales</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
                     <h5 class="card-title mb-0"><i class="fas fa-clock text-primary"></i> Zona horaria</h5>
                 </div>
                 <div class="card-body">

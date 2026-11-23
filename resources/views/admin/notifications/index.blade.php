@@ -77,66 +77,14 @@
     </div>
     
     <div class="row">
-        <!-- Nueva Notificación -->
         <div class="col-lg-12">
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <i class="fas fa-plus-circle me-1"></i>
-                        Nueva Notificación
-                    </div>
-                    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNewNotification" aria-expanded="false" aria-controls="collapseNewNotification">
-                        Mostrar/Ocultar
-                    </button>
-                </div>
-                <div class="collapse" id="collapseNewNotification">
-                    <div class="card-body">
-                        <form action="{{ route('admin.notifications.store') }}" method="POST">
-                            @csrf
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="title" class="form-label">Título</label>
-                                        <input type="text" class="form-control" id="title" name="title" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="category" class="form-label">Categoría</label>
-                                        <select class="form-select" id="category" name="category" required>
-                                            <option value="">Seleccionar categoría</option>
-                                            <option value="info">Información</option>
-                                            <option value="warning">Advertencia</option>
-                                            <option value="success">Éxito</option>
-                                            <option value="error">Error</option>
-                                            <option value="update">Actualización</option>
-                                            <option value="promotion">Promoción</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="message" class="form-label">Mensaje</label>
-                                <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="user_ids" class="form-label">Destinatarios</label>
-                                <select class="form-select" id="user_ids" name="user_ids[]" multiple required>
-                                    <option value="">Seleccionar usuarios</option>
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
-                                    @endforeach
-                                </select>
-                                <div class="form-text">Mantén presionada la tecla Ctrl (o Command en Mac) para seleccionar múltiples usuarios.</div>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Enviar Notificación</button>
-                        </form>
-                    </div>
-                </div>
+            <div class="alert alert-info d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <span><i class="fas fa-bullhorn me-1"></i> Para enviar un aviso a uno o varios participantes (con notificación push, filtros y envío programado) usá <strong>Avisos especiales</strong>.</span>
+                <a href="{{ route('admin.notification-campaigns.create') }}" class="btn btn-sm btn-primary">Nuevo aviso especial</a>
             </div>
         </div>
     </div>
-    
+
     <div class="row">
         <!-- Filtros -->
         <div class="col-lg-12">

@@ -184,6 +184,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('support-tickets', SupportTicketController::class)->names('api.support-tickets');
     });
     // Notificaciones in-app (rutas específicas antes del apiResource para que no las capture {notification})
+    // Push (Fase 6): dispositivos y preferencias por categoría
+    Route::post('me/device-tokens', [\App\Http\Controllers\API\DeviceTokenController::class, 'store'])->name('api.me.device-tokens.store');
+    Route::delete('me/device-tokens', [\App\Http\Controllers\API\DeviceTokenController::class, 'destroy'])->name('api.me.device-tokens.destroy');
+    Route::get('me/notification-preferences', [\App\Http\Controllers\API\NotificationPreferenceController::class, 'show'])->name('api.me.notification-preferences');
+    Route::put('me/notification-preferences', [\App\Http\Controllers\API\NotificationPreferenceController::class, 'update'])->name('api.me.notification-preferences.update');
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('api.notifications.unread-count');
     Route::patch('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('api.notifications.mark-all-read');
     Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('api.notifications.read');

@@ -195,6 +195,17 @@ class User extends Authenticatable
         return $this->hasMany(Application::class);
     }
 
+    /** Dispositivos con la app (tokens de Expo Push). */
+    public function deviceTokens()
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
+    public function notificationPreferences()
+    {
+        return $this->hasMany(UserNotificationPreference::class);
+    }
+
     public function payments()
     {
         return $this->hasMany(\App\Models\Payment::class);

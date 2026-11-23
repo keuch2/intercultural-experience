@@ -178,9 +178,9 @@ class DocumentService
         $label = ProgramDefinition::for($doc->process->program)->requirement($doc->requirement_key)?->label ?? $doc->requirement_key;
         $notifier = app(Notifier::class);
         if ($status === ProgramDocument::STATUS_APPROVED) {
-            $notifier->toUser($doc->process->user_id, "Documento aprobado: {$label}", "Tu documento \"{$label}\" fue aprobado.", 'documents');
+            $notifier->toUser($doc->process->user_id, "Documento aprobado: {$label}", "Tu documento \"{$label}\" fue aprobado.", 'documents', 'document_approved');
         } else {
-            $notifier->toUser($doc->process->user_id, "Documento rechazado: {$label}", "Tu documento \"{$label}\" fue rechazado. Motivo: {$reason}. Volvé a subirlo desde la app.", 'documents');
+            $notifier->toUser($doc->process->user_id, "Documento rechazado: {$label}", "Tu documento \"{$label}\" fue rechazado. Motivo: {$reason}. Volvé a subirlo desde la app.", 'documents', 'document_rejected');
         }
 
         return $doc;

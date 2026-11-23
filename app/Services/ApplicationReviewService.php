@@ -54,6 +54,7 @@ class ApplicationReviewService
                 'Tu postulación fue aprobada',
                 "¡Felicitaciones! IE aprobó tu acceso a {$program}. Ya podés continuar con tu proceso desde la app.",
                 self::CATEGORY,
+                'application_approved',
             );
         }
 
@@ -89,6 +90,7 @@ class ApplicationReviewService
             "Tu solicitud de acceso a {$program} no fue aprobada.".($reason ? " Motivo: {$reason}." : '')
                 .' Si tenés dudas, escribinos por WhatsApp.',
             self::CATEGORY,
+            'application_rejected',
         );
 
         return $application;

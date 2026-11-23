@@ -186,6 +186,14 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::resource('app-banners', \App\Http\Controllers\Admin\AppBannerController::class)->except(['show'])->names('admin.app-banners');
         Route::post('/app-banners/{appBanner}/toggle', [\App\Http\Controllers\Admin\AppBannerController::class, 'toggle'])->name('admin.app-banners.toggle');
 
+        // Fase 6: avisos especiales (campañas) + configuración de notificaciones push por tipo
+        Route::post('/notification-campaigns/preview', [\App\Http\Controllers\Admin\NotificationCampaignController::class, 'preview'])->name('admin.notification-campaigns.preview');
+        Route::get('/notification-campaigns/users', [\App\Http\Controllers\Admin\NotificationCampaignController::class, 'users'])->name('admin.notification-campaigns.users');
+        Route::post('/notification-campaigns/{notificationCampaign}/cancel', [\App\Http\Controllers\Admin\NotificationCampaignController::class, 'cancel'])->name('admin.notification-campaigns.cancel');
+        Route::resource('notification-campaigns', \App\Http\Controllers\Admin\NotificationCampaignController::class)->except(['destroy'])->names('admin.notification-campaigns');
+        Route::get('/notification-types', [\App\Http\Controllers\Admin\NotificationTypeController::class, 'index'])->name('admin.notification-types.index');
+        Route::put('/notification-types', [\App\Http\Controllers\Admin\NotificationTypeController::class, 'update'])->name('admin.notification-types.update');
+
         // Applications Management
         Route::get('/applications', [AdminApplicationController::class, 'index'])->name('admin.applications.index');
         Route::get('/applications/{application}', [AdminApplicationController::class, 'show'])->name('admin.applications.show');

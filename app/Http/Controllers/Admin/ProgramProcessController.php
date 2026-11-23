@@ -572,7 +572,7 @@ class ProgramProcessController extends Controller
         $appointmentAfter = $visa->appointment_date?->toDateString();
         if ($appointmentAfter && $appointmentAfter !== $appointmentBefore) {
             $when = \Carbon\Carbon::parse($appointmentAfter)->format('d/m/Y').($visa->appointment_time ? ' a las '.substr((string) $visa->appointment_time, 0, 5) : '').($visa->embassy ? ' en '.$visa->embassy : '');
-            app(\App\Services\ProgramEngine\Notifier::class)->toUser($process->user_id, $appointmentBefore ? 'Cita de visa modificada' : 'Cita de visa agendada', "Tu cita en la embajada quedó fijada para el {$when}. Revisá la sección Visa.", 'visa');
+            app(\App\Services\ProgramEngine\Notifier::class)->toUser($process->user_id, $appointmentBefore ? 'Cita de visa modificada' : 'Cita de visa agendada', "Tu cita en la embajada quedó fijada para el {$when}. Revisá la sección Visa.", 'visa', 'visa_appointment');
         }
 
         return $this->toTab($program, $process, 'visa', 'Proceso de visa actualizado.');
@@ -599,7 +599,7 @@ class ProgramProcessController extends Controller
         $validated['logged_by'] = $request->user()->id;
         $validated['source'] = 'staff';
         $log = $process->supportLogs()->create($validated);
-        app(\App\Services\ProgramEngine\Notifier::class)->toUser($process->user_id, 'Nuevo seguimiento de tu coordinador', "Tu coordinador registró: \"{$log->title}\". Podés verlo en Soporte.", 'support');
+        app(\App\Services\ProgramEngine\Notifier::class)->toUser($process->user_id, 'Nuevo seguimiento de tu coordinador', "Tu coordinador registró: \"{$log->title}\". Podés verlo en Soporte.", 'support', 'support_followup');
 
         return $this->toTab($program, $process, 'support', 'Registro de seguimiento creado.');
     }
@@ -698,7 +698,7 @@ class ProgramProcessController extends Controller
             }
             $pool->setPoolAccess($process, $enable, $request->user(), allowReselect: false);
             if ($enable) {
-                app(\App\Services\ProgramEngine\Notifier::class)->toUser($process->user_id, 'Pool de Ofertas habilitado', 'IE habilitó tu acceso al Pool de Ofertas Laborales. Ya podés revisar las ofertas y elegir la tuya desde la app.', 'job_pool');
+                app(\App\Services\ProgramEngine\Notifier::class)->toUser($process->user_id, 'Pool de Ofertas habilitado', 'IE habilitó tu acceso al Pool de Ofertas Laborales. Ya podés revisar las ofertas y elegir la tuya desde la app.', 'job_pool', 'job_pool_enabled');
             }
             $done++;
         }

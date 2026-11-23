@@ -44,6 +44,7 @@ class SendJobPoolNotifications
             "{$offer->headline} — {$offer->city}, {$offer->state} ({$offer->positions_available} posiciones). Revisá el Pool de Ofertas en la app.",
             self::CATEGORY,
             fn (ProgramProcess $p) => $p->hasModuleAccess(ModuleCatalog::JOB_POOL) && ! $p->activeJobAssignment()->exists(),
+            'job_pool_offer_published',
         );
     }
 
@@ -51,7 +52,7 @@ class SendJobPoolNotifications
     {
         $a = $event->assignment->loadMissing(['offer', 'process.user']);
         $offer = $a->offer;
-        $this->notifier->toUser($a->process->user_id, 'Oferta laboral seleccionada', "Confirmamos tu selección: {$offer->headline} — {$offer->city}, {$offer->state}. El equipo IE continuará con tu Job Placement.", self::CATEGORY);
+        $this->notifier->toUser($a->process->user_id, 'Oferta laboral seleccionada', "Confirmamos tu selección: {$offer->headline} — {$offer->city}, {$offer->state}. El equipo IE continuará con tu Job Placement.", self::CATEGORY, 'job_offer_selected');
         $this->notifier->toAdmins('Selección de oferta laboral', "{$a->process->user?->name} seleccionó la oferta {$offer->headline} ({$offer->city}, {$offer->state}). Cupos restantes: {$offer->positions_available}.", self::CATEGORY);
     }
 
@@ -64,7 +65,7 @@ class SendJobPoolNotifications
             ? ' Ya podés elegir otra oferta en el Pool de Ofertas.'
             : ' El equipo IE te avisará cuando puedas elegir otra oferta.';
         $title = $a->status === JobPoolAssignment::STATUS_JOB_CANCELLED ? 'El empleador canceló el puesto' : 'Asignación de oferta liberada';
-        $this->notifier->toUser($a->process->user_id, $title, "Se liberó tu asignación a {$offer->headline} ({$offer->city}, {$offer->state}).".($event->reason ? " Motivo: {$event->reason}." : '').$next, self::CATEGORY);
+        $this->notifier->toUser($a->process->user_id, $title, "Se liberó tu asignación a {$offer->headline} ({$offer->city}, {$offer->state}).".($event->reason ? " Motivo: {$event->reason}." : '').$next, self::CATEGORY, 'job_offer_released');
     }
 
     public function onExhausted(JobPoolOfferExhausted $event): void

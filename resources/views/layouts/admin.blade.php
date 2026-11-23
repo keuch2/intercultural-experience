@@ -255,6 +255,11 @@
                                     <i class="fas fa-images"></i> Banners de la app
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/notification-campaigns*') || request()->is('admin/notification-types*') ? 'active' : '' }}" href="{{ route('admin.notification-campaigns.index') }}">
+                                    <i class="fas fa-bullhorn"></i> Avisos especiales
+                                </a>
+                            </li>
                         </ul>
                         @endif
 

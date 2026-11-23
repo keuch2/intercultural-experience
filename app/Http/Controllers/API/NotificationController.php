@@ -101,6 +101,8 @@ class NotificationController extends Controller
                 'documents' => str_starts_with($n->title, 'Documento aprobado') ? 'success' : 'warning',
                 default => 'info'
             },
+            'notification_type' => $n->notification_type,
+            'data' => $n->data,
             'is_read' => (bool) $n->is_read,
             'created_at' => optional($n->created_at)->toIso8601String(),
             'updated_at' => optional($n->created_at)->toIso8601String(),

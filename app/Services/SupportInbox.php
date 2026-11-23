@@ -61,7 +61,7 @@ class SupportInbox
         $log->markResolved($by, $resolution);
         $userId = $log->process?->user_id;
         if ($userId) {
-            $this->notifier->toUser($userId, 'Tu reporte fue solucionado', "IE marcó como solucionado tu reporte \"{$log->title}\": {$resolution}", ParticipantSupportReports::CATEGORY);
+            $this->notifier->toUser($userId, 'Tu reporte fue solucionado', "IE marcó como solucionado tu reporte \"{$log->title}\": {$resolution}", ParticipantSupportReports::CATEGORY, 'support_report_resolved');
         }
     }
 

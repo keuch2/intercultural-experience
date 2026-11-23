@@ -393,10 +393,10 @@ class AuPairProfileController extends Controller
         $notifier = app(\App\Services\ProgramEngine\Notifier::class);
         if ($request->action === 'approve') {
             $doc->approve(Auth::id());
-            $notifier->toUser((int) $id, "Documento aprobado: {$docLabel}", "Tu documento \"{$docLabel}\" fue aprobado.", 'documents');
+            $notifier->toUser((int) $id, "Documento aprobado: {$docLabel}", "Tu documento \"{$docLabel}\" fue aprobado.", 'documents', 'document_approved');
         } else {
             $doc->reject(Auth::id(), $request->rejection_reason);
-            $notifier->toUser((int) $id, "Documento rechazado: {$docLabel}", "Tu documento \"{$docLabel}\" fue rechazado. Motivo: {$request->rejection_reason}. Volvé a subirlo desde la app.", 'documents');
+            $notifier->toUser((int) $id, "Documento rechazado: {$docLabel}", "Tu documento \"{$docLabel}\" fue rechazado. Motivo: {$request->rejection_reason}. Volvé a subirlo desde la app.", 'documents', 'document_rejected');
         }
 
         // Check if all required admission docs are now approved → update process
@@ -785,7 +785,7 @@ class AuPairProfileController extends Controller
 
             $newStage = $process->fresh()->current_stage;
             $stageLabels = ['admission' => 'Admisión', 'application' => 'Aplicación', 'match_visa' => 'Match / Visa J1', 'support' => 'Support', 'completed' => 'Completado'];
-            app(\App\Services\ProgramEngine\Notifier::class)->toUser($user->id, 'Tu proceso avanzó: '.($stageLabels[$newStage] ?? $newStage), 'Tu proceso Au Pair pasó a la etapa "'.($stageLabels[$newStage] ?? $newStage).'". Revisá la app para ver los próximos pasos.', 'program_stage');
+            app(\App\Services\ProgramEngine\Notifier::class)->toUser($user->id, 'Tu proceso avanzó: '.($stageLabels[$newStage] ?? $newStage), 'Tu proceso Au Pair pasó a la etapa "'.($stageLabels[$newStage] ?? $newStage).'". Revisá la app para ver los próximos pasos.', 'program_stage', 'stage_advanced');
 
             return redirect()
                 ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => match ($newStage) { 'application' => 'application', 'support' => 'support', default => 'match_visa' }])
@@ -916,7 +916,7 @@ class AuPairProfileController extends Controller
             return;
         }
         $when = \Carbon\Carbon::parse($after)->format('d/m/Y').($visa->appointment_time ? ' a las '.substr((string) $visa->appointment_time, 0, 5) : '').($visa->embassy ? ' en '.$visa->embassy : '');
-        app(\App\Services\ProgramEngine\Notifier::class)->toUser($userId, $before ? 'Cita de visa modificada' : 'Cita de visa agendada', "Tu cita en la embajada quedó fijada para el {$when}. Revisá la sección Visa.", 'visa');
+        app(\App\Services\ProgramEngine\Notifier::class)->toUser($userId, $before ? 'Cita de visa modificada' : 'Cita de visa agendada', "Tu cita en la embajada quedó fijada para el {$when}. Revisá la sección Visa.", 'visa', 'visa_appointment');
     }
 
     /**
@@ -1029,7 +1029,7 @@ class AuPairProfileController extends Controller
         $validated['source'] = 'staff';
 
         $log = $process->supportLogs()->create($validated);
-        app(\App\Services\ProgramEngine\Notifier::class)->toUser($user->id, 'Nuevo seguimiento de tu coordinador', "Tu coordinador registró: \"{$log->title}\". Podés verlo en Soporte.", 'support');
+        app(\App\Services\ProgramEngine\Notifier::class)->toUser($user->id, 'Nuevo seguimiento de tu coordinador', "Tu coordinador registró: \"{$log->title}\". Podés verlo en Soporte.", 'support', 'support_followup');
 
         return redirect()
             ->route('admin.aupair.profiles.show', ['id' => $id, 'tab' => 'support'])

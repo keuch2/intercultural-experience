@@ -256,6 +256,10 @@ class AuthController extends Controller
         try {
             // Option 1: Delete only current token (recommended for mobile apps)
             $request->user()->currentAccessToken()->delete();
+            // El dispositivo deja de recibir push de esta cuenta.
+            if ($deviceToken = $request->input('device_token')) {
+                $request->user()->deviceTokens()->where('token', $deviceToken)->delete();
+            }
             
             // Option 2: Delete all tokens (uncomment if you want to logout from all devices)
             // $request->user()->tokens()->delete();

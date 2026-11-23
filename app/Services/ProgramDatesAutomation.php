@@ -216,7 +216,7 @@ class ProgramDatesAutomation
                     $p->markAutomation(self::FLAG_AUTO_ADVANCED);
                     $p->markAutomation(self::FLAG_STARTED);
                     $this->notifier->toUser($p->user_id, 'Tu proceso avanzó: Support',
-                        'Tu programa Au Pair comenzó y tu proceso pasó a la etapa "Support". Tu coordinador te acompaña desde ahora; revisá la app.', 'program_stage');
+                        'Tu programa Au Pair comenzó y tu proceso pasó a la etapa "Support". Tu coordinador te acompaña desde ahora; revisá la app.', 'program_stage', 'stage_advanced');
                     $this->notifier->toAdmins("Avance automático a Support: {$name}",
                         "{$name} (Au Pair) inició el programa el {$date} y pasó automáticamente a la etapa Support. ".$this->auPairUrl($p, 'support'), self::CATEGORY);
                 }
@@ -266,7 +266,7 @@ class ProgramDatesAutomation
         }
         $this->notifier->toAdmins($title, $message, self::CATEGORY);
         if ($participant && $p->user_id) {
-            $this->notifier->toUser($p->user_id, $participant[0], $participant[1], self::CATEGORY);
+            $this->notifier->toUser($p->user_id, $participant[0], $participant[1], self::CATEGORY, 'program_dates');
         }
         $p->markAutomation($flag);
     }

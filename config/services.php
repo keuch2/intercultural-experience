@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    // Expo Push (notificaciones push de la app). El access token es opcional: solo si se activa
+    // "Enhanced security for push notifications" en expo.dev.
+    'expo' => [
+        'access_token' => env('EXPO_ACCESS_TOKEN'),
+    ],
+
 ];

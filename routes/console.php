@@ -21,3 +21,9 @@ Schedule::command('participants:send-reminders')
     ->timezone('America/Asuncion')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/participant-reminders.log'));
+
+// Avisos especiales programados + notificaciones push (Expo) + recibos. Sin cola: corre cada minuto.
+Schedule::command('notifications:dispatch')
+    ->everyMinute()
+    ->withoutOverlapping(10)
+    ->appendOutputTo(storage_path('logs/notifications-dispatch.log'));

@@ -25,6 +25,7 @@ class NotifyParticipantOfStageChange
             "Tu proceso avanzó: {$label}",
             "Tu postulación a {$program->name} pasó a la etapa \"{$label}\". Revisá la app para ver los próximos pasos.",
             'program_stage',
+            'stage_advanced',
         );
     }
 }
