@@ -4,6 +4,7 @@ namespace App\Services\ProgramEngine;
 
 use App\Models\ProgramDocument;
 use App\Models\ProgramProcess;
+use App\Services\PersonalInfoService;
 
 /**
  * Próxima acción sugerida al participante: {key, label, screen, params}.
@@ -14,6 +15,8 @@ class NextActionResolver
     public const SCREEN_DOCUMENTS = 'ProgramDocuments';
 
     public const SCREEN_PAYMENTS = 'Payments';
+
+    public const SCREEN_PERSONAL_INFO = 'PersonalInfo';
 
     public function __construct(private readonly StageEvaluator $evaluator = new StageEvaluator) {}
 
@@ -27,8 +30,14 @@ class NextActionResolver
         if ($process->status === ProgramProcess::STATUS_CANCELLED) {
             return $this->action('cancelled', 'Tu proceso fue cancelado. Contactá al equipo IE.');
         }
+        $personalInfoPending = app(PersonalInfoService::class)->blocksParticipant($process->application);
         if (! $process->applicantApproved()) {
-            return $this->action('wait_approval', 'Tu postulación está en revisión por el equipo IE.');
+            return $personalInfoPending
+                ? $this->action('personal_info', 'Mientras IE revisa tu postulación, completá tu información personal.', self::SCREEN_PERSONAL_INFO, ['application_id' => $process->application_id])
+                : $this->action('wait_approval', 'Tu postulación está en revisión por el equipo IE.');
+        }
+        if ($personalInfoPending) {
+            return $this->action('personal_info', 'Completá y confirmá tu información personal', self::SCREEN_PERSONAL_INFO, ['application_id' => $process->application_id]);
         }
 
         $stage = $definition->stage($process->current_stage_key);

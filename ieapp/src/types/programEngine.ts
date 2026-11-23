@@ -1,3 +1,4 @@
+import { PersonalInfoStatus } from './personalInfo';
 /**
  * Tipos del motor de programas (Work & Travel y programas configurables).
  * Corresponden a app/Services/ProgramEngine/EnvelopeBuilder y a los controladores
@@ -96,6 +97,8 @@ export interface ProgramEnvelope {
   status: 'active' | 'completed' | 'cancelled';
   application_approved: boolean;
   application_review_status: string | null;
+  /** Formulario de información personal de Admisión (backend nov 2026; puede faltar en respuestas viejas). */
+  personal_info?: PersonalInfoStatus;
   enrollment_date: string | null;
   /** Fecha de inicio/fin del programa (viaje/trabajo), cargada por IE */
   program_start_date: string | null;

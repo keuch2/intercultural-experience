@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\ProgramDocument;
 use App\Models\ProgramProcess;
 use App\Models\User;
+use App\Services\PersonalInfoService;
 use App\Services\ProgramEngine\Exceptions\DocumentException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -88,6 +89,9 @@ class DocumentService
         if ($uploaderType === 'participant') {
             if (! $process->applicantApproved()) {
                 throw new DocumentException('pending_approval', 'Tu postulación está pendiente de aprobación. El equipo IE debe aprobarla antes de subir documentos.', 403);
+            }
+            if (app(PersonalInfoService::class)->blocksParticipant($process->application)) {
+                throw new DocumentException('personal_info_pending', PersonalInfoService::PENDING_MESSAGE, 403);
             }
             if ($req->uploaded_by === 'staff') {
                 throw new DocumentException('staff_only', 'Este documento lo carga el equipo IE, no se puede subir desde la app.', 403);

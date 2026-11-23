@@ -1,3 +1,4 @@
+import { PersonalInfoStatus } from './personalInfo';
 /**
  * Tipos del dominio Au Pair (mobile V1).
  * Corresponden 1:1 con la serialización del backend en:
@@ -38,6 +39,7 @@ export interface AuPairProcess {
   current_stage: AuPairStage;
   application_approved: boolean;
   application_review_status: string | null;
+  personal_info?: PersonalInfoStatus;
   enrollment_date: string | null;
   program_start_date: string | null;
   program_end_date: string | null;

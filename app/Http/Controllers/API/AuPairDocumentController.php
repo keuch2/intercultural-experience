@@ -6,6 +6,7 @@ use App\Http\Controllers\API\Concerns\ResolvesAuPairProcess;
 use App\Http\Controllers\Controller;
 use App\Models\AuPairDocument;
 use App\Models\AuPairProcess;
+use App\Services\PersonalInfoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -80,6 +81,10 @@ class AuPairDocumentController extends Controller
                 'status' => 'error',
                 'message' => 'Tu postulación está pendiente de aprobación. El equipo IE debe aprobarla antes de subir documentos.',
             ], 403);
+        }
+
+        if (app(PersonalInfoService::class)->blocksParticipant($process->application)) {
+            return response()->json(['status' => 'personal_info_pending', 'message' => PersonalInfoService::PENDING_MESSAGE], 403);
         }
 
         $allStages = ['admission', 'application_payment1', 'application_payment2', 'visa'];

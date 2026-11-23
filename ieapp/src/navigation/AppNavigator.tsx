@@ -51,6 +51,7 @@ export type RootStackParamList = {
   ProgramDashboard: undefined;
   ProgramDocuments: { group?: string } | undefined;
   ProgramDocumentUpload: { entry: any };
+  PersonalInfo: { application_id?: number | null } | undefined;
   ProgramEnglishTest: undefined;
   ProgramVisa: undefined;
   ProgramSupport: undefined;

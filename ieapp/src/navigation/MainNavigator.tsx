@@ -32,6 +32,7 @@ import AuPairOnboardingScreen from '../screens/AuPair/AuPairOnboardingScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import ProgramDashboardScreen from '../screens/Program/ProgramDashboardScreen';
 import ProgramDocumentsScreen from '../screens/Program/ProgramDocumentsScreen';
+import PersonalInfoScreen from '../screens/Program/PersonalInfoScreen';
 import ProgramDocumentUploadScreen from '../screens/Program/ProgramDocumentUploadScreen';
 import ProgramEnglishTestScreen from '../screens/Program/ProgramEnglishTestScreen';
 import ProgramVisaScreen from '../screens/Program/ProgramVisaScreen';
@@ -90,6 +91,7 @@ export type MainStackParamList = {
   ProgramDashboard: undefined;
   ProgramDocuments: { group?: string } | undefined;
   ProgramDocumentUpload: { entry: any };
+  PersonalInfo: { application_id?: number | null } | undefined;
   ProgramEnglishTest: undefined;
   ProgramVisa: undefined;
   ProgramSupport: undefined;
@@ -194,6 +196,7 @@ const MainNavigator: React.FC = () => {
       <Stack.Screen name="ProgramDashboard" component={ProgramDashboardWithNav} />
       <Stack.Screen name="ProgramDocuments" component={ProgramDocumentsWithNav} />
       <Stack.Screen name="ProgramDocumentUpload" component={ProgramDocumentUploadScreen} />
+      <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
       <Stack.Screen name="ProgramEnglishTest" component={ProgramEnglishTestWithNav} />
       <Stack.Screen name="ProgramVisa" component={ProgramVisaWithNav} />
       <Stack.Screen name="ProgramSupport" component={ProgramSupportWithNav} />

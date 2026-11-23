@@ -5,11 +5,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { auPairService } from '../../services/api';
 import { AuPairDocumentEntry, AuPairProcess, DocStage } from '../../types/aupair';
 import DocumentCard from '../../components/aupair/DocumentCard';
+import PersonalInfoCard from '../../components/program/PersonalInfoCard';
 import EmptyState from '../../components/EmptyState';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { downloadAndOpen } from '../../utils/downloadFile';
@@ -34,6 +35,7 @@ const AuPairDocumentsScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [approved, setApproved] = useState<boolean | null>(null);
   const [contract, setContract] = useState<AuPairProcess['contract'] | null>(null);
+  const [proc, setProc] = useState<AuPairProcess | null>(null);
 
   const load = useCallback(async (s: DocStage) => {
     try {
@@ -43,6 +45,7 @@ const AuPairDocumentsScreen: React.FC = () => {
       const isApproved = !!proc?.application_approved;
       setApproved(isApproved);
       setContract(proc?.contract ?? null);
+      setProc(proc ?? null);
       if (!isApproved) {
         setEntries([]);
         return;
@@ -58,6 +61,13 @@ const AuPairDocumentsScreen: React.FC = () => {
   }, []);
 
   useEffect(() => { setLoading(true); load(stage); }, [stage, load]);
+  // Al volver del formulario de información personal se habilita la carga.
+  const firstFocus = React.useRef(true);
+  useFocusEffect(useCallback(() => {
+    if (firstFocus.current) { firstFocus.current = false; return; }
+    load(stage);
+  }, [stage, load]));
+  const personalInfoPending = !!proc?.personal_info?.pending;
 
   const onRefresh = () => { setRefreshing(true); load(stage); };
 
@@ -111,6 +121,9 @@ const AuPairDocumentsScreen: React.FC = () => {
         />
       ) : (
       <>
+      {personalInfoPending && (
+        <PersonalInfoCard status={proc?.personal_info} onPress={() => (navigation as any).navigate('PersonalInfo', { application_id: proc?.application_id })} style={{ marginHorizontal: 16, marginBottom: 8 }} />
+      )}
       <View style={styles.tabRow}>
         {STAGE_TABS.map(t => (
           <TouchableOpacity
@@ -167,7 +180,7 @@ const AuPairDocumentsScreen: React.FC = () => {
             <EmptyState icon="folder-open-outline" title="Sin documentos en esta etapa" />
           ) : (
             entries.map(e => (
-              <DocumentCard key={e.document_type} entry={e} onUpload={handleUpload} onDelete={handleDelete} onDownload={f => f.download_url && downloadAndOpen(f.download_url, f.original_filename || undefined)} />
+              <DocumentCard key={e.document_type} entry={e} onUpload={personalInfoPending ? undefined : handleUpload} onDelete={handleDelete} onDownload={f => f.download_url && downloadAndOpen(f.download_url, f.original_filename || undefined)} />
             ))
           )}
         </ScrollView>

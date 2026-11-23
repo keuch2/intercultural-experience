@@ -15,6 +15,7 @@
         </button>
     </div>
     <div class="card-body">
+        @include('admin.partials._personal_info_status', ['application' => $application ?? null, 'participantUser' => $user ?? null])
         {{-- Read-only display --}}
         <div id="personalDataDisplay">
             <div class="row g-3">

@@ -4,6 +4,7 @@
         <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#editPersonalData"><i class="fas fa-edit"></i> Editar</button>
     </div>
     <div class="card-body">
+        @include('admin.partials._personal_info_status', ['application' => $process->application, 'participantUser' => $user])
         <div class="row g-3">
             <div class="col-md-3"><label class="form-label small text-muted mb-0">Fecha de inscripción</label><p class="mb-0 fw-semibold">{{ $process->enrollment_date?->format('d/m/Y') ?? '-' }}</p></div>
             <div class="col-md-3"><label class="form-label small text-muted mb-0">Temporada</label><p class="mb-0 fw-semibold">{{ $process->season ?? '-' }}</p></div>

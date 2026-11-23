@@ -793,6 +793,9 @@ class AuPairProfileController extends Controller
         }
 
         $reasons = $process->current_stage === 'match_visa' ? $process->supportBlockingReasons() : [];
+        if ($process->current_stage === 'admission' && app(\App\Services\PersonalInfoService::class)->blocksParticipant($process->application)) {
+            $reasons[] = 'El participante no confirmó su información personal (podés marcarla como confirmada en Admisión).';
+        }
 
         return back()->with('error', 'No se puede avanzar. '.($reasons ? implode(' ', $reasons) : 'Verifique que se cumplan todos los requisitos.'));
     }

@@ -114,6 +114,7 @@ const CityField: React.FC<CityFieldProps> = ({ label, country, value, onChange, 
         error={selected === OTHER ? undefined : error}
         searchable
         maxHeight={520}
+        labelStyle={labelStyle}
       />
       {selected === OTHER && (
         <View style={styles.container}>

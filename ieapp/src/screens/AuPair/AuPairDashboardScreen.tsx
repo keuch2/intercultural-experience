@@ -12,6 +12,7 @@ import { auPairService } from '../../services/api';
 import { AuPairProcess } from '../../types/aupair';
 import StageProgressIndicator from '../../components/aupair/StageProgressIndicator';
 import NextActionCard from '../../components/aupair/NextActionCard';
+import PersonalInfoCard from '../../components/program/PersonalInfoCard';
 import EmptyState from '../../components/EmptyState';
 import { useAuth } from '../../contexts/AuthContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -131,6 +132,10 @@ const AuPairDashboardScreen: React.FC = () => {
               </Text>
             </View>
           </View>
+        )}
+
+        {process.current_stage !== 'completed' && !(approved && process.next_action?.key === 'personal_info') && (
+          <PersonalInfoCard status={process.personal_info} onPress={() => navigation.navigate('PersonalInfo', { application_id: process.application_id })} />
         )}
 
         {/* Mientras la postulación no esté aprobada solo se muestra el aviso. */}

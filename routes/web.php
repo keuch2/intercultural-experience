@@ -188,6 +188,7 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::post('/applications/{application}/review', [AdminApplicationController::class, 'review'])->name('admin.applications.review');
         Route::post('/applications/{application}/approve', [AdminApplicationController::class, 'approve'])->name('admin.applications.approve');
         Route::post('/applications/{application}/reject', [AdminApplicationController::class, 'reject'])->name('admin.applications.reject');
+        Route::post('/applications/{application}/personal-info/confirm', [AdminApplicationController::class, 'confirmPersonalInfo'])->name('admin.applications.personal-info.confirm');
         Route::post('/applications/{application}/notes', [AdminApplicationController::class, 'storeNote'])->name('admin.applications.notes.store');
         Route::delete('/applications/notes/{note}', [AdminApplicationController::class, 'destroyNote'])->name('admin.applications.notes.destroy');
         Route::get('/applications/export', [AdminApplicationController::class, 'export'])->name('admin.applications.export');
@@ -374,6 +375,7 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
         Route::post('/settings', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'update'])->name('admin.settings.update');
         Route::get('/settings/cache/clear', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'clearCache'])->name('admin.settings.cache.clear');
         Route::post('/settings/timezone', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'updateTimezone'])->name('admin.settings.timezone.update');
+        Route::post('/settings/personal-info', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'updatePersonalInfo'])->name('admin.settings.personal-info.update');
         Route::get('/settings/whatsapp', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'whatsapp'])->name('admin.settings.whatsapp');
         Route::post('/settings/whatsapp', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'updateWhatsapp'])->name('admin.settings.whatsapp.update');
         Route::get('/settings/logs', [\App\Http\Controllers\Admin\AdminSystemSettingController::class, 'logs'])->name('admin.settings.logs');

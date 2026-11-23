@@ -19,6 +19,8 @@ interface DropdownFieldProps {
   error?: string;
   searchable?: boolean;
   maxHeight?: number;
+  /** Estilo de la etiqueta, para combinar con los campos de texto del formulario que lo usa. */
+  labelStyle?: object;
 }
 
 const DropdownField: React.FC<DropdownFieldProps> = React.memo(({
@@ -29,7 +31,8 @@ const DropdownField: React.FC<DropdownFieldProps> = React.memo(({
   placeholder = "Selecciona una opción",
   error,
   searchable = false,
-  maxHeight = 300
+  maxHeight = 300,
+  labelStyle,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -95,7 +98,7 @@ const DropdownField: React.FC<DropdownFieldProps> = React.memo(({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, labelStyle]}>{label}</Text>
       
       <TouchableOpacity
         style={[

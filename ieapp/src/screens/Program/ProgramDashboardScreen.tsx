@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProgram, useRefreshWhilePending } from '../../contexts/ProgramContext';
 import StageProgress, { stageColor } from '../../components/program/StageProgress';
+import PersonalInfoCard from '../../components/program/PersonalInfoCard';
 import NextActionCard from '../../components/program/NextActionCard';
 import EmptyState from '../../components/EmptyState';
 import { MODULE_ICONS, MODULE_SCREENS } from '../../navigation/programFlowRegistry';
@@ -97,6 +98,10 @@ const ProgramDashboardScreen: React.FC = () => {
         )}
         {envelope.status === 'completed' && (
           <View style={[styles.banner, styles.bannerSuccess]}><Ionicons name="trophy-outline" size={22} color="#065F46" /><View style={{ flex: 1, marginLeft: 10 }}><Text style={[styles.bannerTitle, { color: '#065F46' }]}>¡Programa completado!</Text><Text style={[styles.bannerText, { color: '#065F46' }]}>Gracias por vivir esta experiencia con IE.</Text></View></View>
+        )}
+
+        {envelope.status === 'active' && !(approved && envelope.next_action?.key === 'personal_info') && (
+          <PersonalInfoCard status={envelope.personal_info} onPress={() => navigation.navigate('PersonalInfo', { application_id: envelope.application_id })} />
         )}
 
         {approved && envelope.status === 'active' && (

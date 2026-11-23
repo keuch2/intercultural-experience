@@ -40,6 +40,8 @@ class Application extends Model
         'reviewed_at',
         'reviewed_by',
         'rejection_reason',
+        'personal_info_confirmed_at',
+        'personal_info_confirmed_by',
     ];
 
     protected $casts = [
@@ -49,6 +51,7 @@ class Application extends Model
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
         'reviewed_at' => 'datetime',
+        'personal_info_confirmed_at' => 'datetime',
         'total_cost' => 'decimal:2',
         'amount_paid' => 'decimal:2',
         'payment_deadline' => 'date',

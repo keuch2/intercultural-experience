@@ -4,6 +4,8 @@ namespace App\Services\ProgramEngine;
 
 use App\Models\ProgramDocument;
 use App\Models\ProgramProcess;
+use App\Models\User;
+use App\Services\PersonalInfoService;
 
 /**
  * Construye el envelope del proceso, superset del que expone
@@ -93,6 +95,7 @@ class EnvelopeBuilder
             'status' => $process->status,
             'application_approved' => $process->applicantApproved(),
             'application_review_status' => optional($process->application)->status,
+            'personal_info' => app(PersonalInfoService::class)->status($process->user ?? User::find($process->user_id), $process->application),
             'enrollment_date' => optional($process->enrollment_date)->toDateString(),
             'program_start_date' => optional($process->program_start_date)->toDateString(),
             'program_end_date' => optional($process->program_end_date)->toDateString(),

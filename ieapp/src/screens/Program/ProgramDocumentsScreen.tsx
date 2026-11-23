@@ -11,6 +11,7 @@ import { ProgramDocumentEntry, EngineDocumentGroup } from '../../types/programEn
 import DocumentCard from '../../components/aupair/DocumentCard';
 import EmptyState from '../../components/EmptyState';
 import ScreenHeader from '../../components/program/ScreenHeader';
+import PersonalInfoCard from '../../components/program/PersonalInfoCard';
 import { downloadAndOpen } from '../../utils/downloadFile';
 
 type RouteP = RouteProp<{ ProgramDocuments: { group?: string } }, 'ProgramDocuments'>;
@@ -83,6 +84,9 @@ const ProgramDocumentsScreen: React.FC = () => {
     return <SafeAreaView style={styles.safe}><ScreenHeader title="Documentos" /><EmptyState icon="lock-closed-outline" title="Aprobación pendiente" message="El equipo de IE debe aprobar tu postulación antes de habilitar la carga de documentos. Te avisaremos cuando esté lista." /></SafeAreaView>;
   }
 
+  // Formulario de información personal sin confirmar (obligatorio): no se puede subir hasta confirmarlo.
+  const personalInfoPending = !!envelope.personal_info?.pending;
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScreenHeader title="Documentos" />
@@ -95,6 +99,10 @@ const ProgramDocumentsScreen: React.FC = () => {
           </TouchableOpacity>
         ))}
       </ScrollView>
+
+      {personalInfoPending && (
+        <PersonalInfoCard status={envelope.personal_info} onPress={() => navigation.navigate('PersonalInfo', { application_id: envelope.application_id })} style={{ marginHorizontal: 16 }} />
+      )}
 
       {current && !current.unlocked && (
         <View style={styles.lockBanner}><Ionicons name="lock-closed-outline" size={16} color="#92400E" /><Text style={styles.lockText}>{lockMessage(current)}</Text></View>
@@ -112,7 +120,7 @@ const ProgramDocumentsScreen: React.FC = () => {
         : (
           <ScrollView contentContainerStyle={styles.list} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(group); refresh(); }} />}>
             {entries.length === 0 ? <EmptyState icon="folder-open-outline" title="Sin documentos en este grupo" /> : entries.map(e => (
-              <DocumentCard key={e.document_type} entry={e} onUpload={current?.unlocked ? handleUpload : undefined} onDelete={handleDelete} onDownload={f => f.download_url && downloadAndOpen(f.download_url, f.original_filename || undefined)} />
+              <DocumentCard key={e.document_type} entry={e} onUpload={current?.unlocked && !personalInfoPending ? handleUpload : undefined} onDelete={handleDelete} onDownload={f => f.download_url && downloadAndOpen(f.download_url, f.original_filename || undefined)} />
             ))}
           </ScrollView>
         )}

@@ -90,7 +90,7 @@ class WorkTravelProgramSeeder extends Seeder
     {
         $stages = [
             ['key' => 'admission', 'label' => 'Admisión', 'sort_order' => 1, 'mobile_screen' => null,
-                'guards' => ['require_docs_approved' => true]],
+                'guards' => ['require_docs_approved' => true, 'require_personal_info' => true]],
             ['key' => 'application', 'label' => 'Aplicación', 'sort_order' => 2, 'mobile_screen' => null,
                 'guards' => ['require_docs_approved' => true, 'require_gates' => ['inscription'], 'require_checklist' => ['contract_signed'], 'require_english_min_level' => true]],
             ['key' => 'job_pool', 'label' => 'Pool de Ofertas', 'sort_order' => 3, 'mobile_screen' => 'JobPool',

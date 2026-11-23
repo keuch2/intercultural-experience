@@ -68,6 +68,32 @@
                 </div>
             </div>
         </div>
+
+        <!-- Información personal obligatoria (formulario de Admisión de la app) -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-user-check text-primary"></i> Información personal en Admisión</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('admin.settings.personal-info.update') }}" method="POST">
+                        @csrf
+                        <div class="form-check form-switch mb-2">
+                            <input type="hidden" name="personal_info_required" value="0">
+                            <input class="form-check-input" type="checkbox" role="switch" id="personal_info_required" name="personal_info_required" value="1" @checked($personalInfoRequired)>
+                            <label class="form-check-label" for="personal_info_required">Exigir que el participante confirme su información personal</label>
+                        </div>
+                        <small class="text-muted d-block mb-3">
+                            Si está activo, el participante debe completar y confirmar el formulario desde la app (una vez por postulación)
+                            antes de subir documentos, y la etapa de Admisión no avanza sin esa confirmación.
+                            <strong>Activalo cuando la versión de la app con el formulario esté publicada en las tiendas</strong>; las versiones
+                            anteriores no lo tienen. Desde la ficha del participante se puede marcar como confirmada.
+                        </small>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Configuraciones por Grupo -->

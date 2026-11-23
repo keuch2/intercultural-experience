@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Application;
 use App\Services\ApplicationReviewService;
+use App\Services\PersonalInfoService;
 use App\Models\ApplicationDocument;
 use App\Models\Program;
 use App\Models\Point;
@@ -143,6 +144,24 @@ class AdminApplicationController extends Controller
         $review->reject($application, $request->user(), $data['rejection_reason'] ?? null);
 
         return redirect()->back()->with('success', "Solicitud rechazada. Se le avisó a {$application->user?->name}.");
+    }
+
+    /**
+     * IE marca como confirmada la información personal de una postulación (p. ej. participante que no usa
+     * la app o datos verificados en una entrevista). Requiere que los datos obligatorios estén completos.
+     */
+    public function confirmPersonalInfo(Request $request, Application $application, PersonalInfoService $personalInfo)
+    {
+        $missing = $personalInfo->missing($application->user);
+        if ($missing !== []) {
+            $sections = collect(array_keys($missing))->map(fn ($k) => PersonalInfoService::SECTIONS[$k]['label'])->implode(', ');
+
+            return redirect()->back()->with('error', "Faltan datos obligatorios en: {$sections}. Completalos en el Perfil General antes de confirmar.");
+        }
+
+        $personalInfo->confirm($application, $request->user());
+
+        return redirect()->back()->with('success', 'Información personal marcada como confirmada.');
     }
 
     /**

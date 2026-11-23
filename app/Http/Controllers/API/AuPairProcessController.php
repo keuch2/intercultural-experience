@@ -8,6 +8,8 @@ use App\Models\Application;
 use App\Models\AuPairDocument;
 use App\Models\AuPairProcess;
 use App\Models\Program;
+use App\Models\User;
+use App\Services\PersonalInfoService;
 use Illuminate\Http\Request;
 
 /**
@@ -54,6 +56,7 @@ class AuPairProcessController extends Controller
             // habilitar el flujo de documentos en la app.
             'application_approved' => optional($p->application)->status === 'approved',
             'application_review_status' => optional($p->application)->status,
+            'personal_info' => app(PersonalInfoService::class)->status($p->user ?? User::find($p->user_id), $p->application),
             'enrollment_date' => optional($p->enrollment_date)->toDateString(),
             'program_start_date' => optional($p->program_start_date)->toDateString(),
             'program_end_date' => optional($p->program_end_date)->toDateString(),
@@ -122,6 +125,14 @@ class AuPairProcessController extends Controller
 
     private function computeNextAction(AuPairProcess $p): array
     {
+        if (app(PersonalInfoService::class)->blocksParticipant($p->application) && $p->current_stage !== 'completed') {
+            $label = optional($p->application)->status === 'approved'
+                ? 'Completá y confirmá tu información personal'
+                : 'Mientras IE revisa tu postulación, completá tu información personal.';
+
+            return ['key' => 'personal_info', 'label' => $label, 'screen' => 'PersonalInfo', 'params' => ['application_id' => $p->application_id]];
+        }
+
         if ($p->current_stage === 'completed') {
             return ['key' => 'done', 'label' => '¡Felicitaciones! Has finalizado el programa.', 'screen' => null];
         }

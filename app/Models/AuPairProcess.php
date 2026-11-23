@@ -181,7 +181,9 @@ class AuPairProcess extends Model
      */
     public function canAdvanceToApplication(): bool
     {
-        return $this->admissionDocsApproved();
+        // Información personal confirmada (solo si IE activó `personal_info_required`).
+        return $this->admissionDocsApproved()
+            && ! app(\App\Services\PersonalInfoService::class)->blocksParticipant($this->application);
     }
 
     /**

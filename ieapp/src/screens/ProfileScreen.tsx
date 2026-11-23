@@ -415,6 +415,12 @@ const ProfileScreen: React.FC = () => {
           )}
         </TouchableOpacity>
       </View>
+      <TouchableOpacity
+        style={styles.orangeButton}
+        onPress={() => navigation.navigate('PersonalInfo')}
+      >
+        <Text style={styles.orangeButtonText}>Mi información personal</Text>
+      </TouchableOpacity>
       <TouchableOpacity 
         style={styles.orangeButton} 
         onPress={() => navigation.navigate('MyApplications')}
@@ -607,6 +613,7 @@ const ProfileScreen: React.FC = () => {
                   placeholder="Selecciona tu país"
                   searchable
                   maxHeight={250}
+                  labelStyle={styles.formLabel}
                 />
 
                 <CityField
@@ -628,6 +635,7 @@ const ProfileScreen: React.FC = () => {
                   value={formData.academic_level}
                   onSelect={(value) => handleChange('academic_level', value)}
                   placeholder="Selecciona tu nivel"
+                  labelStyle={styles.formLabel}
                 />
 
                 <DropdownField
@@ -636,6 +644,7 @@ const ProfileScreen: React.FC = () => {
                   value={formData.english_level}
                   onSelect={(value) => handleChange('english_level', value)}
                   placeholder="Selecciona tu nivel"
+                  labelStyle={styles.formLabel}
                 />
               </ScrollView>
 

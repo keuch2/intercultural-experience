@@ -6,6 +6,7 @@ use App\Models\ProgramDocument;
 use App\Models\ProgramDocumentRequirement;
 use App\Models\ProgramProcess;
 use App\Models\ProgramStage;
+use App\Services\PersonalInfoService;
 
 /**
  * Evalúa guards declarativos de las etapas. Sin efectos secundarios.
@@ -50,6 +51,10 @@ class StageEvaluator
 
         if ($stage->guardValue('manual_only', false)) {
             return [];
+        }
+
+        if ($stage->guardValue('require_personal_info', false) && app(PersonalInfoService::class)->blocksParticipant($process->application)) {
+            $reasons[] = 'El participante no confirmó su información personal.';
         }
 
         if ($stage->guardValue('require_docs_approved', true) && ! $this->docsApproved($process, $stage->key)) {

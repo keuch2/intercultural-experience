@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SystemSetting;
+use App\Services\PersonalInfoService;
 
 class AdminSystemSettingController extends Controller
 {
@@ -13,12 +14,28 @@ class AdminSystemSettingController extends Controller
      */
     public function index()
     {
-        $settings = SystemSetting::where('key', '!=', SystemSetting::TIMEZONE_KEY)
+        $settings = SystemSetting::whereNotIn('key', [SystemSetting::TIMEZONE_KEY, PersonalInfoService::SETTING_KEY])
             ->orderBy('group')->orderBy('key')->get()->groupBy('group');
         $timezones = \DateTimeZone::listIdentifiers();
         $currentTimezone = config('app.timezone');
+        $personalInfoRequired = PersonalInfoService::isRequired();
 
-        return view('admin.settings.index', compact('settings', 'timezones', 'currentTimezone'));
+        return view('admin.settings.index', compact('settings', 'timezones', 'currentTimezone', 'personalInfoRequired'));
+    }
+
+    /**
+     * Exigir que el participante confirme su información personal (formulario de Admisión de la app)
+     * antes de subir documentos y de avanzar de Admisión. Activar cuando la app con el formulario esté en tiendas.
+     */
+    public function updatePersonalInfo(Request $request)
+    {
+        $required = $request->boolean('personal_info_required');
+        SystemSetting::set(PersonalInfoService::SETTING_KEY, $required, 'boolean', 'participants',
+            'Exigir confirmación de la información personal en Admisión');
+
+        return redirect()->route('admin.settings.index')->with('success', $required
+            ? 'Desde ahora los participantes deben confirmar su información personal antes de subir documentos.'
+            : 'La confirmación de la información personal ya no es obligatoria.');
     }
 
     /**

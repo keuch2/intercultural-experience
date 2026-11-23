@@ -63,6 +63,7 @@ class ParticipantReminders
         $this->engineDocuments();
         $this->auPairDocuments();
         $this->visaAppointments();
+        $this->personalInfo();
 
         ksort($this->counts);
 
@@ -178,6 +179,33 @@ class ParticipantReminders
         $n = $labels->count();
         $list = $labels->take(3)->implode(', ').($n > 3 ? '…' : '');
         $this->sendOnce($userId, $prefix.':'.$this->today->toDateString(), 'Documentos pendientes', "Tenés {$n} documento(s) requerido(s) pendiente(s) o rechazado(s): {$list}. Subilos desde la app para no demorar tu proceso.", 'documents', 'documents_pending');
+    }
+
+    // ── Información personal (formulario de Admisión) ─────────────────
+
+    /** Recordatorio semanal mientras la postulación (en revisión o con proceso activo) no la confirme. */
+    private function personalInfo(): void
+    {
+        if (! PersonalInfoService::isRequired()) {
+            return;
+        }
+        $activeProcess = fn ($q) => $q->whereIn('applications.id', ProgramProcess::query()->active()->select('application_id'))
+            ->orWhereIn('applications.id', AuPairProcess::query()->active()->select('application_id'));
+
+        Application::query()->whereNull('personal_info_confirmed_at')
+            ->where(fn ($q) => $q->whereIn('status', Application::AWAITING_REVIEW_STATUSES)
+                ->orWhere(fn ($q) => $q->where('status', 'approved')->where($activeProcess)))
+            ->whereHas('user', fn ($q) => $q->where('role', 'user')->whereNull('app_account_deleted_at'))
+            ->chunkById(100, function ($applications) {
+                foreach ($applications as $application) {
+                    $prefix = "personal_info:{$application->id}";
+                    if ($this->docsRemindedRecently($application->user_id, $prefix)) {
+                        continue;
+                    }
+                    $this->sendOnce($application->user_id, $prefix.':'.$this->today->toDateString(), 'Completá tu información personal',
+                        'Para continuar con tu proceso tenés que completar y confirmar tu información personal desde la app.', 'program_stage', 'personal_info_pending');
+                }
+            });
     }
 
     // ── Visa ───────────────────────────────────────────────────────────

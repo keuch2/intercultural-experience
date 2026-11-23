@@ -25,6 +25,8 @@ class ProgramStage extends Model
         'require_job_assignment',
         'require_placement_complete',
         'require_visa_approved',
+        // Información personal confirmada por el participante (solo si `personal_info_required` está activo).
+        'require_personal_info',
         'manual_only',
     ];
 

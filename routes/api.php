@@ -123,7 +123,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/profile/avatar', [\App\Http\Controllers\API\ProfileController::class, 'apiUpdateAvatar']);
         Route::put('/profile/password', [\App\Http\Controllers\API\ProfileController::class, 'changePassword']);
         Route::delete('/me', [AuthController::class, 'deleteAccount'])->name('api.me.delete');
+        Route::put('/me/personal-info', [\App\Http\Controllers\API\PersonalInfoController::class, 'update'])->name('api.me.personal-info.update');
     });
+    // Formulario de información personal de Admisión (pedido de IE, nov 2026)
+    Route::get('/me/personal-info', [\App\Http\Controllers\API\PersonalInfoController::class, 'show'])->name('api.me.personal-info');
 
     // Authentication - no rate limiting needed for these
     Route::post('/logout', [AuthController::class, 'logout']);
