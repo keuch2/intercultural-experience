@@ -45,6 +45,12 @@
     "plugins": [
       "expo-font",
       [
+        "expo-notifications",
+        {
+          "color": "#E52224"
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "Usamos tu galería para que puedas seleccionar y subir tu foto de perfil y los documentos requeridos en tu proceso de admisión.",

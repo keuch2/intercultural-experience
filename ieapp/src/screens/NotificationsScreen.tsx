@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  TouchableOpacity, RefreshControl
+  TouchableOpacity, RefreshControl, Linking
 } from 'react-native';
 import { SafeAreaView } from '../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,7 +13,7 @@ import EmptyState from '../components/EmptyState';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useTabNavigation } from '../contexts/NavigationContext';
 import { useOptionalProgram } from '../contexts/ProgramContext';
-import { screensFor } from '../navigation/programFlowRegistry';
+import { refreshesProcess, resolveNotificationDestination } from '../utils/notificationTarget';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -49,20 +49,6 @@ const NotificationsScreen: React.FC = () => {
   const program = useOptionalProgram();
   const flow = program?.flow ?? 'none';
 
-  /** Pantalla a la que lleva cada categoría de aviso */
-  const screenFor = (category?: string): string | null => {
-    switch (category) {
-      case 'payment': return 'Payments';
-      case 'documents': return flow === 'none' ? null : screensFor(flow).documents;
-      case 'visa': return flow === 'aupair' ? 'AuPairVisa' : flow === 'engine' ? 'ProgramVisa' : null;
-      case 'support': return flow === 'aupair' ? 'AuPairSupport' : flow === 'engine' ? 'ProgramSupport' : null;
-      case 'job_pool': return flow === 'engine' ? 'JobPool' : null;
-      // Solicitud aprobada → su proceso. Una rechazada no tiene pantalla (la postulación ya no se muestra).
-      case 'program_stage': case 'program_dates': case 'application': return flow === 'none' ? null : screensFor(flow).home;
-      default: return null;
-    }
-  };
-
   const markRead = async (n: Notification) => {
     if (!n.is_read) {
       setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x));
@@ -71,11 +57,12 @@ const NotificationsScreen: React.FC = () => {
       refreshUnread(true);
     }
     // Avisos que cambian el estado del proceso (aprobación, etapa, fechas): se recarga antes de abrirlo.
-    if (program && ['application', 'program_stage', 'program_dates'].includes(n.category ?? '')) {
+    if (program && refreshesProcess(n.category)) {
       await program.refresh();
     }
-    const target = screenFor(n.category);
-    if (target) (navigation as any).navigate(target);
+    const destination = resolveNotificationDestination(flow, n.category, n.data);
+    if (destination?.kind === 'url') Linking.openURL(destination.url).catch(() => {});
+    else if (destination?.kind === 'screen') (navigation as any).navigate(destination.name, destination.params);
   };
 
   const markAll = async () => {
@@ -100,11 +87,16 @@ const NotificationsScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color="#222" />
         </TouchableOpacity>
         <Text style={styles.title}>Avisos</Text>
-        {unread > 0 ? (
-          <TouchableOpacity onPress={markAll}>
-            <Text style={styles.markAll}>Leer todo</Text>
+        <View style={styles.headerActions}>
+          {unread > 0 && (
+            <TouchableOpacity onPress={markAll}>
+              <Text style={styles.markAll}>Leer todo</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={() => (navigation as any).navigate('NotificationSettings')} accessibilityLabel="Configurar notificaciones" testID="notifications-settings">
+            <Ionicons name="settings-outline" size={22} color="#222" />
           </TouchableOpacity>
-        ) : <View style={{ width: 60 }} />}
+        </View>
       </View>
 
       <ScrollView
@@ -146,6 +138,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#f4f4f5' },
   headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 14, backgroundColor: '#fff' },
   title: { fontSize: 17, fontWeight: '700' },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 14, minWidth: 60, justifyContent: 'flex-end' },
   markAll: { color: '#E52224', fontWeight: '700', fontSize: 13 },
   scroll: { padding: 16, paddingBottom: 40 },
   card: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#fff', padding: 14, borderRadius: 10, marginBottom: 8 },

@@ -421,6 +421,13 @@ const ProfileScreen: React.FC = () => {
       >
         <Text style={styles.orangeButtonText}>Mi información personal</Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.orangeButton}
+        onPress={() => navigation.navigate('NotificationSettings')}
+        testID="profile-notification-settings"
+      >
+        <Text style={styles.orangeButtonText}>Notificaciones</Text>
+      </TouchableOpacity>
       <TouchableOpacity 
         style={styles.orangeButton} 
         onPress={() => navigation.navigate('MyApplications')}

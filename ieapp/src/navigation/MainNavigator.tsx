@@ -30,6 +30,8 @@ import AuPairSupportScreen from '../screens/AuPair/AuPairSupportScreen';
 import AuPairResourcesScreen from '../screens/AuPair/AuPairResourcesScreen';
 import AuPairOnboardingScreen from '../screens/AuPair/AuPairOnboardingScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
+import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
+import PushNotificationsManager from '../components/PushNotificationsManager';
 import ProgramDashboardScreen from '../screens/Program/ProgramDashboardScreen';
 import ProgramDocumentsScreen from '../screens/Program/ProgramDocumentsScreen';
 import PersonalInfoScreen from '../screens/Program/PersonalInfoScreen';
@@ -87,6 +89,7 @@ export type MainStackParamList = {
   AuPairResources: undefined;
   AuPairOnboarding: { programId?: number } | undefined;
   Notifications: undefined;
+  NotificationSettings: undefined;
   // Motor de programas
   ProgramDashboard: undefined;
   ProgramDocuments: { group?: string } | undefined;
@@ -189,6 +192,7 @@ const MainNavigator: React.FC = () => {
 
   return (
   <NavigationProvider>
+    <PushNotificationsManager />
     <Stack.Navigator key={initial} initialRouteName={initial as any} screenOptions={{ headerShown: false }}>
       <Stack.Screen name="PublicPrograms" component={PublicProgramsWithNav} />
       <Stack.Screen name="PublicProgramDetail" component={PublicProgramDetailWithNav} />
@@ -241,6 +245,7 @@ const MainNavigator: React.FC = () => {
         initialParams={authRequest?.programId ? { programId: authRequest.programId } : undefined}
       />
       <Stack.Screen name="Notifications" component={NotificationsWithNav} />
+      <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
     </Stack.Navigator>
   </NavigationProvider>
   );

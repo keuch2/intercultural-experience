@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import AppNavigator from './src/navigation/AppNavigator';
+import { navigationRef } from './src/navigation/navigationRef';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { NetworkProvider } from './src/contexts/NetworkContext';
 import ErrorBoundary from './src/components/ErrorBoundary';
@@ -15,7 +16,7 @@ export default function App() {
       <StatusBar style="dark" />
       <NetworkProvider>
         <AuthProvider>
-          <NavigationContainer>
+          <NavigationContainer ref={navigationRef}>
             <OfflineQueueManager>
               <AppNavigator />
             </OfflineQueueManager>

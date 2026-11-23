@@ -162,6 +162,10 @@ export interface Notification {
   type: 'info' | 'success' | 'warning' | 'error';
   /** payment | documents | visa | support | program_stage | program_dates | job_pool | application | general */
   category?: string;
+  /** Tipo del catálogo de avisos (NotificationCatalog) o null en avisos sin push. */
+  notification_type?: string | null;
+  /** A dónde lleva el aviso: {target, program_id, url}. */
+  data?: { target?: string; program_id?: number; url?: string } | null;
   is_read: boolean;
   created_at: string;
   updated_at: string;

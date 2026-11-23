@@ -47,6 +47,7 @@ export type RootStackParamList = {
   AuPairResources: undefined;
   AuPairOnboarding: { programId?: number } | undefined;
   Notifications: undefined;
+  NotificationSettings: undefined;
   // Motor de programas (Work & Travel y programas configurables)
   ProgramDashboard: undefined;
   ProgramDocuments: { group?: string } | undefined;

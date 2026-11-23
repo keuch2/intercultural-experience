@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { unregisterDeviceForPush } from '../services/pushNotifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '../services/api';
 import { handleApiError, logError, retryWithBackoff, AppError } from '../utils/ErrorUtils';
@@ -203,6 +204,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
+      // Este dispositivo deja de recibir push de la cuenta (con la sesión todavía activa).
+      await unregisterDeviceForPush();
       // Try to logout from server, but don't fail if it doesn't work
       await authService.logout();
     } catch (err: any) {

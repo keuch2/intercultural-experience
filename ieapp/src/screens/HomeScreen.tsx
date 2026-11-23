@@ -12,6 +12,7 @@ import { screensFor } from '../navigation/programFlowRegistry';
 import { APPLICATION_STATUS_LABELS } from '../types/applications';
 import { describeProgramStart } from '../utils/programDates';
 import BannerCarousel from '../components/BannerCarousel';
+import PushPermissionCard from '../components/PushPermissionCard';
 import { bannerService, AppBanner } from '../services/api/bannerService';
 
 /**
@@ -67,6 +68,8 @@ const HomeScreen: React.FC = () => {
         </View>
 
         <BannerCarousel banners={banners} onOpenProgram={(id) => navigation.navigate('PublicProgramDetail', { id })} />
+
+        <PushPermissionCard style={{ marginHorizontal: 18, marginTop: 14 }} />
 
         {/* Mi postulación actual */}
         <View style={styles.section}>
