@@ -123,7 +123,7 @@ class SettingsService {
     const name = userName || 'Usuario';
     const email = userEmail || '';
     
-    return `Hola! Soy ${name}${email ? ` (${email})` : ''} de la app Intercultural Experience. Necesito ayuda con mi cuenta.`;
+    return `Hola! Soy ${name}${email ? ` (${email})` : ''} de la app IE Xperience. Necesito ayuda con mi cuenta.`;
   }
 }
 
