@@ -70,6 +70,10 @@ const NotificationsScreen: React.FC = () => {
       try { await notificationService.markAsRead(n.id); } catch {}
       refreshUnread(true);
     }
+    // Avisos que cambian el estado del proceso (aprobación, etapa, fechas): se recarga antes de abrirlo.
+    if (program && ['application', 'program_stage', 'program_dates'].includes(n.category ?? '')) {
+      await program.refresh();
+    }
     const target = screenFor(n.category);
     if (target) (navigation as any).navigate(target);
   };

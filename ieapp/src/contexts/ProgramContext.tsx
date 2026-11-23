@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from './AuthContext';
 import { programEngineService, auPairService, programService } from '../services/api';
 import { ProgramEnvelope } from '../types/programEngine';
@@ -153,3 +154,19 @@ export const useProgram = (): ProgramCtx => {
 
 /** Variante tolerante para componentes que pueden montarse fuera del provider. */
 export const useOptionalProgram = (): ProgramCtx | undefined => useContext(Ctx);
+
+/**
+ * Mientras la postulación espera la aprobación de IE, cada vez que la pantalla vuelve a estar visible se
+ * consulta de nuevo el proceso: así el participante ve la aprobación sin tener que tocar el aviso.
+ */
+export const useRefreshWhilePending = (): void => {
+  const program = useContext(Ctx);
+  const pending = !!program && (
+    (program.envelope !== null && program.envelope.application_approved === false)
+    || (program.auPairProcess !== null && program.auPairProcess.application_approved === false)
+  );
+  const refresh = program?.refresh;
+  useFocusEffect(useCallback(() => {
+    if (pending && refresh) refresh();
+  }, [pending, refresh]));
+};

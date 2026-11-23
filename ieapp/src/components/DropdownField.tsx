@@ -129,6 +129,8 @@ const DropdownField: React.FC<DropdownFieldProps> = React.memo(({
           style={styles.modalOverlay}
           activeOpacity={1}
           onPress={handleModalClose}
+          // El fondo no agrupa el contenido: cada opción queda accesible (VoiceOver / TalkBack).
+          accessible={false}
         >
           <View style={[styles.modalContent, { maxHeight }]}>
             <Text style={styles.modalTitle}>{label}</Text>
@@ -156,6 +158,8 @@ const DropdownField: React.FC<DropdownFieldProps> = React.memo(({
             )}
             
             <FlatList
+              // Con el teclado del buscador abierto, el primer toque debe elegir la opción (no solo cerrar el teclado).
+              keyboardShouldPersistTaps="handled"
               data={filteredOptions}
               keyExtractor={keyExtractor}
               renderItem={renderOption}

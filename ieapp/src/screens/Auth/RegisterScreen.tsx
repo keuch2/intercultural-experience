@@ -243,7 +243,13 @@ const RegisterScreen: React.FC = () => {
     return fieldErrors && fieldErrors.length > 0 ? fieldErrors[0] : undefined;
   };
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      // iPhone: el teclado numérico (teléfono / fecha) no tiene botón para cerrarlo y tapaba los campos siguientes.
+      automaticallyAdjustKeyboardInsets
+      keyboardDismissMode="on-drag"
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={styles.headerContainer}>
         <Image 
           source={require('../../../assets/images/ie-logo-blk.png')} 

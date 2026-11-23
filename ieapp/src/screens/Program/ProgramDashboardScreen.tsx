@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl
 } from 'react-native';
@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { describeProgramStart } from '../../utils/programDates';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
-import { useProgram } from '../../contexts/ProgramContext';
+import { useProgram, useRefreshWhilePending } from '../../contexts/ProgramContext';
 import StageProgress, { stageColor } from '../../components/program/StageProgress';
 import NextActionCard from '../../components/program/NextActionCard';
 import EmptyState from '../../components/EmptyState';
@@ -22,6 +22,7 @@ const ProgramDashboardScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { flow, loading, envelope, refresh } = useProgram();
+  useRefreshWhilePending();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => { setRefreshing(true); await refresh(); setRefreshing(false); }, [refresh]);
@@ -31,13 +32,18 @@ const ProgramDashboardScreen: React.FC = () => {
     try { navigation.navigate(screen, params || undefined); } catch { /* pantalla no registrada */ }
   };
 
+  // Postulación Au Pair seleccionada: se cambia al panel Au Pair fuera del render (navegar en el render
+  // actualizaba el NavigationContainer mientras se dibujaba esta pantalla).
+  useEffect(() => {
+    if (flow === 'aupair') navigation.reset({ index: 0, routes: [{ name: 'AuPairDashboard' }] });
+  }, [flow, navigation]);
+
   if (loading && !envelope) {
     return <SafeAreaView style={styles.safe}><ActivityIndicator size="large" color="#E52224" style={{ marginTop: 80 }} /></SafeAreaView>;
   }
 
   if (flow === 'aupair') {
-    // El usuario tiene postulación Au Pair: su flujo es el específico.
-    navigation.reset({ index: 0, routes: [{ name: 'AuPairDashboard' }] });
+    // El usuario tiene postulación Au Pair: su flujo es el específico (la navegación va en el efecto de arriba).
     return null;
   }
 

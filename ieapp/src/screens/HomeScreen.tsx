@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from '../components/SafeArea';
 import { useAuth } from '../contexts/AuthContext';
-import { useProgram, flowForApplication, activeApplicationFor } from '../contexts/ProgramContext';
+import { useProgram, useRefreshWhilePending, flowForApplication, activeApplicationFor } from '../contexts/ProgramContext';
 import { useTabNavigation } from '../contexts/NavigationContext';
 import { publicService } from '../services/api';
 import type { PublicProgram } from '../services/api';
@@ -20,6 +20,7 @@ const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { flow, loading, selectedApplication, applications, envelope, auPairProcess, refresh } = useProgram();
+  useRefreshWhilePending();
   const { unreadCount } = useTabNavigation();
   const [programs, setPrograms] = useState<PublicProgram[]>([]);
   const [loadingPrograms, setLoadingPrograms] = useState(true);

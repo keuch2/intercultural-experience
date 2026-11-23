@@ -6,7 +6,7 @@ import {
 import { SafeAreaView } from '../../components/SafeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { describeProgramStart } from '../../utils/programDates';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { auPairService } from '../../services/api';
 import { AuPairProcess } from '../../types/aupair';
@@ -44,7 +44,8 @@ const AuPairDashboardScreen: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  // Se recarga al volver a la pantalla (p. ej. después de que IE aprueba la solicitud).
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const onRefresh = () => { setRefreshing(true); load(); };
 
