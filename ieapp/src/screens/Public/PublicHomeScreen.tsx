@@ -3,12 +3,13 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from '../../components/SafeArea';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { publicService, PublicProgram } from '../../services/api';
 import PublicProgramCard from '../../components/public/PublicProgramCard';
 import EmptyState from '../../components/EmptyState';
+import BannerCarousel from '../../components/BannerCarousel';
+import { bannerService, AppBanner } from '../../services/api/bannerService';
 import { PublicStackParamList } from '../../navigation/PublicNavigator';
 import { usePublicAuth } from '../../contexts/PublicAuthContext';
 
@@ -38,7 +39,10 @@ const PublicHomeScreen: React.FC = () => {
     load();
   }, [load]);
 
-  const auPairProgram = programs.find(p => p.is_available_in_app);
+  const [banners, setBanners] = useState<AppBanner[]>([]);
+  useEffect(() => {
+    bannerService.publicList().then(setBanners).catch(() => setBanners([]));
+  }, []);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -53,27 +57,8 @@ const PublicHomeScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Hero CTA Au Pair */}
-        {auPairProgram && (
-          <TouchableOpacity
-            style={styles.hero}
-            activeOpacity={0.9}
-            onPress={() => navigation.navigate('PublicProgramDetail', { id: auPairProgram.id })}
-          >
-            <View style={styles.heroBadge}>
-              <Ionicons name="star" size={12} color="#fff" />
-              <Text style={styles.heroBadgeText}>POSTULACIÓN ABIERTA</Text>
-            </View>
-            <Text style={styles.heroTitle}>Postulá como Au Pair</Text>
-            <Text style={styles.heroSubtitle}>
-              Viajá a Estados Unidos, viví con una familia anfitriona y vivencía un año inolvidable.
-            </Text>
-            <View style={styles.heroCta}>
-              <Text style={styles.heroCtaText}>Conocé más</Text>
-              <Ionicons name="arrow-forward" size={18} color="#fff" />
-            </View>
-          </TouchableOpacity>
-        )}
+        {/* Banners gestionados desde el admin (antes: banner fijo de Au Pair) */}
+        <BannerCarousel banners={banners} onOpenProgram={(id) => navigation.navigate('PublicProgramDetail', { id })} />
 
         {/* Sección de programas */}
         <View style={styles.section}>
@@ -141,36 +126,6 @@ const styles = StyleSheet.create({
     borderColor: '#E52224',
   },
   loginBtnText: { color: '#E52224', fontWeight: '700', fontSize: 13 },
-  hero: {
-    margin: 18,
-    padding: 22,
-    borderRadius: 16,
-    backgroundColor: '#3B82F6',
-  },
-  heroBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  heroBadgeText: { color: '#fff', fontSize: 10, fontWeight: '800', marginLeft: 4, letterSpacing: 0.5 },
-  heroTitle: { color: '#fff', fontSize: 24, fontWeight: '800', marginBottom: 8 },
-  heroSubtitle: { color: '#e8f0fe', fontSize: 14, lineHeight: 20 },
-  heroCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 18,
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(0,0,0,0.18)',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  heroCtaText: { color: '#fff', fontWeight: '700', marginRight: 6 },
   section: { paddingHorizontal: 18, paddingTop: 10, paddingBottom: 6 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: '#222' },
   sectionSubtitle: { fontSize: 13, color: '#777', marginTop: 4 },

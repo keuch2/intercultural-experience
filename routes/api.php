@@ -55,6 +55,8 @@ Route::get('/programs', [ProgramController::class, 'index']);
 Route::prefix('public')->group(function () {
     Route::get('/programs', [\App\Http\Controllers\API\PublicProgramController::class, 'index']);
     Route::get('/programs/{id}', [\App\Http\Controllers\API\PublicProgramController::class, 'show']);
+    // Banners del Inicio sin sesión (gestionados en el admin)
+    Route::get('/banners', [\App\Http\Controllers\API\BannerController::class, 'public'])->name('api.public.banners');
 });
 
 // Catálogo de ciudades (registro y perfil de la app)
@@ -127,6 +129,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     // Formulario de información personal de Admisión (pedido de IE, nov 2026)
     Route::get('/me/personal-info', [\App\Http\Controllers\API\PersonalInfoController::class, 'show'])->name('api.me.personal-info');
+    // Banners del Inicio del participante (gestionados en el admin)
+    Route::get('/banners', [\App\Http\Controllers\API\BannerController::class, 'index'])->name('api.banners');
 
     // Authentication - no rate limiting needed for these
     Route::post('/logout', [AuthController::class, 'logout']);

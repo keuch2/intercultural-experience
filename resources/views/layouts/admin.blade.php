@@ -250,6 +250,11 @@
                                     <i class="fas fa-users-cog"></i> Gestión de Pagos
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('admin/app-banners*') ? 'active' : '' }}" href="{{ route('admin.app-banners.index') }}">
+                                    <i class="fas fa-images"></i> Banners de la app
+                                </a>
+                            </li>
                         </ul>
                         @endif
 

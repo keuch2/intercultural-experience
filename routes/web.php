@@ -182,6 +182,10 @@ Route::middleware(['auth', 'admin', 'activity.log'])->prefix('admin')->group(fun
             Route::get('/resources/{resource}/download', [ProgramConfigController::class, 'downloadResource'])->name('resources.download');
         });
         
+        // Banners del Inicio de la app (pedido de IE, nov 2026)
+        Route::resource('app-banners', \App\Http\Controllers\Admin\AppBannerController::class)->except(['show'])->names('admin.app-banners');
+        Route::post('/app-banners/{appBanner}/toggle', [\App\Http\Controllers\Admin\AppBannerController::class, 'toggle'])->name('admin.app-banners.toggle');
+
         // Applications Management
         Route::get('/applications', [AdminApplicationController::class, 'index'])->name('admin.applications.index');
         Route::get('/applications/{application}', [AdminApplicationController::class, 'show'])->name('admin.applications.show');

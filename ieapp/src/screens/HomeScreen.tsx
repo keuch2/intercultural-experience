@@ -11,6 +11,8 @@ import type { PublicProgram } from '../services/api';
 import { screensFor } from '../navigation/programFlowRegistry';
 import { APPLICATION_STATUS_LABELS } from '../types/applications';
 import { describeProgramStart } from '../utils/programDates';
+import BannerCarousel from '../components/BannerCarousel';
+import { bannerService, AppBanner } from '../services/api/bannerService';
 
 /**
  * Home general del participante (tras el login): postulación actual con acceso
@@ -30,9 +32,15 @@ const HomeScreen: React.FC = () => {
     try { setPrograms(await publicService.getPublicPrograms()); } catch { /* se muestra vacío */ } finally { setLoadingPrograms(false); }
   }, []);
 
-  useEffect(() => { loadPrograms(); }, [loadPrograms]);
+  // Banners gestionados en el admin (filtrados por las postulaciones del participante).
+  const [banners, setBanners] = useState<AppBanner[]>([]);
+  const loadBanners = useCallback(async () => {
+    try { setBanners(await bannerService.list()); } catch { /* sin banners */ }
+  }, []);
 
-  const onRefresh = async () => { setRefreshing(true); await Promise.all([refresh(), loadPrograms()]); setRefreshing(false); };
+  useEffect(() => { loadPrograms(); loadBanners(); }, [loadPrograms, loadBanners]);
+
+  const onRefresh = async () => { setRefreshing(true); await Promise.all([refresh(), loadPrograms(), loadBanners()]); setRefreshing(false); };
 
   const process = envelope ?? auPairProcess;
   const currentStage = process?.stages?.find(s => s.key === process.current_stage);
@@ -57,6 +65,8 @@ const HomeScreen: React.FC = () => {
             {user?.avatar_url ? <Image source={{ uri: user.avatar_url }} style={styles.avatar} /> : <View style={[styles.avatar, styles.avatarFallback]}><Ionicons name="person" size={22} color="#E52224" /></View>}
           </TouchableOpacity>
         </View>
+
+        <BannerCarousel banners={banners} onOpenProgram={(id) => navigation.navigate('PublicProgramDetail', { id })} />
 
         {/* Mi postulación actual */}
         <View style={styles.section}>
