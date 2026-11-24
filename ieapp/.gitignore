@@ -50,3 +50,4 @@ qr-devserver.html
 credentials.json
 *.jks
 google-services.json
+*firebase-adminsdk*.json
