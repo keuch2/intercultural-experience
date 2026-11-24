@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { navigationRef } from '../navigation/navigationRef';
 import { useOptionalProgram } from '../contexts/ProgramContext';
 import { useTabNavigation } from '../contexts/NavigationContext';
@@ -10,6 +11,12 @@ import { refreshesProcess, resolveNotificationDestination } from '../utils/notif
 
 // Respuestas ya atendidas (la del arranque en frío también llega por el listener en algunos casos).
 const handled = new Set<string>();
+// Android conserva la última respuesta entre aperturas: sin esto, cada arranque volvía a abrir Avisos.
+const LAST_HANDLED_KEY = 'push.lastHandledResponse';
+
+const clearLastResponse = () => {
+  try { Notifications.clearLastNotificationResponse(); } catch {}
+};
 
 const waitForNavigation = async (tries = 20) => {
   for (let i = 0; i < tries && !navigationRef.isReady(); i++) {
@@ -32,6 +39,8 @@ const PushNotificationsManager: React.FC = () => {
     const id = response.notification.request.identifier;
     if (handled.has(id)) return;
     handled.add(id);
+    clearLastResponse();
+    AsyncStorage.setItem(LAST_HANDLED_KEY, id).catch(() => {});
 
     const data: any = response.notification.request.content.data ?? {};
     const notificationId = Number(data.notification_id);
@@ -56,7 +65,16 @@ const PushNotificationsManager: React.FC = () => {
   useEffect(() => {
     registerDeviceForPush();
 
-    Notifications.getLastNotificationResponseAsync().then(r => { if (r) open(r); }).catch(() => {});
+    (async () => {
+      const last = await Notifications.getLastNotificationResponseAsync();
+      if (!last) return;
+      const lastHandled = await AsyncStorage.getItem(LAST_HANDLED_KEY).catch(() => null);
+      if (last.notification.request.identifier === lastHandled) {
+        clearLastResponse();
+        return;
+      }
+      open(last);
+    })().catch(() => {});
     const tapSub = Notifications.addNotificationResponseReceivedListener(open);
     const receivedSub = Notifications.addNotificationReceivedListener(() => refreshUnread(true));
     return () => {
