@@ -9,10 +9,25 @@ import { notificationService } from '../services/api';
 import { registerDeviceForPush } from '../services/pushNotifications';
 import { refreshesProcess, resolveNotificationDestination } from '../utils/notificationTarget';
 
-// Respuestas ya atendidas (la del arranque en frío también llega por el listener en algunos casos).
-const handled = new Set<string>();
-// Android conserva la última respuesta entre aperturas: sin esto, cada arranque volvía a abrir Avisos.
-const LAST_HANDLED_KEY = 'push.lastHandledResponse';
+// Pushes ya atendidas, persistidas entre aperturas. Android vuelve a entregar el toque original
+// (intent de la notificación) cada vez que se reabre la app desde recientes, y getLastNotificationResponse
+// conserva la última respuesta: sin esto la app volvía a abrir Avisos en cada arranque.
+const HANDLED_KEY = 'push.handledResponses';
+const MAX_HANDLED = 50;
+let handledPromise: Promise<string[]> | null = null;
+
+const loadHandled = () => {
+  handledPromise ??= AsyncStorage.getItem(HANDLED_KEY)
+    .then(v => (v ? (JSON.parse(v) as string[]) : []))
+    .catch(() => []);
+  return handledPromise;
+};
+
+/** Un aviso del servidor se abre una sola vez; sin notification_id se usa el id de la push. */
+const responseKey = (response: Notifications.NotificationResponse) => {
+  const data: any = response.notification.request.content.data ?? {};
+  return data.notification_id ? `n:${data.notification_id}` : `i:${response.notification.request.identifier}`;
+};
 
 const clearLastResponse = () => {
   try { Notifications.clearLastNotificationResponse(); } catch {}
@@ -36,11 +51,13 @@ const PushNotificationsManager: React.FC = () => {
   programRef.current = program;
 
   const open = useCallback(async (response: Notifications.NotificationResponse) => {
-    const id = response.notification.request.identifier;
-    if (handled.has(id)) return;
-    handled.add(id);
+    const key = responseKey(response);
+    const handled = await loadHandled();
     clearLastResponse();
-    AsyncStorage.setItem(LAST_HANDLED_KEY, id).catch(() => {});
+    if (handled.includes(key)) return;
+    handled.push(key);
+    handled.splice(0, Math.max(0, handled.length - MAX_HANDLED));
+    AsyncStorage.setItem(HANDLED_KEY, JSON.stringify(handled)).catch(() => {});
 
     const data: any = response.notification.request.content.data ?? {};
     const notificationId = Number(data.notification_id);
@@ -65,16 +82,7 @@ const PushNotificationsManager: React.FC = () => {
   useEffect(() => {
     registerDeviceForPush();
 
-    (async () => {
-      const last = await Notifications.getLastNotificationResponseAsync();
-      if (!last) return;
-      const lastHandled = await AsyncStorage.getItem(LAST_HANDLED_KEY).catch(() => null);
-      if (last.notification.request.identifier === lastHandled) {
-        clearLastResponse();
-        return;
-      }
-      open(last);
-    })().catch(() => {});
+    Notifications.getLastNotificationResponseAsync().then(r => { if (r) open(r); }).catch(() => {});
     const tapSub = Notifications.addNotificationResponseReceivedListener(open);
     const receivedSub = Notifications.addNotificationReceivedListener(() => refreshUnread(true));
     return () => {
