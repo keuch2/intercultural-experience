@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { navigationRef } from '../navigation/navigationRef';
 import { useOptionalProgram } from '../contexts/ProgramContext';
 import { useTabNavigation } from '../contexts/NavigationContext';
 import { notificationService } from '../services/api';
-import { registerDeviceForPush } from '../services/pushNotifications';
+import { getPushPermission, registerDeviceForPush } from '../services/pushNotifications';
 import { refreshesProcess, resolveNotificationDestination } from '../utils/notificationTarget';
 
 // Pushes ya atendidas, persistidas entre aperturas. Android vuelve a entregar el toque original
@@ -38,6 +38,30 @@ const waitForNavigation = async (tries = 20) => {
     await new Promise(r => setTimeout(r, 150));
   }
   return navigationRef.isReady();
+};
+
+// Invitación inicial: se ofrece una sola vez por dispositivo, la primera vez que se entra con sesión.
+const INVITE_KEY = 'push.firstRunInviteShownAt';
+
+const inviteToEnablePush = async () => {
+  try {
+    if (await AsyncStorage.getItem(INVITE_KEY)) return;
+    if ((await getPushPermission()) === 'granted') return;
+    await AsyncStorage.setItem(INVITE_KEY, String(Date.now()));
+  } catch {
+    return;
+  }
+  // Dejar que se pinte la pantalla inicial antes de la alerta.
+  await new Promise(r => setTimeout(r, 1200));
+  if (!(await waitForNavigation())) return;
+  Alert.alert(
+    '¿Activar notificaciones?',
+    'Te avisamos al instante cuando IE revise tu postulación, tus documentos o tus pagos, y antes de tu cita de visa.',
+    [
+      { text: 'Ahora no', style: 'cancel' },
+      { text: 'Activar', onPress: () => navigationRef.navigate('NotificationSettings', { prompt: true }) },
+    ],
+  );
 };
 
 /**
@@ -81,6 +105,7 @@ const PushNotificationsManager: React.FC = () => {
 
   useEffect(() => {
     registerDeviceForPush();
+    inviteToEnablePush();
 
     Notifications.getLastNotificationResponseAsync().then(r => { if (r) open(r); }).catch(() => {});
     const tapSub = Notifications.addNotificationResponseReceivedListener(open);

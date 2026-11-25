@@ -89,7 +89,7 @@ export type MainStackParamList = {
   AuPairResources: undefined;
   AuPairOnboarding: { programId?: number } | undefined;
   Notifications: undefined;
-  NotificationSettings: undefined;
+  NotificationSettings: { prompt?: boolean } | undefined;
   // Motor de programas
   ProgramDashboard: undefined;
   ProgramDocuments: { group?: string } | undefined;

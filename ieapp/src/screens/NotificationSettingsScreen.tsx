@@ -1,7 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity, ActivityIndicator, Linking, AppState, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from '../components/SafeArea';
 import { notificationPreferencesService, NotificationPreferences } from '../services/api/notificationPreferencesService';
 import { getPushPermission, PushPermission, registerDeviceForPush, requestPushPermission } from '../services/pushNotifications';
@@ -12,6 +12,7 @@ import { getPushPermission, PushPermission, registerDeviceForPush, requestPushPe
  */
 const NotificationSettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
   const [permission, setPermission] = useState<PushPermission>('undetermined');
   const [loading, setLoading] = useState(true);
@@ -48,6 +49,18 @@ const NotificationSettingsScreen: React.FC = () => {
     if (status === 'granted') registerDeviceForPush();
     else if (status === 'denied') Linking.openSettings();
   };
+
+  // Desde la invitación inicial ("¿Activar notificaciones?") se pide el permiso del sistema al entrar.
+  useEffect(() => {
+    if (!route.params?.prompt) return;
+    navigation.setParams({ prompt: undefined });
+    (async () => {
+      if ((await getPushPermission()) !== 'undetermined') return;
+      const status = await requestPushPermission();
+      setPermission(status);
+      if (status === 'granted') registerDeviceForPush();
+    })();
+  }, [route.params?.prompt, navigation]);
 
   const osOff = permission === 'denied' || permission === 'undetermined';
 
