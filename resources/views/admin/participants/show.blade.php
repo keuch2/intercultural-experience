@@ -75,7 +75,8 @@
                             'rejected' => 'Rechazado',
                         ];
                         // Postulación que representa al participante: la actual (no la primera cargada).
-                        $firstApp = \App\Support\ApplicationProgress::currentApplication($participant->applications);
+                        // Las solicitudes rechazadas no representan al participante (no está postulando).
+                        $firstApp = \App\Support\ApplicationProgress::currentApplication($participant->applications->where('status', '!=', 'rejected'));
                         $firstProgress = $firstApp ? \App\Support\ApplicationProgress::for($firstApp) : null;
                         $pStatus = $firstApp->status ?? null;
                         $color = $statusColors[$pStatus] ?? 'secondary';
@@ -464,7 +465,7 @@
                                     </h5>
                                     <small class="text-muted">
                                         Cada tarjeta representa una aplicación independiente a un programa.
-                                        Total: {{ $allApplications->count() }} aplicación(es).
+                                        Total: {{ $allApplications->count() }} aplicación(es)@if($rejectedApplications->isNotEmpty()) · {{ $rejectedApplications->count() }} solicitud(es) no aprobada(s)@endif.
                                     </small>
                                 </div>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newApplicationModal">
@@ -475,7 +476,7 @@
                             @if($allApplications->isEmpty())
                                 <div class="alert alert-info">
                                     <i class="bi bi-info-circle me-2"></i>
-                                    No hay aplicaciones registradas para este participante.
+                                    No hay aplicaciones en curso para este participante.
                                 </div>
                             @else
                                 @php
@@ -711,6 +712,41 @@
                                                     <small><span class="badge bg-secondary">●</span> Completado</small>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Solicitudes rechazadas: historial, no son postulaciones en curso. --}}
+                            @if($rejectedApplications->isNotEmpty())
+                                <div class="card border-0 bg-light mt-4">
+                                    <div class="card-body py-3">
+                                        <h6 class="fw-bold mb-1"><i class="bi bi-x-circle text-danger me-1"></i> Solicitudes no aprobadas</h6>
+                                        <small class="text-muted d-block mb-3">Historial de solicitudes de acceso rechazadas. No generan un proceso en el programa y el participante puede volver a postular.</small>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm align-middle mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Programa</th>
+                                                        <th>Solicitada</th>
+                                                        <th>Rechazada</th>
+                                                        <th>Motivo</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($rejectedApplications as $rejected)
+                                                        <tr>
+                                                            <td>{{ optional($rejected->program)->name ?? 'Sin programa' }} <small class="text-muted">#{{ $rejected->id }}</small></td>
+                                                            <td>{{ optional($rejected->applied_at ?? $rejected->created_at)->format('d/m/Y') }}</td>
+                                                            <td>
+                                                                {{ optional($rejected->reviewed_at)->format('d/m/Y') ?? '—' }}
+                                                                @if($rejected->reviewer)<small class="text-muted d-block">por {{ $rejected->reviewer->name }}</small>@endif
+                                                            </td>
+                                                            <td>{{ $rejected->rejection_reason ?: '—' }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>

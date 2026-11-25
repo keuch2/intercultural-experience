@@ -294,8 +294,12 @@ class AdminParticipantController extends Controller
         // Calcular total de puntos
         $totalPoints = $participant->points->sum('points');
 
-        // All applications for the applications tab
-        $allApplications = $participant->applications()->with(['program', 'programProcess'])->get();
+        // Postulaciones del tab Aplicaciones. Las solicitudes rechazadas no son postulaciones en curso:
+        // se listan aparte como historial (motivo, fecha y quién la revisó).
+        $applications = $participant->applications()->with(['program', 'programProcess', 'reviewer:id,name'])->get();
+        [$rejectedApplications, $allApplications] = $applications->partition(fn ($a) => $a->status === 'rejected');
+        $rejectedApplications = $rejectedApplications->sortByDesc(fn ($a) => $a->reviewed_at ?? $a->updated_at)->values();
+        $allApplications = $allApplications->values();
         $deletion = app(ApplicationDeletionService::class);
         $allApplications->each(fn ($a) => $a->setAttribute('deletion_summary', $deletion->summary($a)));
 
@@ -313,7 +317,7 @@ class AdminParticipantController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        return view('admin.participants.show', compact('participant', 'applicationStats', 'totalPoints', 'allApplications', 'currencies', 'programs', 'notes'));
+        return view('admin.participants.show', compact('participant', 'applicationStats', 'totalPoints', 'allApplications', 'rejectedApplications', 'currencies', 'programs', 'notes'));
     }
 
     /**
